@@ -9,8 +9,10 @@ import (
 type User struct {
 	gorm.Model // Tạo ID tự tăng "identity"
 
-	Username  string    `json:"username" gorm:"unique"`
-	Password  string    `json:"password"`
+	Username string `json:"username" gorm:"unique"`
+
+	// Thực ra là hashpassword nhưng sử dụng bằng tên password để lưu vào databaseư
+	Password  string    `json:"password" gorm:"password"`
 	Hoten     string    `json:"name"`
 	Address   string    `json:"address"`
 	NgaySinh  time.Time `json:"ngaysinh"`

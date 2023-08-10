@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
 	// gói thư viện dùng để mã hóa, giải mã mật khẩu
 	"golang.org/x/crypto/bcrypt"
 
@@ -21,8 +20,7 @@ type User struct {
 type IUser interface {
 	Login(ctx *gin.Context)
 	Register(ctx *gin.Context)
-	CheckPassword(password string) error
-	HashPassword(password string) error
+	GenerateToken(ctx *gin.Context)
 }
 
 func NewUser(service service.IUser) *User {
@@ -79,6 +77,7 @@ func (h *User) Register(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, gin.H{"usedID": user.ID, "email": user.Email, "address": user.Address, "role": user.Role, "status": user.Create_id, "createdAt": user.CreatedAt, "updatedAt": user.UpdatedAt, "deletedAt": user.DeletedAt})
 }
 
+// HashPassword mã hóa mật khẩu thông qua thuật toán bcrypt
 func (user *User) HashPassword(password string) error {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
@@ -94,4 +93,53 @@ func (user *User) CheckPassword(password string) error {
 		return err
 	}
 	return nil
+}
+
+func (user *User) GenerateToken(ctx *gin.Context) {
+	var request model.TokenRequest
+	if err := ctx.ShouldBindJSON(&request); err != nil {
+		ctx.JSON(400, gin.H{
+			"error": err.Error(),
+		})
+		ctx.Abort()
+		return
+	}
+
+	// Kiểm tra xem email có tồn tại trong database không và password có đúng
+	// không
+	record := config.DbDefault.Where("email = ?", request.Email).First(&user)
+	if record.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": record.Error.Error(),
+		})
+		ctx.Abort()
+		return
+	}
+
+	// Kiểm tra mật khẩu
+	// Hiện tại cái check password bị lỗi cấu trúc (chỉ để được phía file model thì mới kéo
+	// được sang file handler)
+	credentialError := user.CheckPassword(request.Password)
+	if credentialError != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"error": credentialError.Error(),
+		})
+		ctx.Abort()
+		return
+	}
+
+	// Tạo token
+	tokenString, err := service.GenerateJWT(user.user.Email, user.user.Username)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+		ctx.Abort()
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"token": tokenString,
+	})
 }
