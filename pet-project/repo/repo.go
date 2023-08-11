@@ -16,4 +16,10 @@ func NewRepo(db *gorm.DB) *Repo {
 
 type IRepo interface {
 	GetUserByEmail(email string) (model.User, error)
+	CreateUser(user model.User) (model.User, error)
+	UpdateUser(user model.User) (model.User, error)
+	DeleteUser(user model.User) (model.User, error)
+	GetUserById(id int) (model.User, error)
+	GetAllUser() ([]model.User, error)
+	GetRoleUser(role string) ([]model.User, error)
 }
