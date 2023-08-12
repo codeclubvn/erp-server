@@ -3,12 +3,17 @@ package route
 import (
 	"pet-project/config"
 	"pet-project/handler"
+	"pet-project/middleware"
 	repo2 "pet-project/repo"
 	"pet-project/service"
 )
 
 type Service struct {
 	*config.App
+}
+
+type IRoute interface {
+	NewService() *Service
 }
 
 func NewService() *Service {
@@ -22,14 +27,20 @@ func NewService() *Service {
 	userService := service.NewUser(repo)
 	user := handler.NewUser(userService)
 	migrate := handler.NewMigration(db)
+	// migration
 
 	router := s.Router
-	v1 := router.Group("/api/v1")
+	api := router.Group("/api/v1")
+	{
+		api.POST("/migrate", migrate.Migrate)
+		api.POST("/token", handler.IUser(user).GenerateToken)
+		api.POST("/user/register", user.Register)
+		// user
+		secured := api.Group("/secure").Use(middleware.Auth())
+		{
+			secured.GET("/user", handler.Ping)
+		}
 
-	// user
-	v1.POST("/login", user.Login)
-
-	// migration
-	v1.POST("/migrate", migrate.Migrate)
+	}
 	return &s
 }
