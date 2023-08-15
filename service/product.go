@@ -12,9 +12,9 @@ type Product struct {
 }
 
 type IProduct interface {
-	CreateProduct(ctx context.Context, businessReq model.ProductRequest) (businessRes model.Product, err error)
-	UpdateProduct(ctx context.Context, businessReq model.ProductRequest) (businessRes model.Product, err error)
-	GetProduct(ctx context.Context, userId string) (businessRes model.Product, err error)
+	CreateProduct(ctx context.Context, productReq model.ProductRequest) (businessRes model.Product, err error)
+	UpdateProduct(ctx context.Context, productReq model.ProductRequest) (businessRes model.Product, err error)
+	GetProduct(ctx context.Context, oneProductReq model.OneProductRequest) (businessRes model.Product, err error)
 	GetProducts(ctx context.Context, userId string) (businessRes model.Products, err error)
 }
 
@@ -24,24 +24,24 @@ func NewProduct(repo repo.IRepo) *Product {
 	}
 }
 
-func (s *Product) CreateProduct(ctx context.Context, businessReq model.ProductRequest) (businessRes model.Product, err error) {
-	common.Sync(businessReq, &businessRes)
+func (s *Product) CreateProduct(ctx context.Context, productReq model.ProductRequest) (businessRes model.Product, err error) {
+	common.Sync(productReq, &businessRes)
 	if err = s.repo.CreateProduct(ctx, &businessRes); err != nil {
 		return model.Product{}, err
 	}
 	return businessRes, nil
 }
 
-func (s *Product) UpdateProduct(ctx context.Context, businessReq model.ProductRequest) (businessRes model.Product, err error) {
-	common.Sync(businessReq, &businessRes)
+func (s *Product) UpdateProduct(ctx context.Context, productReq model.ProductRequest) (businessRes model.Product, err error) {
+	common.Sync(productReq, &businessRes)
 	if err = s.repo.UpdateProduct(ctx, &businessRes); err != nil {
 		return model.Product{}, err
 	}
 	return businessRes, nil
 }
 
-func (s *Product) GetProduct(ctx context.Context, userId string) (businessRes model.Product, err error) {
-	businessRes, err = s.repo.GetProduct(ctx, userId)
+func (s *Product) GetProduct(ctx context.Context, oneProductReq model.OneProductRequest) (businessRes model.Product, err error) {
+	businessRes, err = s.repo.GetProduct(ctx, oneProductReq)
 	if err != nil {
 		return model.Product{}, err
 	}

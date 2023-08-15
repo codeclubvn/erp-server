@@ -6,11 +6,9 @@ import (
 
 type Money struct {
 	BaseModel
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Price       int       `json:"price"`
-	Quantity    int       `json:"quantity"`
 	Status      string    `json:"status"`
+	Description string    `json:"description"`
+	Price       float64   `json:"price"`
 	UserId      uuid.UUID `json:"user_id"`
 }
 
@@ -20,12 +18,15 @@ func (Money) TableName() string {
 
 type MoneyRequest struct {
 	ID          *uuid.UUID `json:"id"`
-	Name        *string    `json:"name"`
-	Description *string    `json:"description"`
-	Price       *int       `json:"price"`
-	Quantity    *int       `json:"quantity"`
 	Status      *string    `json:"status"`
+	Description *string    `json:"description"`
+	Price       *float64   `json:"price"`
 	UserId      *uuid.UUID
 }
 
 type Moneys []Money
+
+type OneMoneyRequest struct {
+	Id     string
+	UserId string
+}

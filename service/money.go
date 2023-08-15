@@ -14,7 +14,7 @@ type Money struct {
 type IMoney interface {
 	CreateMoney(ctx context.Context, businessReq model.MoneyRequest) (businessRes model.Money, err error)
 	UpdateMoney(ctx context.Context, businessReq model.MoneyRequest) (businessRes model.Money, err error)
-	GetMoney(ctx context.Context, userId string) (businessRes model.Money, err error)
+	GetMoney(ctx context.Context, oneMoneyReq model.OneMoneyRequest) (businessRes model.Money, err error)
 	GetMoneys(ctx context.Context, userId string) (businessRes model.Moneys, err error)
 	DeleteMoney(ctx context.Context, id string) (err error)
 }
@@ -41,8 +41,8 @@ func (s *Money) UpdateMoney(ctx context.Context, businessReq model.MoneyRequest)
 	return businessRes, nil
 }
 
-func (s *Money) GetMoney(ctx context.Context, userId string) (businessRes model.Money, err error) {
-	businessRes, err = s.repo.GetMoney(ctx, userId)
+func (s *Money) GetMoney(ctx context.Context, oneMoneyReq model.OneMoneyRequest) (businessRes model.Money, err error) {
+	businessRes, err = s.repo.GetMoney(ctx, oneMoneyReq)
 	if err != nil {
 		return model.Money{}, err
 	}

@@ -12,10 +12,10 @@ type Order struct {
 }
 
 type IOrder interface {
-	CreateOrder(ctx context.Context, businessReq model.OrderRequest) (businessRes model.Order, err error)
-	UpdateOrder(ctx context.Context, businessReq model.OrderRequest) (businessRes model.Order, err error)
-	GetOrder(ctx context.Context, userId string) (businessRes model.Order, err error)
-	GetOrders(ctx context.Context, userId string) (businessRes model.Orders, err error)
+	CreateOrder(ctx context.Context, businessReq model.OrderRequest) (orderRes model.Order, err error)
+	UpdateOrder(ctx context.Context, businessReq model.OrderRequest) (orderRes model.Order, err error)
+	GetOrder(ctx context.Context, oneOrderReq model.OneOrderRequest) (orderRes model.Order, err error)
+	GetOrders(ctx context.Context, userId string) (orderRes model.Orders, err error)
 }
 
 func NewOrder(repo repo.IRepo) *Order {
@@ -24,34 +24,34 @@ func NewOrder(repo repo.IRepo) *Order {
 	}
 }
 
-func (s *Order) CreateOrder(ctx context.Context, businessReq model.OrderRequest) (businessRes model.Order, err error) {
-	common.Sync(businessReq, &businessRes)
-	if err = s.repo.CreateOrder(ctx, &businessRes); err != nil {
+func (s *Order) CreateOrder(ctx context.Context, businessReq model.OrderRequest) (orderRes model.Order, err error) {
+	common.Sync(businessReq, &orderRes)
+	if err = s.repo.CreateOrder(ctx, &orderRes); err != nil {
 		return model.Order{}, err
 	}
-	return businessRes, nil
+	return orderRes, nil
 }
 
-func (s *Order) UpdateOrder(ctx context.Context, businessReq model.OrderRequest) (businessRes model.Order, err error) {
-	common.Sync(businessReq, &businessRes)
-	if err = s.repo.UpdateOrder(ctx, &businessRes); err != nil {
+func (s *Order) UpdateOrder(ctx context.Context, businessReq model.OrderRequest) (orderRes model.Order, err error) {
+	common.Sync(businessReq, &orderRes)
+	if err = s.repo.UpdateOrder(ctx, &orderRes); err != nil {
 		return model.Order{}, err
 	}
-	return businessRes, nil
+	return orderRes, nil
 }
 
-func (s *Order) GetOrder(ctx context.Context, userId string) (businessRes model.Order, err error) {
-	businessRes, err = s.repo.GetOrder(ctx, userId)
+func (s *Order) GetOrder(ctx context.Context, oneOrderReq model.OneOrderRequest) (orderRes model.Order, err error) {
+	orderRes, err = s.repo.GetOrder(ctx, oneOrderReq)
 	if err != nil {
 		return model.Order{}, err
 	}
-	return businessRes, nil
+	return orderRes, nil
 }
 
-func (s *Order) GetOrders(ctx context.Context, userId string) (businessRes model.Orders, err error) {
-	businessRes, err = s.repo.GetOrders(ctx, userId)
+func (s *Order) GetOrders(ctx context.Context, userId string) (orderRes model.Orders, err error) {
+	orderRes, err = s.repo.GetOrders(ctx, userId)
 	if err != nil {
 		return model.Orders{}, err
 	}
-	return businessRes, nil
+	return orderRes, nil
 }

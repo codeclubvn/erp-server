@@ -19,9 +19,10 @@ func (r *Repo) UpdateProduct(ctx context.Context, product *model.Product) error 
 	return nil
 }
 
-func (r *Repo) GetProduct(ctx context.Context, userId string) (model.Product, error) {
+func (r *Repo) GetProduct(ctx context.Context, oneProductReq model.OneProductRequest) (model.Product, error) {
 	product := model.Product{}
-	if err := r.db.Where("user_id = ?", userId).First(&product).Error; err != nil {
+	if err := r.db.Where("id = ?", oneProductReq.Id).
+		First(&product).Error; err != nil {
 		return model.Product{}, err
 	}
 	return product, nil
