@@ -111,8 +111,16 @@ func (h *Order) GetOrder(ctx *gin.Context) {
 	// check x-user-id
 	userId := ctx.GetHeader("x-user-id")
 
+	// get id
+	id := ctx.Param("id")
+
+	oneOrderReq := model.OneOrderRequest{
+		UserId: userId,
+		Id:     id,
+	}
+
 	// Create business
-	business, err := h.service.GetOrder(ctx, userId)
+	business, err := h.service.GetOrder(ctx, oneOrderReq)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),

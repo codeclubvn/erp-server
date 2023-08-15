@@ -28,19 +28,19 @@ func (h *Product) CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	businessReq := model.ProductRequest{}
-	if err := ctx.ShouldBindJSON(&businessReq); err != nil {
+	productReq := model.ProductRequest{}
+	if err := ctx.ShouldBindJSON(&productReq); err != nil {
 		ctx.JSON(400, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	businessReq.UserId = &userId
+	productReq.UserId = &userId
 
 	// Check valid request
 
-	// Create business
-	business, err := h.service.CreateProduct(ctx, businessReq)
+	// Create product
+	product, err := h.service.CreateProduct(ctx, productReq)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -49,7 +49,7 @@ func (h *Product) CreateProduct(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, business)
+	ctx.JSON(http.StatusCreated, product)
 }
 
 func (h *Product) UpdateProduct(ctx *gin.Context) {
@@ -64,19 +64,19 @@ func (h *Product) UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	businessReq := model.ProductRequest{}
-	if err := ctx.ShouldBindJSON(&businessReq); err != nil {
+	productReq := model.ProductRequest{}
+	if err := ctx.ShouldBindJSON(&productReq); err != nil {
 		ctx.JSON(400, gin.H{
 			"error": err.Error(),
 		})
 		return
 	}
-	businessReq.UserId = &userId
+	productReq.UserId = &userId
 
 	// Check valid request
 
-	// Create business
-	business, err := h.service.UpdateProduct(ctx, businessReq)
+	// Create product
+	product, err := h.service.UpdateProduct(ctx, productReq)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -85,7 +85,7 @@ func (h *Product) UpdateProduct(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, business)
+	ctx.JSON(http.StatusCreated, product)
 }
 
 func (h *Product) GetProducts(ctx *gin.Context) {
@@ -93,8 +93,8 @@ func (h *Product) GetProducts(ctx *gin.Context) {
 	// check x-user-id
 	userId := ctx.GetHeader("x-user-id")
 
-	// Create business
-	business, err := h.service.GetProducts(ctx, userId)
+	// Create product
+	product, err := h.service.GetProducts(ctx, userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -103,7 +103,7 @@ func (h *Product) GetProducts(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, business)
+	ctx.JSON(http.StatusOK, product)
 }
 
 func (h *Product) GetProduct(ctx *gin.Context) {
@@ -111,8 +111,16 @@ func (h *Product) GetProduct(ctx *gin.Context) {
 	// check x-user-id
 	userId := ctx.GetHeader("x-user-id")
 
-	// Create business
-	business, err := h.service.GetProduct(ctx, userId)
+	// get id
+	id := ctx.Param("id")
+
+	oneProductReq := model.OneProductRequest{
+		UserId: userId,
+		Id:     id,
+	}
+
+	// Create product
+	product, err := h.service.GetProduct(ctx, oneProductReq)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
@@ -121,5 +129,5 @@ func (h *Product) GetProduct(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, business)
+	ctx.JSON(http.StatusOK, product)
 }

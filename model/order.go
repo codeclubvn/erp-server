@@ -6,12 +6,12 @@ import (
 
 type Order struct {
 	BaseModel
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	Price       int       `json:"price"`
-	Quantity    int       `json:"quantity"`
-	Status      string    `json:"status"`
-	UserId      uuid.UUID `json:"user_id"`
+	Price       float64     `json:"price"` // total price of all items
+	DeliveryFee float64     `json:"delivery_fee"`
+	State       string      `json:"state"` // pending, processing, completed, cancelled
+	Total       float64     `json:"total"` // total price + delivery fee
+	UserId      uuid.UUID   `json:"user_id"`
+	OrderItems  []OrderItem `json:"order_items"`
 }
 
 func (Order) TableName() string {
@@ -20,12 +20,17 @@ func (Order) TableName() string {
 
 type OrderRequest struct {
 	ID          *uuid.UUID `json:"id"`
-	Name        *string    `json:"name"`
-	Description *string    `json:"description"`
-	Price       *int       `json:"price"`
-	Quantity    *int       `json:"quantity"`
-	Status      *string    `json:"status"`
+	Price       *float64   `json:"price"` // total price of all items
+	DeliveryFee *float64   `json:"delivery_fee"`
+	State       *string    `json:"state"` // pending, processing, completed, cancelled
+	Total       *float64   `json:"total"` // total price + delivery fee
 	UserId      *uuid.UUID
+	OrderItems  []OrderItemRequest `json:"order_items"`
 }
 
 type Orders []Order
+
+type OneOrderRequest struct {
+	Id     string
+	UserId string
+}

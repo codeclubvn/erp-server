@@ -29,21 +29,21 @@ type IRepo interface {
 	GetBusiness(ctx context.Context, userId string) (model.Business, error)
 
 	// product
-	CreateProduct(ctx context.Context, business *model.Product) error
-	UpdateProduct(ctx context.Context, business *model.Product) error
-	GetProduct(ctx context.Context, userId string) (model.Product, error)
+	CreateProduct(ctx context.Context, product *model.Product) error
+	UpdateProduct(ctx context.Context, product *model.Product) error
+	GetProduct(ctx context.Context, oneProductReq model.OneProductRequest) (model.Product, error)
 	GetProducts(ctx context.Context, userId string) (model.Products, error)
 
 	// order
-	CreateOrder(ctx context.Context, business *model.Order) error
-	UpdateOrder(ctx context.Context, business *model.Order) error
-	GetOrder(ctx context.Context, userId string) (model.Order, error)
+	CreateOrder(ctx context.Context, order *model.Order) error
+	UpdateOrder(ctx context.Context, order *model.Order) error
+	GetOrder(ctx context.Context, oneOrderReq model.OneOrderRequest) (model.Order, error)
 	GetOrders(ctx context.Context, userId string) (model.Orders, error)
 
 	// money
-	CreateMoney(ctx context.Context, business *model.Money) error
-	UpdateMoney(ctx context.Context, business *model.Money) error
-	GetMoney(ctx context.Context, userId string) (model.Money, error)
+	CreateMoney(ctx context.Context, money *model.Money) error
+	UpdateMoney(ctx context.Context, money *model.Money) error
+	GetMoney(ctx context.Context, oneMoneyReq model.OneMoneyRequest) (model.Money, error)
 	GetMoneys(ctx context.Context, userId string) (model.Moneys, error)
 	DeleteMoney(ctx context.Context, id string) error
 }

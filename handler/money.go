@@ -107,12 +107,19 @@ func (h *Money) GetMoneys(ctx *gin.Context) {
 }
 
 func (h *Money) GetMoney(ctx *gin.Context) {
-
 	// check x-user-id
 	userId := ctx.GetHeader("x-user-id")
 
-	// Create business
-	business, err := h.service.GetMoney(ctx, userId)
+	// get id
+	id := ctx.Param("id")
+
+	oneMoneyReq := model.OneMoneyRequest{
+		Id:     id,
+		UserId: userId,
+	}
+
+	// get one money
+	business, err := h.service.GetMoney(ctx, oneMoneyReq)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),

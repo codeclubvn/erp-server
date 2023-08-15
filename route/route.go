@@ -64,16 +64,16 @@ func NewService() *Service {
 	v1.POST("/product", product.CreateProduct)
 	v1.PUT("/product", product.UpdateProduct)
 	v1.GET("/products", product.GetProducts)
-	v1.GET("/product", product.GetProduct)
+	v1.GET("/product/:id", product.GetProduct)
 
 	// order
 	v1.POST("/order", order.CreateOrder)
 	v1.PUT("/order", order.UpdateOrder)
 	v1.GET("/orders", order.GetOrders)
-	v1.GET("/order", order.GetOrder)
+	v1.GET("/order/:id", order.GetOrder)
 
 	// money
-	v1.GET("/money", money.GetMoney)
+	v1.GET("/money/:id", money.GetMoney)
 	v1.POST("/money", money.CreateMoney)
 	v1.PUT("/money", money.UpdateMoney)
 	v1.GET("/moneys", money.GetMoneys)
