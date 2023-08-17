@@ -1,4 +1,14 @@
-.idea
+/.idea
+/.vscode
+
+/log
+*.log
+
 *.exe
 *.exe~
 run-local.sh
+
+.env
+.env.*
+
+/.docker

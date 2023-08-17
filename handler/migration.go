@@ -3,6 +3,7 @@ package handler
 import (
 	"erp-server/model"
 	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
@@ -22,34 +23,14 @@ func NewMigration(db *gorm.DB) *Migration {
 }
 
 func (h *Migration) BaseMigrate(ctx *gin.Context) {
-	if err := h.db.Exec(`
-			CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-		`).Error; err != nil {
-		fmt.Errorf(err.Error())
+	if err := h.db.Exec(`CREATE EXTENSION IF NOT EXISTS "uuid-ossp";`).Error; err != nil {
+		fmt.Println(err)
 	}
 }
 
 func (h *Migration) Migrate(ctx *gin.Context) {
-	// put your migrations at the begin of the list
+	// put your migrations at the end of the list
 	migrate := gormigrate.New(h.db, gormigrate.DefaultOptions, []*gormigrate.Migration{
-		{
-			// delete table money, product, order
-			// update column price to float in table money, product, order
-			// add table order_item
-			ID: "20230815182141",
-			Migrate: func(tx *gorm.DB) error {
-				if err := h.db.Exec(`
-			drop table money, product, order if exists;
-		`).Error; err != nil {
-					fmt.Errorf(err.Error())
-				}
-				if err := h.db.AutoMigrate(
-					&model.Money{}, &model.Order{}, &model.Product{}, &model.OrderItem{}); err != nil {
-					return err
-				}
-				return nil
-			},
-		},
 		{
 			// add uuid extension
 			// add table user, business, product, order, money
@@ -62,6 +43,22 @@ func (h *Migration) Migrate(ctx *gin.Context) {
 					&model.Product{},
 					&model.Order{},
 					&model.Money{}); err != nil {
+					return err
+				}
+				return nil
+			},
+		},
+		{
+			// delete table money, product, order
+			// update column price to float in table money, product, order
+			// add table order_item
+			ID: "20230815182141",
+			Migrate: func(tx *gorm.DB) error {
+				if err := h.db.Exec(`drop table if exists money, product, "order";`).Error; err != nil {
+					fmt.Println(err)
+				}
+				if err := h.db.AutoMigrate(
+					&model.Money{}, &model.Order{}, &model.Product{}, &model.OrderItem{}); err != nil {
 					return err
 				}
 				return nil
