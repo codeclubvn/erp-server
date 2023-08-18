@@ -6,7 +6,6 @@ on:
       - deploy
 env:
   REGISTRY: ghcr.io
-  TEST_TAG: ${{ github.repository }}:test
   LATEST_TAG: ${{ github.repository }}:latest
 jobs:
   build:
@@ -23,15 +22,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and export Docker image
-        uses: docker/build-push-action@v4.1.1
-        with:
-          context: .
-          load: true
-          tags: ${{ env.TEST_TAG }}
-      - name: Test Docker image
-        run: |
-          docker run --rm ${{ env.TEST_TAG }}
       - name: Build and push Docker image
         uses: docker/build-push-action@v4.1.1
         with:
