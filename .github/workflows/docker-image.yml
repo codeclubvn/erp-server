@@ -7,7 +7,7 @@ on:
 env:
   REGISTRY: ghcr.io
   TEST_TAG: ${{ github.repository }}:test
-  LATEST_TAG: ${{ env.REGISTRY }}/${{ github.repository }}:latest
+  LATEST_TAG: ${{ github.repository }}:latest
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -38,4 +38,4 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ env.LATEST_TAG }}
+          tags: ${{ env.REGISTRY }}/${{ env.LATEST_TAG }}
