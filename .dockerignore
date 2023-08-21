@@ -1,20 +1,18 @@
 /.idea
 /.vscode
 
-/logs
+/[Ll]ogs
 *.log
 
 /.git
 .gitignore
 
 Dockerfile
-docker-compose.yaml
+docker-compose.yml
 .dockerignore
 
 .env
 .env.*
-
-deploy.*
 
 /.docker
 
