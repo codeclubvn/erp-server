@@ -12,7 +12,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  LATEST_TAG: ${{ github.repository }}:latest
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build:
@@ -40,4 +40,5 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.LATEST_TAG }}
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
