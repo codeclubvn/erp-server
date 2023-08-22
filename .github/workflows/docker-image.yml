@@ -45,7 +45,9 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4.1.1
-        if: github.ref == 'refs/heads/master'
+        if: |
+          github.ref == 'refs/heads/master' ||
+          github.base_ref == 'master'
         with:
           context: .
           push: true
