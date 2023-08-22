@@ -35,8 +35,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Test Docker image
+        uses: docker/build-push-action@v4.1.1
+        if: github.ref == 'refs/heads/deploy'
+        with:
+          context: .
+          load: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v4.1.1
+        if: github.ref == 'refs/heads/master'
         with:
           context: .
           push: true
