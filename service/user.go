@@ -2,47 +2,36 @@ package service
 
 import (
 	"context"
-	"errors"
-
-	"erp-server/model"
-	"erp-server/repo"
+	config "erp/config"
+	models "erp/models"
+	repository "erp/repository"
 )
 
-type User struct {
-	repo repo.IRepo
+type (
+	UserService interface {
+		Create(ctx context.Context, user models.User) (models.User, error)
+		GetByID(ctx context.Context, id string) (models.User, error)
+	}
+	UserServiceImpl struct {
+		userRepo repository.UserRepository
+		config   config.Config
+	}
+)
+
+// Create implements UserService.
+func (u *UserServiceImpl) Create(ctx context.Context, user models.User) (models.User, error) {
+	user, err := u.userRepo.Create(ctx, user)
+	return user, err
 }
 
-type IUser interface {
-	Login(ctx context.Context, userRequest model.UserRequest) (userResponse model.User, err error)
-	Register(ctx context.Context, userRequest model.UserRequest) (userResponse model.User, err error)
-}
-
-func NewUser(repo repo.IRepo) *User {
-	return &User{
-		repo: repo,
+func NewUserService(itemRepo repository.UserRepository, config config.Config) UserService {
+	return &UserServiceImpl{
+		userRepo: itemRepo,
+		config:   config,
 	}
 }
 
-func (s *User) Login(ctx context.Context, userRequest model.UserRequest) (userResponse model.User, err error) {
-	user, err := s.repo.GetUserByEmail(userRequest.Username)
-	if err != nil {
-		return model.User{}, err
-	}
-	// kiểm tra xem mật khẩu có đúng không
-	if user.Password != userRequest.Password {
-		return model.User{}, errors.New("Invalid username or password")
-	}
-	return user, nil
-}
-
-func (s *User) Register(ctx context.Context, userRequest model.UserRequest) (userResponse model.User, err error) {
-	userr := model.User{
-		Username: userRequest.Username,
-		Password: userRequest.Password,
-	}
-	user, err := s.repo.CreateUser(userr)
-	if err != nil {
-		return model.User{}, err
-	}
-	return user, nil
+func (s *UserServiceImpl) GetByID(ctx context.Context, id string) (item models.User, err error) {
+	item, err = s.userRepo.GetByID(ctx, id)
+	return
 }
