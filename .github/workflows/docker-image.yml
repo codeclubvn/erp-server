@@ -37,7 +37,9 @@ jobs:
 
       - name: Test Docker image
         uses: docker/build-push-action@v4.1.1
-        if: github.ref == 'refs/heads/deploy'
+        if: |
+          github.ref == 'refs/heads/deploy' ||
+          github.base_ref == 'master'
         with:
           context: .
           load: true
@@ -46,8 +48,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4.1.1
         if: |
-          github.ref == 'refs/heads/master' ||
-          github.base_ref == 'master'
+          github.ref == 'refs/heads/master'
         with:
           context: .
           push: true
