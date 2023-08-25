@@ -1,62 +1,103 @@
 package service
 
 import (
-	"errors"
-	"time"
+	"context"
+	"erp/api_errors"
+	config "erp/config"
+	"erp/constants"
+	dto "erp/dto/auth"
+	models "erp/models"
 
-	"github.com/dgrijalva/jwt-go"
+	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtKey = []byte("super_secret_key")
-
-type JWTClaim struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Role     string `json:"role"`
-	jwt.StandardClaims
-}
-
-type IAuth interface {
-	GenerateJWT(email string, username string) (tokenString string, err error)
-	ValidateToken(signedToken string) (err error)
-}
-
-// GenerateJWT generates a JWT token and assign a username to it's claims and return it
-func GenerateJWT(email string, username string) (tokenString string, err error) {
-	expirationTime := time.Now().Add(5 * time.Hour)
-	claims := &JWTClaim{
-		Email:    email,
-		Username: username,
-		StandardClaims: jwt.StandardClaims{
-			ExpiresAt: expirationTime.Unix(),
-		},
+type (
+	AuthService interface {
+		Register(ctx context.Context, req dto.RegisterRequest) (user *models.User, err error)
+		Login(ctx context.Context, req dto.LoginRequest) (res *dto.LoginResponse, err error)
 	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err = token.SignedString(jwtKey)
-	return
+	AuthServiceImpl struct {
+		userService UserService
+		jwtService  JwtService
+		config      *config.Config
+	}
+)
+
+func NewAuthService(userService UserService, config *config.Config, jwtService JwtService) AuthService {
+	return &AuthServiceImpl{
+		userService: userService,
+		jwtService:  jwtService,
+		config:      config,
+	}
 }
 
-func ValidateToken(signedToken string) (err error) {
-	// Chuyển chuỗi token thành token object
-	token, err := jwt.ParseWithClaims(
-		signedToken,
-		&JWTClaim{},
-		func(token *jwt.Token) (interface{}, error) {
-			return []byte(jwtKey), nil
-		},
+func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest) (user *models.User, err error) {
+	roleKey := constants.RoleCustomer
+
+	if req.RequestFrom != string(constants.Web) {
+		roleKey = constants.RoleStoreOwner
+	}
+
+	encryptedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(req.Password),
+		bcrypt.DefaultCost,
 	)
 	if err != nil {
-		return
+		return user, err
 	}
-	// Kiểm tra xem token có hợp lệ không
-	claims, ok := token.Claims.(*JWTClaim)
-	if !ok {
-		err = errors.New("couldn't parse claims")
-		return
+
+	req.Password = string(encryptedPassword)
+
+	user, err = a.userService.Create(ctx, models.User{
+		Email:     req.Email,
+		Password:  req.Password,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		RoleKey:   roleKey,
+	})
+
+	return user, err
+}
+
+func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (res *dto.LoginResponse, err error) {
+	user, err := a.userService.GetByEmail(ctx, req.Email)
+
+	if req.RequestFrom != string(constants.Web) {
+		// TODO: Sẽ có thêm role của nhân viên
+		if user.RoleKey != constants.RoleStoreOwner {
+			return nil, api_errors.ErrUnauthorizedAccess
+		}
 	}
-	if claims.ExpiresAt < time.Now().Unix() {
-		err = errors.New("token is expired")
-		return
+
+	if err != nil {
+		return nil, err
 	}
-	return
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
+
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, refreshToken, err := a.jwtService.GenerateAuthTokens(user.ID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	res = &dto.LoginResponse{
+		User: dto.UserResponse{
+			ID:        user.ID.String(),
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+			RoleKey:   user.RoleKey,
+		},
+		Token: dto.TokenResponse{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			ExpiresIn:    a.config.Jwt.AccessTokenExpiresIn,
+		},
+	}
+
+	return res, nil
 }

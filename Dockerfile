@@ -1,12 +1,25 @@
-FROM golang:1.21-alpine as builder
-WORKDIR /usr/src/app
-COPY go.mod .
-COPY go.sum .
-RUN go mod download
-COPY . .
-RUN GOENV=production CGO_ENABLED=0 GOOS=linux go build -o erp-server .
+FROM golang:1.19-alpine as build-env
 
-FROM alpine:3.18.3 as production
-WORKDIR /usr/src/app
-COPY --from=builder /usr/src/app/erp-server .
-CMD ["./erp-server"]
+# cache dependencies first
+WORKDIR /app
+COPY go.mod /app
+COPY go.sum /app
+RUN go mod download
+
+COPY . /app
+
+# build
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app/main ./main.go
+
+FROM alpine:latest
+
+WORKDIR /app
+COPY ./config/config.release.yml /app/config/config.release.yml
+COPY ./config/config.dev.yml /app/config/config.dev.yml
+COPY ./config/config.yml /app/config/config.yml
+
+COPY --from=build-env /app/main /app/main
+
+ENTRYPOINT ["/app/main"]
+
+

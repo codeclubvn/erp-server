@@ -1,14 +1,9 @@
 package main
 
 import (
-	"erp-server/conf"
-	"erp-server/route"
+	bootstrap "erp/bootstrap"
 )
 
 func main() {
-	conf.SetEnv()
-	app := route.NewService()
-	if err := app.Run(); err != nil {
-		panic(err)
-	}
+	bootstrap.Run()
 }

@@ -1,17 +1,17 @@
-/.idea
-/.vscode
-
-/[Ll]ogs
-*.log
-
+# Binaries for programs and plugins
 *.exe
 *.exe~
-run-local.sh
+*.dll
+*.so
+*.dylib
 
-.env
-.env.*
+# Test binary, built with `go test -c`
+*.test
 
-deploy.*
-docker-compose.yml
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
 
-/.docker
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+.idea
