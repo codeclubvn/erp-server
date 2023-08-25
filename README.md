@@ -1,5 +1,15 @@
 # Golang Clean Architecture
 
+
+## Các công nghệ sử dụng
+
+- [Golang](https://golang.org/)
+- [Gin](https://https://gin-gonic.com/)
+- [Gorm](https://gorm.io/)
+- [JWT](https://jwt.io/)
+- [Docker](https://www.docker.com/)
+- [PostgreSQL](https://www.postgresql.org/)
+
 ## Cấu trúc thư mục
 
 ```
@@ -66,11 +76,3 @@
 └── utils // Các hàm hỗ trợ
 ```
 
-## Các công nghệ sử dụng
-
-- [Golang](https://golang.org/)
-- [Gin](https://https://gin-gonic.com/)
-- [Gorm](https://gorm.io/)
-- [JWT](https://jwt.io/)
-- [Docker](https://www.docker.com/)
-- [PostgreSQL](https://www.postgresql.org/)
