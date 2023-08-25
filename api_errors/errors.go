@@ -6,7 +6,12 @@ import (
 )
 
 var (
-	ErrUnauthorizedAccess = errors.New("unauthorized access")
+	ErrInternalServerError  = errors.New("internal server error")
+	ErrUnauthorizedAccess   = errors.New("unauthorized access")
+	ErrTokenBadSignedMethod = errors.New("bad signed method received")
+	ErrTokenExpired         = errors.New("token expired")
+	ErrTokenInvalid         = errors.New("token invalid")
+	ErrTokenMalformed       = errors.New("token malformed")
 )
 
 func GetStatusCode(err error) (int, bool) {

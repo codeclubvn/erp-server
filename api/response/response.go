@@ -2,8 +2,8 @@ package response
 
 type ResponseError struct {
 	//Code    int      `json:"code"`
-	Message string   `json:"message"`
-	Errors  []string `json:"errors,omitempty"`
+	Message string  `json:"message"`
+	Errors  []error `json:"errors,omitempty"`
 }
 
 type SimpleResponse struct {

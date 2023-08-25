@@ -1,9 +1,6 @@
 package constants
 
-type Role string
-
 const (
-	RoleSeller   Role = "seller"
-	RoleCustomer Role = "customer"
-	RoleAdmin    Role = "admin"
+	RoleStoreOwner string = "store_owner" // default role other role in database
+	RoleCustomer   string = "customer"
 )

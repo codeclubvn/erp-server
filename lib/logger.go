@@ -13,14 +13,14 @@ import (
 
 type _zap struct{}
 
-func (z *_zap) GetEncoder(config config.Config) zapcore.Encoder {
+func (z *_zap) GetEncoder(config *config.Config) zapcore.Encoder {
 	if config.Logger.Format == "json" {
 		return zapcore.NewJSONEncoder(z.GetEncoderConfig(config))
 	}
 	return zapcore.NewConsoleEncoder(z.GetEncoderConfig(config))
 }
 
-func (z *_zap) GetEncoderConfig(config config.Config) zapcore.EncoderConfig {
+func (z *_zap) GetEncoderConfig(config *config.Config) zapcore.EncoderConfig {
 	return zapcore.EncoderConfig{
 		MessageKey:     "message",
 		LevelKey:       "level",
@@ -79,7 +79,7 @@ func (z *_zap) GetLevelPriority(level zapcore.Level) zap.LevelEnablerFunc {
 	}
 }
 
-func NewZapLogger(config config.Config) *zap.Logger {
+func NewZapLogger(config *config.Config) *zap.Logger {
 	var (
 		zapLogger *zap.Logger
 		zapLogLvl zapcore.Level

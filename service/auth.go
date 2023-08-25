@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
+	"erp/api_errors"
 	config "erp/config"
-	constants "erp/constants"
+	"erp/constants"
 	dto "erp/dto/auth"
 	models "erp/models"
 
@@ -12,26 +13,29 @@ import (
 
 type (
 	AuthService interface {
-		Register(ctx context.Context, req dto.RegisterRequest) (item models.User, err error)
+		Register(ctx context.Context, req dto.RegisterRequest) (user *models.User, err error)
+		Login(ctx context.Context, req dto.LoginRequest) (res *dto.LoginResponse, err error)
 	}
 	AuthServiceImpl struct {
 		userService UserService
-		config      config.Config
+		jwtService  JwtService
+		config      *config.Config
 	}
 )
 
-func NewAuthService(userService UserService, config config.Config) AuthService {
+func NewAuthService(userService UserService, config *config.Config, jwtService JwtService) AuthService {
 	return &AuthServiceImpl{
 		userService: userService,
+		jwtService:  jwtService,
 		config:      config,
 	}
 }
 
-func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest) (user models.User, err error) {
-	role := constants.RoleCustomer
+func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest) (user *models.User, err error) {
+	roleKey := constants.RoleCustomer
 
 	if req.RequestFrom != string(constants.Web) {
-		role = constants.RoleSeller
+		roleKey = constants.RoleStoreOwner
 	}
 
 	encryptedPassword, err := bcrypt.GenerateFromPassword(
@@ -49,8 +53,51 @@ func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest)
 		Password:  req.Password,
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
-		Role:      role,
+		RoleKey:   roleKey,
 	})
 
 	return user, err
+}
+
+func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (res *dto.LoginResponse, err error) {
+	user, err := a.userService.GetByEmail(ctx, req.Email)
+
+	if req.RequestFrom != string(constants.Web) {
+		// TODO: Sẽ có thêm role của nhân viên
+		if user.RoleKey != constants.RoleStoreOwner {
+			return nil, api_errors.ErrUnauthorizedAccess
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
+
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, refreshToken, err := a.jwtService.GenerateAuthTokens(user.ID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	res = &dto.LoginResponse{
+		User: dto.UserResponse{
+			ID:        user.ID.String(),
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+			RoleKey:   user.RoleKey,
+		},
+		Token: dto.TokenResponse{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			ExpiresIn:    a.config.Jwt.AccessTokenExpiresIn,
+		},
+	}
+
+	return res, nil
 }

@@ -27,10 +27,10 @@ func (b *BaseController) ResponseList(c *gin.Context, message string, total *int
 
 func (b *BaseController) ResponseError(c *gin.Context, statusCode int, errs []error) {
 
-	errorStrings := make([]string, len(errs))
+	errorStrings := make([]error, len(errs))
 	for i, err := range errs {
 		c.Error(err)
-		errorStrings[i] = err.Error()
+		errorStrings[i] = err
 	}
 
 	c.AbortWithStatusJSON(statusCode, response.ResponseError{

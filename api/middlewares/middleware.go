@@ -4,5 +4,6 @@ type GinMiddleware struct {
 }
 
 func NewMiddleware() *GinMiddleware {
-	return &GinMiddleware{}
+	middleware := &GinMiddleware{}
+	return middleware
 }

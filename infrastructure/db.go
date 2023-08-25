@@ -18,7 +18,7 @@ type Database struct {
 	logger *zap.Logger
 }
 
-func NewDatabase(config config.Config, logger *zap.Logger) *Database {
+func NewDatabase(config *config.Config, logger *zap.Logger) *Database {
 	var err error
 	var sqlDB *sql.DB
 
@@ -53,7 +53,7 @@ func NewDatabase(config config.Config, logger *zap.Logger) *Database {
 	return db
 }
 
-func getDatabaseInstance(config config.Config) (db *gorm.DB, err error) {
+func getDatabaseInstance(config *config.Config) (db *gorm.DB, err error) {
 	switch config.Database.Driver {
 	case "mysql":
 		dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
@@ -84,6 +84,8 @@ func getDatabaseInstance(config config.Config) (db *gorm.DB, err error) {
 func (d Database) RegisterTables() {
 	err := d.DB.AutoMigrate(
 		models.User{},
+		models.Role{},
+		models.Routes{},
 	)
 
 	if err != nil {

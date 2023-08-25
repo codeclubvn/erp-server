@@ -2,6 +2,7 @@ package bootstrap
 
 import (
 	controller "erp/api/controllers"
+	"erp/api/middlewares"
 	config "erp/config"
 	infrastructure "erp/infrastructure"
 	lib "erp/lib"
@@ -28,6 +29,7 @@ func inject() fx.Option {
 		repository.Module,
 		service.Module,
 		controller.Module,
+		middlewares.Module,
 		infrastructure.Module,
 	)
 }
