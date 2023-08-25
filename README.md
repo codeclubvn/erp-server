@@ -63,7 +63,7 @@
 │ ├── jwt.go
 │ ├── module.go
 │ └── user.go
-└── utils // Các module để hỗ trợ cho việc xử lý request
+└── utils // Các hàm hỗ trợ
 ```
 
 ## Các công nghệ sử dụng
