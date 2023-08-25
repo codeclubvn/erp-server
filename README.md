@@ -15,17 +15,9 @@
 ```
 ├── api
 │ ├── controllers // Để xử lý các request từ client và trả về response
-│ │ ├── auth.go
-│ │ ├── base.go
 │ │ ├── health.go
 │ │ ├── module.go // Để khởi tạo các controller
-│ │ └── user.go
 │ ├── middlewares // Middleware để xử lý các request trước khi đến controller
-│ │ ├── cors.go
-│ │ ├── error_handle.go
-│ │ ├── json.go
-│ │ ├── jwt.go
-│ │ ├── logger.go
 │ │ ├── middleware.go
 │ │ └── module.go
 │ └── response // Để trả về response cho client
@@ -60,17 +52,12 @@
 │ └── server.go
 ├── main.go
 ├── models // Define các model để mapping với database
-│ ├── base.go
-│ ├── role.go
-│ ├── routes.go
 │ └── user.go
 ├── README.md
 ├── repository // Để xử lý các thao tác với database
 │ ├── module.go
 │ └── user.go
 ├── service // Để xử lý các logic của project
-│ ├── auth.go
-│ ├── jwt.go
 │ ├── module.go
 │ └── user.go
 └── utils // Các hàm hỗ trợ
