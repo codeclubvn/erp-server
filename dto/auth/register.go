@@ -7,3 +7,10 @@ type RegisterRequest struct {
 	LastName    string `json:"last_name" binding:"required" validate:"min=1,max=50"`
 	RequestFrom string `json:"request_from" binding:"required" enums:"erp/,web,app"`
 }
+
+type UserGoogleRequest struct {
+	Email     string `json:"email" binding:"required" validate:"email"`
+	GoogleID  string `json:"id" binding:"required"`
+	FirstName string `json:"family_name"`
+	LastName  string `json:"given_name"`
+}

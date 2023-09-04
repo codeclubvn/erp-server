@@ -7,6 +7,8 @@ import (
 	"erp/constants"
 	dto "erp/dto/auth"
 	models "erp/models"
+	"fmt"
+	"log"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,7 +16,9 @@ import (
 type (
 	AuthService interface {
 		Register(ctx context.Context, req dto.RegisterRequest) (user *models.User, err error)
+		RegisterByGoogle(ctx context.Context, req dto.UserGoogleRequest) (user *models.User, err error)
 		Login(ctx context.Context, req dto.LoginRequest) (res *dto.LoginResponse, err error)
+		LoginByGoogle(ctx context.Context, req dto.LoginByGoogleRequest) (res *dto.LoginResponse, err error)
 	}
 	AuthServiceImpl struct {
 		userService UserService
@@ -33,7 +37,7 @@ func NewAuthService(userService UserService, config *config.Config, jwtService J
 
 func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest) (user *models.User, err error) {
 	roleKey := constants.RoleCustomer
-
+	log.Println(fmt.Sprintf("Request info %+v", req))
 	if req.RequestFrom != string(constants.Web) {
 		roleKey = constants.RoleStoreOwner
 	}
@@ -58,7 +62,22 @@ func (a *AuthServiceImpl) Register(ctx context.Context, req dto.RegisterRequest)
 
 	return user, err
 }
-
+func (a *AuthServiceImpl) RegisterByGoogle(ctx context.Context, req dto.UserGoogleRequest) (user *models.User, err error) {
+	roleKey := constants.RoleCustomer
+	log.Println(fmt.Sprintf("Request info %+v", req))
+	//if req.RequestFrom != string(constants.Web) {
+	//	roleKey = constants.RoleStoreOwner
+	//}
+	user, err = a.userService.Create(ctx, models.User{
+		Email:     req.Email,
+		FirstName: req.FirstName,
+		LastName:  req.LastName,
+		Social:    "Google",
+		SocialID:  req.GoogleID,
+		RoleKey:   roleKey,
+	})
+	return user, err
+}
 func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (res *dto.LoginResponse, err error) {
 	user, err := a.userService.GetByEmail(ctx, req.Email)
 
@@ -84,6 +103,36 @@ func (a *AuthServiceImpl) Login(ctx context.Context, req dto.LoginRequest) (res 
 		return nil, err
 	}
 
+	res = &dto.LoginResponse{
+		User: dto.UserResponse{
+			ID:        user.ID.String(),
+			FirstName: user.FirstName,
+			LastName:  user.LastName,
+			Email:     user.Email,
+			RoleKey:   user.RoleKey,
+		},
+		Token: dto.TokenResponse{
+			AccessToken:  accessToken,
+			RefreshToken: refreshToken,
+			ExpiresIn:    a.config.Jwt.AccessTokenExpiresIn,
+		},
+	}
+
+	return res, nil
+}
+func (a *AuthServiceImpl) LoginByGoogle(ctx context.Context, req dto.LoginByGoogleRequest) (res *dto.LoginResponse, err error) {
+	user, err := a.userService.GetByEmail(ctx, req.Email)
+	if err != nil {
+		return nil, err
+	}
+	_, err = a.userService.GetBySocialId(ctx, req.GoogleId)
+	if err != nil {
+		return nil, err
+	}
+	accessToken, refreshToken, err := a.jwtService.GenerateAuthTokens(user.ID.String())
+	if err != nil {
+		return nil, err
+	}
 	res = &dto.LoginResponse{
 		User: dto.UserResponse{
 			ID:        user.ID.String(),
