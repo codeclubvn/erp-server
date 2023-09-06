@@ -13,7 +13,7 @@ services:
 database:
   driver: 'postgres'
   host: 'localhost'
-  port: 5432
+  port: 5437
   username: 'erp-dev'
   password: 'erp-dev'
   name: 'erp-dev'

@@ -14,12 +14,22 @@ type (
 		Create(ctx context.Context, user models.User) (*models.User, error)
 		GetByID(ctx context.Context, id string) (*models.User, error)
 		GetByEmail(ctx context.Context, email string) (*models.User, error)
+		GetBySocialId(ctx context.Context, socialId string) (*models.User, error)
 	}
 	UserServiceImpl struct {
 		userRepo repository.UserRepository
 		config   *config.Config
 	}
 )
+
+func (u *UserServiceImpl) GetBySocialId(ctx context.Context, socialId string) (*models.User, error) {
+	//TODO implement me
+	user, err := u.userRepo.GetBySocailId(ctx, socialId)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
 
 func (u *UserServiceImpl) Create(ctx context.Context, user models.User) (*models.User, error) {
 	r, err := u.userRepo.Create(ctx, user)

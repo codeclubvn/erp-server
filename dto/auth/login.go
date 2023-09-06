@@ -11,6 +11,11 @@ type LoginResponse struct {
 	Token TokenResponse `json:"token"`
 }
 
+type LoginByGoogleRequest struct {
+	Email    string `json:"email" binding:"required" validate:"email"`
+	GoogleId string `json:"google_id" binding:"required"`
+}
+
 type TokenResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
