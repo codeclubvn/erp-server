@@ -7,6 +7,6 @@ type User struct {
 	Email     string `json:"email" gorm:"column:email;type:varchar(100);not null; unique"`
 	Password  string `json:"password" gorm:"column:password;type:varchar(255);not null"`
 	Social    string `json:"social" gorm:"column:social;type:varchar(50)"`
-	SocialID  string `json:"social_id" gorm:"column:social_id;type:varchar(50); unique"`
+	SocialID  string `json:"social_id" gorm:"column:social_id;type:varchar(50)"`
 	RoleKey   string `json:"role_key" gorm:"column:role_key;type:varchar(50);not null"`
 }
