@@ -32,9 +32,9 @@ func TestListPermission(t *testing.T) {
 type MockPermissionRepo struct {
 }
 
-func (*MockPermissionRepo) List() ([]models.Permission, *int64, error) {
+func (*MockPermissionRepo) List() ([]*models.Permission, *int64, error) {
 	total := int64(3)
-	return []models.Permission{
+	return []*models.Permission{
 		{ID: uuid.NewV4(), Name: "permission1"},
 		{ID: uuid.NewV4(), Name: "permission2"},
 		{ID: uuid.NewV4(), Name: "permission3"},

@@ -26,3 +26,15 @@ func GetUserUUIDFromContext(ctx context.Context) (uuid.UUID, error) {
 func GetStoreIDFromContext(ctx context.Context) string {
 	return ctx.Value("x-store-id").(string)
 }
+
+func GetPageCount(total int64, limit int64) int64 {
+	if total == 0 {
+		return 0
+	}
+
+	if total%limit != 0 {
+		return total/limit + 1
+	}
+
+	return total / limit
+}

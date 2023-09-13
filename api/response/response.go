@@ -20,10 +20,10 @@ type SimpleResponseList struct {
 
 type Meta struct {
 	Total       *int64 `json:"total"`
-	Page        int    `form:"page" json:"page"`
-	Limit       int    `form:"limit" json:"limit"`
+	Page        int64  `form:"page" json:"page"`
+	Limit       int64  `form:"limit" json:"limit"`
 	Sort        string `form:"sort" json:"sort"`
-	PageCount   int    `json:"page_count"`
+	PageCount   int64  `json:"page_count"`
 	HasPrevPage bool   `json:"has_prev_page"`
 	HasNextPage bool   `json:"has_next_page"`
 }

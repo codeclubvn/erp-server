@@ -1,6 +1,7 @@
 package api
 
 import (
+	"erp/api/request"
 	"erp/api/response"
 	"erp/api_errors"
 	"erp/utils"
@@ -23,11 +24,32 @@ func (b *BaseController) Response(c *gin.Context, statusCode int, message string
 }
 
 func (b *BaseController) ResponseList(c *gin.Context, message string, total *int64, data interface{}) {
+	var o request.PageOptions
+	if err := c.ShouldBindQuery(&o); err != nil {
+		b.ResponseValidationError(c, err)
+		return
+	}
+
+	if o.Limit == 0 {
+		o.Limit = 10
+	}
+
+	if o.Page == 0 {
+		o.Page = 1
+	}
+
+	pageCount := utils.GetPageCount(*total, o.Limit)
 	c.JSON(http.StatusOK, response.SimpleResponseList{
 		Message: message,
 		Data:    data,
 		Meta: response.Meta{
-			Total: total,
+			Total:       total,
+			Page:        o.Page,
+			Limit:       o.Limit,
+			Sort:        o.Sort,
+			PageCount:   pageCount,
+			HasPrevPage: o.Page > 1,
+			HasNextPage: o.Page < pageCount,
 		},
 	})
 }

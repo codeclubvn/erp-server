@@ -11,7 +11,7 @@ import (
 )
 
 type ErpPermissionRepo interface {
-	List() ([]models.Permission, *int64, error)
+	List() ([]*models.Permission, *int64, error)
 }
 
 type erpPermissionRepo struct {
@@ -23,13 +23,18 @@ func NewErpPermissionRepo(db *infrastructure.Database, logger *zap.Logger) ErpPe
 	return &erpPermissionRepo{db, logger}
 }
 
-func (e *erpPermissionRepo) List() ([]models.Permission, *int64, error) {
+func (e *erpPermissionRepo) List() ([]*models.Permission, *int64, error) {
 	var total int64 = 0
-	var res []models.Permission
+	var res []*models.Permission
 	err := utils.QueryPagination(e.db, request.PageOptions{
 		Limit: 1000,
 		Page:  1,
 	}, &res).Count(&total).Error()
 
-	return res, &total, errors.WithStack(err)
+	if err != nil {
+		return nil, nil, errors.WithStack(e.db.Error)
+	}
+
+	return res, &total, nil
+
 }

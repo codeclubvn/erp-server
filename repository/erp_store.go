@@ -77,7 +77,7 @@ func (p *erpStoreRepository) FindByID(ctx context.Context, id string) (*models.S
 
 func (p *erpStoreRepository) List(ctx context.Context, search string, o request.PageOptions, userID string) ([]*models.Store, *int64, error) {
 	var stores []*models.Store
-	var total *int64
+	var total int64 = 0
 
 	q := p.db.WithContext(ctx).Model(&models.Store{})
 
@@ -87,11 +87,11 @@ func (p *erpStoreRepository) List(ctx context.Context, search string, o request.
 
 	q.Order("created_at DESC")
 
-	if err := utils.QueryPagination(p.db, o, &stores).Count(total).Error(); err != nil {
-		return nil, nil, errors.Wrap(err, "List store failed")
+	if err := utils.QueryPagination(p.db, o, &stores).Count(&total).Error(); err != nil {
+		return nil, nil, errors.WithStack(err)
 	}
 
-	return stores, total, nil
+	return stores, &total, nil
 }
 
 func (p *erpStoreRepository) DeleteByID(tx *TX, ctx context.Context, id string) error {

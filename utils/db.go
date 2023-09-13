@@ -3,6 +3,7 @@ package utils
 import (
 	"erp/api/request"
 	"erp/infrastructure"
+	"fmt"
 
 	"github.com/jackc/pgx/v4"
 )
@@ -21,7 +22,7 @@ type QueryPaginationBuilder[E any] struct {
 	db *infrastructure.Database
 }
 
-func QueryPagination[E any](db *infrastructure.Database, o request.PageOptions, data *[]E) *QueryPaginationBuilder[E] {
+func QueryPagination[E any](db *infrastructure.Database, o request.PageOptions, data *[]*E) *QueryPaginationBuilder[E] {
 	MustHaveDb(db)
 	copyDB := &infrastructure.Database{}
 	*copyDB = *db
@@ -36,7 +37,9 @@ func QueryPagination[E any](db *infrastructure.Database, o request.PageOptions, 
 	}
 	offset := (o.Page - 1) * o.Limit
 
-	q.db.DB = q.db.Offset(offset).Limit(o.Limit).Find(data)
+	q.db.DB = q.db.Debug().Offset(int(offset)).Limit(int(o.Limit)).Find(&data)
+
+	fmt.Println(data)
 	return q
 }
 
