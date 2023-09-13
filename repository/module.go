@@ -4,6 +4,9 @@ import (
 	"go.uber.org/fx"
 )
 
-var Module = fx.Provide(
+var Module = fx.Options(fx.Provide(
 	NewUserRepository,
-)
+	NewErpPermissionRepo,
+	NewErpRoleRepo,
+	NewERPStoreRepository,
+))

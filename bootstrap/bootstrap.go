@@ -3,9 +3,10 @@ package bootstrap
 import (
 	controller "erp/api/controllers"
 	"erp/api/middlewares"
+	"erp/api/route"
 	config "erp/config"
 	infrastructure "erp/infrastructure"
-	lib "erp/lib"
+	"erp/lib"
 	repository "erp/repository"
 	service "erp/service"
 	utils "erp/utils"
@@ -25,6 +26,7 @@ func inject() fx.Option {
 			config.NewConfig,
 			utils.NewTimeoutContext,
 		),
+		route.Module,
 		lib.Module,
 		repository.Module,
 		service.Module,

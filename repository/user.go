@@ -5,50 +5,53 @@ import (
 	api_errors "erp/api_errors"
 	"erp/infrastructure"
 	models "erp/models"
-	"fmt"
+	"erp/utils"
 
-	"gorm.io/gorm"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 type UserRepository interface {
 	GetByID(ctx context.Context, id string) (res *models.User, err error)
 	GetByEmail(ctx context.Context, email string) (res *models.User, err error)
-	Create(ctx context.Context, user models.User) (res *models.User, err error)
+	Create(tx *TX, ctx context.Context, user models.User) (res *models.User, err error)
 }
 
-type userRepositoryImpl struct {
-	*infrastructure.Database
+type userRepository struct {
+	db     *infrastructure.Database
+	logger *zap.Logger
 }
 
-func NewUserRepository(db *infrastructure.Database) UserRepository {
-	if db == nil {
-		panic("Database engine is null")
+func NewUserRepository(db *infrastructure.Database, logger *zap.Logger) UserRepository {
+	utils.MustHaveDb(db)
+	return &userRepository{db, logger}
+}
+
+func (u *userRepository) Create(tx *TX, ctx context.Context, user models.User) (res *models.User, err error) {
+	if tx != nil {
+		tx = &TX{db: *u.db}
 	}
-	return &userRepositoryImpl{db}
+	err = u.db.Create(&user).Error
+
+	return &user, errors.Wrap(err, "create user error")
 }
 
-func (u *userRepositoryImpl) Create(ctx context.Context, user models.User) (res *models.User, err error) {
-	err = u.DB.Create(&user).Error
-
-	return &user, err
-}
-
-func (u *userRepositoryImpl) GetByID(ctx context.Context, id string) (res *models.User, err error) {
-	err = u.WithContext(ctx).Where("id = ?", id).First(&res).Error
+func (u *userRepository) GetByID(ctx context.Context, id string) (res *models.User, err error) {
+	err = u.db.WithContext(ctx).Where("id = ?", id).First(&res).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return res, fmt.Errorf(api_errors.UserNotFound)
+		if utils.ErrNoRows(err) {
+			return res, errors.New(api_errors.ErrUserNotFound)
 		}
-		return nil, err
+		return nil, errors.Wrap(err, "get user by id error")
 	}
 	return
 }
 
-func (u *userRepositoryImpl) GetByEmail(ctx context.Context, email string) (res *models.User, err error) {
-	err = u.WithContext(ctx).Where("email = ?", email).First(&res).Error
+func (u *userRepository) GetByEmail(ctx context.Context, email string) (res *models.User, err error) {
+	err = u.db.WithContext(ctx).Where("email = ?", email).First(&res).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return res, fmt.Errorf(api_errors.UserNotFound)
+		if utils.ErrNoRows(err) {
+			return nil, errors.New(api_errors.ErrUserNotFound)
 		}
 		return nil, err
 	}

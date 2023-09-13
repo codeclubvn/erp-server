@@ -19,6 +19,8 @@ require (
 	gorm.io/gorm v1.23.10
 )
 
+require github.com/go-playground/validator v9.31.0+incompatible // indirect
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
@@ -53,6 +55,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect

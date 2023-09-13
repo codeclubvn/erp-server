@@ -1,6 +1,5 @@
 # Golang Clean Architecture
 
-
 ## Các công nghệ sử dụng
 
 - [Golang](https://golang.org/)
@@ -9,6 +8,18 @@
 - [JWT](https://jwt.io/)
 - [Docker](https://www.docker.com/)
 - [PostgreSQL](https://www.postgresql.org/)
+
+## Error handling
+
+Use github.com/pkg/errors to wrap errors and add stack trace to errors
+
+Error in repository layer must be wrapped by errors.Wrap(err,message)
+
+Service layer don't need to wrap errors returned from repository layer, because it already wrapped. Service layer only need to wrap errors returned from it's own logic
+
+## Config
+
+Copy file config.example.yml to config.yml to config for local environment
 
 ## Cấu trúc thư mục
 
@@ -62,4 +73,3 @@
 │ └── user.go
 └── utils // Các hàm hỗ trợ
 ```
-

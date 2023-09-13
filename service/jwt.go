@@ -4,9 +4,12 @@ import (
 	"erp/api_errors"
 	config "erp/config"
 	"erp/constants"
+	dto "erp/dto/auth"
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 )
 
 type JwtService interface {
@@ -17,20 +20,25 @@ type JwtService interface {
 
 type jwtService struct {
 	config *config.Config
+	logger *zap.Logger
 }
 
-func NewJwtService(config *config.Config) JwtService {
+func NewJwtService(config *config.Config, logger *zap.Logger) JwtService {
 	return &jwtService{
 		config: config,
+		logger: logger,
 	}
 }
 
 func (j *jwtService) GenerateToken(userID string, tokenType constants.TokenType, expiresIn int64) (string, error) {
-	claims := jwt.StandardClaims{
-		Subject:   userID,
-		ExpiresAt: time.Now().Add(time.Duration(expiresIn)).Unix(),
-		IssuedAt:  time.Now().Unix(),
-		Issuer:    "erp",
+	claims := dto.JwtClaims{
+		StandardClaims: jwt.StandardClaims{
+			Subject:   userID,
+			ExpiresAt: time.Now().Add(time.Duration(expiresIn) * time.Second).Unix(),
+			IssuedAt:  time.Now().Unix(),
+			Issuer:    "erp",
+		},
+		TokenType: string(tokenType),
 	}
 
 	token, err := jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(j.config.Jwt.Secret))
@@ -42,6 +50,9 @@ func (j *jwtService) GenerateToken(userID string, tokenType constants.TokenType,
 }
 
 func (j *jwtService) GenerateAuthTokens(userID string) (string, string, error) {
+
+	j.logger.Debug("Generating auth tokens", zap.Any("ExpiresIn", j.config.Jwt.AccessTokenExpiresIn))
+
 	accessToken, err := j.GenerateToken(userID, constants.AccessToken, j.config.Jwt.AccessTokenExpiresIn)
 	if err != nil {
 		return "", "", err
@@ -66,15 +77,15 @@ func (j *jwtService) ValidateToken(token string, tokenType constants.TokenType) 
 	}
 
 	if claims.ExpiresAt < time.Now().Unix() {
-		return nil, api_errors.ErrTokenExpired
+		return nil, errors.New(api_errors.ErrTokenExpired)
 	}
 
 	if claims.Issuer != "erp" {
-		return nil, api_errors.ErrTokenInvalid
+		return nil, errors.New(api_errors.ErrTokenInvalid)
 	}
 
 	if claims.Subject == "" {
-		return nil, api_errors.ErrTokenInvalid
+		return nil, errors.New(api_errors.ErrTokenInvalid)
 	}
 
 	return &claims.Subject, nil

@@ -1,5 +1,7 @@
 package dto
 
+import uuid "github.com/satori/go.uuid"
+
 type LoginRequest struct {
 	Email       string `json:"email" binding:"required" validate:"email"`
 	Password    string `json:"password" binding:"required" validate:"min=6,max=20"`
@@ -18,9 +20,9 @@ type TokenResponse struct {
 }
 
 type UserResponse struct {
-	ID        string `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	RoleKey   string `json:"role_key"`
+	ID        string     `json:"id"`
+	FirstName string     `json:"first_name"`
+	LastName  string     `json:"last_name"`
+	Email     string     `json:"email"`
+	RoleID    *uuid.UUID `json:"role_id,omitempty"`
 }

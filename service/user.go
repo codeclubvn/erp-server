@@ -15,25 +15,25 @@ type (
 		GetByID(ctx context.Context, id string) (*models.User, error)
 		GetByEmail(ctx context.Context, email string) (*models.User, error)
 	}
-	UserServiceImpl struct {
+	userService struct {
 		userRepo repository.UserRepository
 		config   *config.Config
 	}
 )
 
-func (u *UserServiceImpl) Create(ctx context.Context, user models.User) (*models.User, error) {
-	r, err := u.userRepo.Create(ctx, user)
+func (u *userService) Create(ctx context.Context, user models.User) (*models.User, error) {
+	r, err := u.userRepo.Create(nil, ctx, user)
 	return r, err
 }
 
-func NewUserService(itemRepo repository.UserRepository, config *config.Config) UserService {
-	return &UserServiceImpl{
-		userRepo: itemRepo,
+func NewUserService(userRepo repository.UserRepository, config *config.Config) UserService {
+	return &userService{
+		userRepo: userRepo,
 		config:   config,
 	}
 }
 
-func (u *UserServiceImpl) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+func (u *userService) GetByEmail(ctx context.Context, email string) (*models.User, error) {
 	user, err := u.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -44,7 +44,7 @@ func (u *UserServiceImpl) GetByEmail(ctx context.Context, email string) (*models
 	return user, err
 }
 
-func (u *UserServiceImpl) GetByID(ctx context.Context, id string) (user *models.User, err error) {
+func (u *userService) GetByID(ctx context.Context, id string) (user *models.User, err error) {
 	user, err = u.userRepo.GetByID(ctx, id)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
