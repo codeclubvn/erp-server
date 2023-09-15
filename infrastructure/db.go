@@ -86,15 +86,11 @@ func (d Database) RegisterTables() {
 	err := d.DB.AutoMigrate(
 		models.User{},
 		models.Role{},
-<<<<<<< HEAD
-		models.Routes{},
-		models.Category{},
-		models.CategoryProduct{},
-=======
 		models.Permission{},
 		models.Store{},
 		models.UserRole{},
->>>>>>> develop
+		models.Category{},
+		models.CategoryProduct{},
 	)
 
 	if err != nil {

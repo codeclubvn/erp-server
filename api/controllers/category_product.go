@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"erp/api"
 	"erp/dto"
 	service "erp/service"
 	"erp/utils"
@@ -12,7 +13,7 @@ import (
 type CategoryProductController struct {
 	categoryProductService service.CategoryProductService
 	logger                 *zap.Logger
-	BaseController
+	api.BaseController
 }
 
 func NewCategoryProductController(c *gin.RouterGroup, categoryProductService service.CategoryProductService, logger *zap.Logger) *CategoryProductController {
@@ -34,14 +35,14 @@ func (b *CategoryProductController) Create(c *gin.Context) {
 	userId, err := utils.CurrentUser(c.Request)
 	if err != nil {
 		// todo: change error to error_code
-		b.ResponseError(c, http.StatusBadRequest, []error{err})
+		b.ResponseError(c, err)
 		return
 	}
 
 	var req dto.CategoryProductRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		// todo: change error to error_code
-		b.ResponseError(c, http.StatusBadRequest, []error{err})
+		b.ResponseError(c, err)
 		return
 	}
 	req.UserId = userId
@@ -49,7 +50,7 @@ func (b *CategoryProductController) Create(c *gin.Context) {
 	res, err := b.categoryProductService.Create(c, req)
 	if err != nil {
 		// todo: change error to error_code
-		b.ResponseError(c, http.StatusBadRequest, []error{err})
+		b.ResponseError(c, err)
 		return
 	}
 	b.Response(c, http.StatusOK, "", res)
@@ -60,13 +61,13 @@ func (b *CategoryProductController) Update(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		// todo: change error to error_code
-		b.ResponseError(c, http.StatusBadRequest, []error{err})
+		b.ResponseError(c, err)
 		return
 	}
 	res, err := b.categoryProductService.Update(c, req)
 	if err != nil {
 		// todo: change error to error_code
-		b.ResponseError(c, http.StatusBadRequest, []error{err})
+		b.ResponseError(c, err)
 		return
 	}
 	b.Response(c, http.StatusOK, "", res)
@@ -77,12 +78,12 @@ func (b *CategoryProductController) Delete(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		// todo: change error to error_code
-		b.ResponseError(c, http.StatusBadRequest, []error{err})
+		b.ResponseError(c, err)
 		return
 	}
 	if err := b.categoryProductService.Delete(c, req); err != nil {
 		// todo: change error to error_code
-		b.ResponseError(c, http.StatusBadRequest, []error{err})
+		b.ResponseError(c, err)
 		return
 	}
 	b.Response(c, http.StatusOK, "delete success", nil)
@@ -93,13 +94,13 @@ func (b *CategoryProductController) GetList(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		// todo: change error to error_code
-		b.ResponseError(c, http.StatusBadRequest, []error{err})
+		b.ResponseError(c, err)
 		return
 	}
 	res, err := b.categoryProductService.GetList(c, req)
 	if err != nil {
 		// todo: change error to error_code
-		b.ResponseError(c, http.StatusBadRequest, []error{err})
+		b.ResponseError(c, err)
 		return
 	}
 	b.Response(c, http.StatusOK, "", res)
