@@ -23,34 +23,41 @@ func (w bodyLogWriter) WriteString(s string) (int, error) {
 	return w.ResponseWriter.WriteString(s)
 }
 
-func (e *GinMiddleware) Logger(zapLogger *zap.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
+func (e *GinMiddleware) Logger(c *gin.Context) {
 
-		start := time.Now()
-		blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
-		c.Writer = blw
-		c.Next()
+	start := time.Now()
+	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
+	c.Writer = blw
+	c.Next()
 
-		path := c.Request.URL.Path
-		raw := c.Request.URL.RawQuery
+	path := c.Request.URL.Path
+	raw := c.Request.URL.RawQuery
 
-		end := time.Now()
-		latency := end.Sub(start)
+	end := time.Now()
+	latency := end.Sub(start)
 
-		clientIP := c.ClientIP()
-		method := c.Request.Method
-		statusCode := c.Writer.Status()
+	clientIP := c.ClientIP()
+	method := c.Request.Method
+	statusCode := c.Writer.Status()
 
-		logger := zapLogger.Info
+	l := e.logger.WithOptions(zap.AddStacktrace(zap.DPanicLevel))
+	logger := l.Info
 
-		logger("Request",
-			zap.String("Path", path),
-			zap.String("Raw", raw),
-			zap.String("ClientIP", clientIP),
-			zap.String("Method", method),
-			zap.Int("StatusCode", statusCode),
-			zap.Duration("Latency", latency),
-			zap.String("Response", blw.body.String()),
-		)
+	if statusCode >= 400 && statusCode < 500 {
+		logger = l.Warn
 	}
+	if statusCode >= 500 {
+		logger = l.Error
+	}
+
+	logger("Request",
+		zap.String("Path", path),
+		zap.String("Raw", raw),
+		zap.String("ClientIP", clientIP),
+		zap.String("Method", method),
+		zap.Int("StatusCode", statusCode),
+		zap.Duration("Latency", latency),
+		zap.String("Response", blw.body.String()),
+	)
+
 }

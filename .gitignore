@@ -15,4 +15,4 @@
 # vendor/
 
 .idea
-config/config.yml
+/config/config.yml

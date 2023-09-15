@@ -8,6 +8,7 @@ import (
 	"erp/infrastructure"
 	models "erp/models"
 	"fmt"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -15,8 +16,14 @@ import (
 	"go.uber.org/fx"
 )
 
-func NewServerGroup(instance *gin.Engine) *gin.RouterGroup {
-	return instance.Group("/api")
+type Handler struct {
+	*gin.RouterGroup
+}
+
+func NewServerGroup(instance *gin.Engine) *Handler {
+	return &Handler{
+		instance.Group("/v1/api"),
+	}
 }
 
 func NewServer(lifecycle fx.Lifecycle, zap *zap.Logger, config *config.Config, db *infrastructure.Database, middlewares *middlewares.GinMiddleware) *gin.Engine {
@@ -38,11 +45,11 @@ func NewServer(lifecycle fx.Lifecycle, zap *zap.Logger, config *config.Config, d
 
 	//instance.Use(gozap.RecoveryWithZap(zap, true))
 
-	instance.Use(middlewares.ErrorHandler(zap))
 	instance.Use(middlewares.JSONMiddleware)
 	instance.Use(middlewares.CORS)
-	instance.Use(middlewares.Logger(zap))
-	instance.Use(middlewares.JWT(config, db))
+	instance.Use(middlewares.Logger)
+	instance.Use(middlewares.ErrorHandler)
+	// instance.Use(middlewares.JWT(config, db))
 
 	lifecycle.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -67,20 +74,66 @@ func NewServer(lifecycle fx.Lifecycle, zap *zap.Logger, config *config.Config, d
 }
 
 func SeedRoutes(engine *gin.Engine, db *infrastructure.Database) error {
-	// Seed routes
-	routes := []models.Routes{}
+	// Seed permissions
+	permissions := []models.Permission{}
+	newPermissions := []models.Permission{}
+	db.Find(&permissions)
 
-	// Delete all routes
-	db.DB.Delete(&routes, "1=1")
+	mapRoutes := make(map[string]models.Permission)
+	for _, r := range permissions {
+		mapRoutes[r.RoutePath] = r
+	}
 
 	for _, r := range engine.Routes() {
-		routes = append(routes, models.Routes{
-			Method: r.Method,
-			Path:   r.Path,
+		// permission name
+		// if method is GET, path is /api/v1/erp/users, permission name is get:users
+		// if method is POST, path is /api/v1/erp/users, permission name is create:users
+		// ...
+
+		_, isPublic := constants.PublicRoutes[r.Path]
+		_, isExist := mapRoutes[r.Path]
+
+		s := strings.Split(r.Path, "/")
+
+		if isExist {
+			continue
+		}
+
+		if isPublic || s[1]+"/"+s[2]+"/"+s[3] != "v1/api/erp" {
+			continue
+		}
+
+		last := s[len(s)-1]
+		if last == "" {
+			s = s[:len(s)-1]
+		}
+
+		permissionPrefix := ""
+		switch r.Method {
+		case "GET":
+			permissionPrefix = "get"
+		case "POST":
+			permissionPrefix = "create"
+		case "PUT":
+			permissionPrefix = "update"
+		case "DELETE":
+			permissionPrefix = "delete"
+		}
+
+		pn := permissionPrefix + ":" + s[len(s)-1]
+
+		newPermissions = append(newPermissions, models.Permission{
+			Method:    r.Method,
+			RoutePath: r.Path,
+			Name:      pn,
 		})
 	}
 
-	err := db.DB.Create(&routes).Error
+	if len(newPermissions) == 0 {
+		return nil
+	}
+
+	err := db.DB.Create(&newPermissions).Error
 	if err != nil {
 		panic(err)
 	}

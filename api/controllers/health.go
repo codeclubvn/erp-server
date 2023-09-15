@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"erp/api"
 	"net/http"
 	"time"
 
@@ -9,12 +10,11 @@ import (
 )
 
 type HealthController struct {
-	BaseController
+	api.BaseController
 }
 
-func NewHealthController(c *gin.RouterGroup) *HealthController {
+func NewHealthController() *HealthController {
 	controller := &HealthController{}
-	c.GET("/health", controller.Health)
 	return controller
 }
 

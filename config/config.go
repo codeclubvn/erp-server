@@ -41,6 +41,8 @@ type (
 		Username string `mapstructure:"username"`
 		Password string `mapstructure:"password"`
 		Name     string `mapstructure:"name"`
+		SSLMode  string `mapstructure:"sslmode"`
+		TimeZone string `mapstructure:"timeZone"`
 	}
 
 	Jwt struct {

@@ -68,8 +68,9 @@ func getDatabaseInstance(config *config.Config) (db *gorm.DB, err error) {
 			return nil, fmt.Errorf("failed to connect database: %w", err)
 		}
 	case "postgres":
-		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Shanghai",
-			config.Database.Host, config.Database.Username, config.Database.Password, config.Database.Name, config.Database.Port)
+		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s",
+			config.Database.Host, config.Database.Username, config.Database.Password, config.Database.Name,
+			config.Database.Port, config.Database.SSLMode, config.Database.TimeZone)
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 		if err != nil {
@@ -85,9 +86,15 @@ func (d Database) RegisterTables() {
 	err := d.DB.AutoMigrate(
 		models.User{},
 		models.Role{},
+<<<<<<< HEAD
 		models.Routes{},
 		models.Category{},
 		models.CategoryProduct{},
+=======
+		models.Permission{},
+		models.Store{},
+		models.UserRole{},
+>>>>>>> develop
 	)
 
 	if err != nil {
