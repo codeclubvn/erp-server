@@ -14,9 +14,9 @@ database:
   driver: 'postgres'
   host: 'localhost'
   port: 5432
-  username: 'erp-dev'
-  password: 'erp-dev'
-  name: 'erp-dev'
+  username: 'postgres'
+  password: 'password'
+  name: 'postgres'
 
 jwt:
   secret: 'hgG6T23XD25N'

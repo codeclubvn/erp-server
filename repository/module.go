@@ -6,4 +6,6 @@ import (
 
 var Module = fx.Provide(
 	NewUserRepository,
+	NewCategoryRepository,
+	NewCategoryProductRepository,
 )

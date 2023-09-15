@@ -86,6 +86,8 @@ func (d Database) RegisterTables() {
 		models.User{},
 		models.Role{},
 		models.Routes{},
+		models.Category{},
+		models.CategoryProduct{},
 	)
 
 	if err != nil {
