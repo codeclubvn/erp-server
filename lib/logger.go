@@ -101,6 +101,7 @@ func NewZapLogger(config *config.Config) *zap.Logger {
 		core := zapcore.NewTee(
 			zapcore.NewCore(consoleEncoder, consoleErrors, Zap.GetLevelPriority(zapcore.ErrorLevel)),
 			zapcore.NewCore(consoleEncoder, consoleInfos, Zap.GetLevelPriority(zapcore.InfoLevel)),
+			zapcore.NewCore(consoleEncoder, consoleInfos, Zap.GetLevelPriority(zapcore.DebugLevel)),
 		)
 
 		zapLogger = zap.New(core, zap.AddCaller(), zap.AddStacktrace(zap.DPanicLevel))

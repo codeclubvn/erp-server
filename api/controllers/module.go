@@ -1,7 +1,10 @@
 package controller
 
-import "go.uber.org/fx"
+import (
+	erpcontroller "erp/api/controllers/erp"
+
+	"go.uber.org/fx"
+)
 
 var Module = fx.Options(
-	fx.Invoke(NewHealthController, NewUserController, NewAuthController),
-)
+	fx.Provide(NewHealthController, NewUserController, NewAuthController), erpcontroller.Module)
