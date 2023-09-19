@@ -18,13 +18,15 @@ var (
 
 type (
 	Config struct {
-		Debug          bool     `mapstructure:"debug"`
-		ContextTimeout int      `mapstructure:"contextTimeout"`
-		Server         Server   `mapstructure:"server"`
-		Services       Services `mapstructure:"services"`
-		Database       Database `mapstructure:"database"`
-		Logger         Logger   `mapstructure:"logger"`
-		Jwt            Jwt      `mapstructure:"jwt"`
+		Debug          bool          `mapstructure:"debug"`
+		ContextTimeout int           `mapstructure:"contextTimeout"`
+		Server         Server        `mapstructure:"server"`
+		Services       Services      `mapstructure:"services"`
+		Database       Database      `mapstructure:"database"`
+		Logger         Logger        `mapstructure:"logger"`
+		Jwt            Jwt           `mapstructure:"jwt"`
+		GoogleOAuth    GoogleOAuth   `mapstructure:"googleOAuth"`
+		FacebookOAuth  FacebookOAuth `mapstructure:"facebookOAuth"`
 	}
 
 	Server struct {
@@ -56,6 +58,20 @@ type (
 	}
 
 	Services struct {
+	}
+
+	GoogleOAuth struct {
+		RedirectURL  string   `mapstructure:"redirectURL"`
+		ClientID     string   `mapstructure:"clientID"`
+		ClientSecret string   `mapstructure:"clientSecret"`
+		Scopes       []string `mapstructure:"scopes"`
+	}
+
+	FacebookOAuth struct {
+		RedirectURL string `mapstructure:"redirectURL"`
+		AppID       string `mapstructure:"appID"`
+		AppSecret   string `mapstructure:"appSecret"`
+		GraphAPIURL string `mapstructure:"graphAPIURL"`
 	}
 )
 

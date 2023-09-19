@@ -2,13 +2,15 @@ package controller
 
 import (
 	"encoding/json"
+	"erp/config"
 	dto "erp/dto/auth"
 	service "erp/service"
 	"fmt"
 	"github.com/jinzhu/copier"
+	"github.com/mitchellh/mapstructure"
 	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/facebook"
 	"golang.org/x/oauth2/google"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,34 +18,47 @@ import (
 	"go.uber.org/zap"
 )
 
-var googleOauthConfig = oauth2.Config{
-	RedirectURL:  "http://localhost:8080/api/auth/google/callback", // Replace with your callback URL
-	ClientID:     "555161563716-820tf0ghjucnn9mirti5imlvkai8t6kv.apps.googleusercontent.com",
-	ClientSecret: "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",
-	Scopes: []string{"https://www.googleapis.com/auth/userinfo.email",
-		"https://www.googleapis.com/auth/userinfo.profile"},
-	Endpoint: google.Endpoint,
-}
-
 type AuthController struct {
 	AuthService service.AuthService
 	logger      *zap.Logger
+	config      *config.Config
 	BaseController
 }
 
-func NewAuthController(c *gin.RouterGroup, authService service.AuthService, logger *zap.Logger) *AuthController {
+func NewAuthController(c *gin.RouterGroup, authService service.AuthService, logger *zap.Logger, config *config.Config) *AuthController {
 	controller := &AuthController{
 		AuthService: authService,
 		logger:      logger,
+		config:      config,
 	}
 	g := c.Group("/auth")
 	g.POST("/register", controller.Register)
 	g.POST("/login", controller.Login)
 	g.GET("/google/login", controller.GoogleLogin)
 	g.GET("/google/callback", controller.GoogleCallback)
+	g.GET("/facebook/login", controller.facebookLogin)
+	g.GET("/facebook/callback", controller.facebookCallback)
 	return controller
 }
 
+func (b *AuthController) getGoogleOAuthConfig() oauth2.Config {
+	return oauth2.Config{
+		RedirectURL:  b.config.GoogleOAuth.RedirectURL, // Replace with your callback URL
+		ClientID:     b.config.GoogleOAuth.ClientID,
+		ClientSecret: b.config.GoogleOAuth.ClientSecret,
+		Scopes:       b.config.GoogleOAuth.Scopes,
+		Endpoint:     google.Endpoint,
+	}
+}
+func (b *AuthController) getFacebookConfig() oauth2.Config {
+	return oauth2.Config{
+		ClientID:     b.config.FacebookOAuth.AppID,
+		ClientSecret: b.config.FacebookOAuth.AppSecret,
+		Endpoint:     facebook.Endpoint,
+		RedirectURL:  b.config.FacebookOAuth.RedirectURL,
+		Scopes:       []string{"email"},
+	}
+}
 func (b *AuthController) Register(c *gin.Context) {
 	var req dto.RegisterRequest
 
@@ -79,37 +94,56 @@ func (b *AuthController) Login(c *gin.Context) {
 }
 
 func (b *AuthController) GoogleLogin(c *gin.Context) {
-	url := googleOauthConfig.AuthCodeURL("", oauth2.AccessTypeOffline)
+	authConfig := b.getGoogleOAuthConfig()
+	url := authConfig.AuthCodeURL("", oauth2.AccessTypeOffline)
 	c.Redirect(http.StatusFound, url)
 }
 
 func (b *AuthController) GoogleCallback(c *gin.Context) {
 	code := c.Query("code")
-	token, err := googleOauthConfig.Exchange(c, code)
+	authConfig := b.getGoogleOAuthConfig()
+	token, err := authConfig.Exchange(c, code)
 	if err != nil {
+		b.logger.Error(fmt.Sprintf("Cannot register with google: %+v", err))
 		b.ResponseError(c, http.StatusInternalServerError, []error{err})
 		return
 	}
 
-	client := googleOauthConfig.Client(c, token)
+	client := authConfig.Client(c, token)
 
 	userInfo, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo?alt=json&access_token" + token.AccessToken)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		b.logger.Error(fmt.Sprintf("Cannot register with google: %+v", err))
+		b.Response(c, http.StatusInternalServerError, "Cannot login by google", nil)
 		return
 	}
 
 	defer userInfo.Body.Close()
 
-	data, err := ioutil.ReadAll(userInfo.Body)
+	var data map[string]interface{}
+	decoder := json.NewDecoder(userInfo.Body)
+	if err := decoder.Decode(&data); err != nil {
+		// Handle JSON decoding error
+		b.logger.Error(fmt.Sprintf("Cannot register with google: %+v", err))
+		b.Response(c, http.StatusInternalServerError, "Cannot login by google", nil)
+		return
+	}
+	fmt.Println(data)
 	var response dto.UserGoogleRequest
-	err = json.Unmarshal(data, &response)
-	b.logger.Info(fmt.Sprintf("google data %+v", response))
+	if err := mapstructure.Decode(data, &response); err != nil {
+		// Handle JSON unmarshaling error
+		b.logger.Error(fmt.Sprintf("Cannot unmarshal JSON response: %+v", err))
+		b.Response(c, http.StatusInternalServerError, "Cannot login by google", nil)
+		return
+	}
+
 	var req dto.UserGoogleRequest
 
 	err = copier.Copy(&req, &response)
 	if err != nil {
 		b.logger.Error("Cannot register with google")
+		b.Response(c, http.StatusInternalServerError, "Cannot login by google", nil)
+		return
 	}
 	_, err = b.AuthService.RegisterByGoogle(c.Request.Context(), req)
 	if err != nil {
@@ -119,8 +153,45 @@ func (b *AuthController) GoogleCallback(c *gin.Context) {
 		})
 		if err != nil {
 			b.Response(c, http.StatusInternalServerError, "Cannot login by google account", nil)
+			return
 		}
 		b.Response(c, http.StatusOK, "success", res)
+		return
 	}
 	b.Response(c, http.StatusOK, "success", nil)
+}
+
+func (b *AuthController) facebookLogin(c *gin.Context) {
+	authConfig := b.getFacebookConfig()
+	url := authConfig.AuthCodeURL("", oauth2.AccessTypeOffline)
+	fmt.Println("url la: ", url)
+	c.Redirect(http.StatusFound, url)
+}
+
+func (b *AuthController) facebookCallback(c *gin.Context) {
+	code := c.DefaultQuery("code", "")
+	if code == "" {
+		b.Response(c, http.StatusBadRequest, "Missing code parameter", nil)
+		return
+	}
+	authConfig := b.getFacebookConfig()
+	token, err := authConfig.Exchange(c, code)
+	if err != nil {
+		b.Response(c, http.StatusBadRequest, fmt.Sprintf("Error exchanging code: %s", err.Error()), nil)
+		return
+	}
+	client := authConfig.Client(c, token)
+	resp, err := client.Get(b.config.FacebookOAuth.GraphAPIURL)
+	if err != nil {
+		b.Response(c, http.StatusInternalServerError, fmt.Sprintf("Error fetching user data: %s", err.Error()), nil)
+		return
+	}
+	defer resp.Body.Close()
+
+	var userData map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&userData); err != nil {
+		b.Response(c, http.StatusInternalServerError, fmt.Sprintf("Error decoding user data: %s", err.Error()), nil)
+		return
+	}
+	b.Response(c, http.StatusOK, "success", userData)
 }

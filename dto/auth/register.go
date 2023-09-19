@@ -9,8 +9,8 @@ type RegisterRequest struct {
 }
 
 type UserGoogleRequest struct {
-	Email     string `json:"email" binding:"required" validate:"email"`
-	GoogleID  string `json:"id" binding:"required"`
-	FirstName string `json:"family_name"`
-	LastName  string `json:"given_name"`
+	Email     string `mapstructure:"email" json:"email" binding:"required" validate:"email"`
+	GoogleID  string `mapstructure:"id" json:"id" binding:"required"`
+	FirstName string `mapstructure:"family_name" json:"family_name"`
+	LastName  string `mapstructure:"given_name" json:"given_name"`
 }

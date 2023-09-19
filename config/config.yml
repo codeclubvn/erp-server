@@ -13,7 +13,7 @@ services:
 database:
   driver: 'postgres'
   host: 'localhost'
-  port: 5437
+  port: 5432
   username: 'erp-dev'
   password: 'erp-dev'
   name: 'erp-dev'
@@ -22,3 +22,19 @@ jwt:
   secret: 'hgG6T23XD25N'
   accessTokenExpiresIn: 3600
   refreshTokenExpiresIn: 86400
+
+
+googleOAuth:
+  redirectURL: 'http://localhost:8080/api/auth/google/callback'
+  clientID: '555161563716-820tf0ghjucnn9mirti5imlvkai8t6kv.apps.googleusercontent.com'
+  clientSecret: "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"
+  scopes:
+          - "https://www.googleapis.com/auth/userinfo.email"
+          - "https://www.googleapis.com/auth/userinfo.profile"
+
+
+facebookOAuth:
+  graphAPIURL: 'https://graph.facebook.com/v12.0/me?fields=id,email,first_name,last_name'
+  appID : '652357916991921'
+  appSecret : '8f0693687f2909ea96f679396228dce5'
+  redirectURL : 'http://localhost:8080/api/auth/facebook/callback'
