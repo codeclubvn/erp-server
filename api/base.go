@@ -56,14 +56,14 @@ func (b *BaseController) ResponseList(c *gin.Context, message string, total *int
 
 func (b *BaseController) ResponseError(c *gin.Context, err error) {
 
-	message, ok := api_errors.MapErrorCodeMessage[err.Error()]
+	mas, ok := api_errors.MapErrorCodeMessage[err.Error()]
 	var status int
 	ginType := gin.ErrorTypePublic
 	errp := err
 	if !ok {
 		status = http.StatusInternalServerError
 		ginType = gin.ErrorTypePrivate
-		message = api_errors.MapErrorCodeMessage[api_errors.ErrInternalServerError]
+		mas = api_errors.MapErrorCodeMessage[api_errors.ErrInternalServerError]
 		errp = errors.New(api_errors.ErrInternalServerError)
 	}
 
@@ -73,9 +73,9 @@ func (b *BaseController) ResponseError(c *gin.Context, err error) {
 		Meta: status,
 	})
 
-	c.AbortWithStatusJSON(status, response.ResponseError{
+	c.AbortWithStatusJSON(mas.Status, response.ResponseError{
 		Code:    errp.Error(),
-		Message: message,
+		Message: mas.Message,
 	})
 }
 
