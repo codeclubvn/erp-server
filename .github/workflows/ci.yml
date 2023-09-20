@@ -48,5 +48,4 @@ jobs:
           path: /tmp
       - name: Test
         run: |
-          docker load --input /tmp/image.tar
-          docker image ls -a
+          go test ./test -v
