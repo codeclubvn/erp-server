@@ -9,6 +9,7 @@ var Module = fx.Options(fx.Provide(
 	NewAuthService,
 	NewUserService,
 	NewJwtService,
-	NewCategoryService,
-	NewCategoryProductService,
+	erpservice.NewCategoryService,
+	erpservice.NewCategoryProductService,
+	erpservice.NewERPProductService,
 ), erpservice.Module)
