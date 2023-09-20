@@ -47,7 +47,7 @@ jobs:
     steps:
       - name: Test
         run: |
-          ls -la
+          ls 
           go test ./test -v
 
   deploy:
