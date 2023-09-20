@@ -2,9 +2,10 @@ package repository
 
 import (
 	"context"
-	"erp/dto"
+	"erp/dto/erp"
 	"erp/infrastructure"
 	models "erp/models"
+	"erp/utils"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -14,11 +15,11 @@ type CategoryRepository interface {
 	Update(ctx context.Context, category *models.Category) (err error)
 	Delete(ctx context.Context, id string, userId string) (err error)
 	GetOneByID(ctx context.Context, id string) (res *models.Category, err error)
-	GetList(ctx context.Context, category dto.GetListCategoryRequest) (res *dto.CategoriesResponse, err error)
+	GetList(ctx context.Context, category erpdto.GetListCategoryRequest) (res *erpdto.CategoriesResponse, err error)
 }
 
 type categoryRepositoryImpl struct {
-	*infrastructure.Database
+	db *infrastructure.Database
 }
 
 func NewCategoryRepository(db *infrastructure.Database) CategoryRepository {
@@ -29,26 +30,40 @@ func NewCategoryRepository(db *infrastructure.Database) CategoryRepository {
 }
 
 func (u *categoryRepositoryImpl) Create(ctx context.Context, category *models.Category) (err error) {
-	err = u.DB.Create(&category).Error
+	err = u.db.Create(&category).Error
 	return errors.Wrap(err, "create category failed")
 }
 
 func (u *categoryRepositoryImpl) Update(ctx context.Context, category *models.Category) (err error) {
-	err = u.DB.Updates(&category).Error
+	err = u.db.Updates(&category).Error
 	return errors.Wrap(err, "update category failed")
 }
 
 func (u *categoryRepositoryImpl) Delete(ctx context.Context, id string, userId string) (err error) {
-	err = u.DB.Where("id = ?", id).Updates(map[string]interface{}{"deleted_at": time.Time{}, "updater_id": userId}).Error
+	err = u.db.Where("id = ?", id).Updates(map[string]interface{}{"deleted_at": time.Time{}, "updater_id": userId}).Error
 	return errors.Wrap(err, "delete category failed")
 }
 
 func (u *categoryRepositoryImpl) GetOneByID(ctx context.Context, id string) (res *models.Category, err error) {
-	err = u.DB.Where("id = ?", id).First(&res).Error
+	err = u.db.Where("id = ?", id).First(&res).Error
 	return res, errors.Wrap(err, "get category by id failed")
 }
 
-func (u *categoryRepositoryImpl) GetList(ctx context.Context, req dto.GetListCategoryRequest) (res *dto.CategoriesResponse, err error) {
-	err = u.DB.Find(&res).Error
+func (u *categoryRepositoryImpl) GetList(ctx context.Context, req erpdto.GetListCategoryRequest) (res *erpdto.CategoriesResponse, err error) {
+	var total int64 = 0
+
+	query := u.db.Model(&models.Product{})
+	if req.Search != "" {
+		query = query.Where("name like ?", "%"+req.Search+"%")
+	}
+
+	switch req.Sort {
+	default:
+		query = query.Order(req.Sort)
+	}
+
+	if err = utils.QueryPagination(u.db, req.PageOptions, &res.Data).Count(&total).Error(); err != nil {
+		return nil, errors.WithStack(err)
+	}
 	return res, err
 }
