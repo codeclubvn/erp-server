@@ -14,11 +14,6 @@ database:
   driver: 'postgres'
   host: 'localhost'
   port: 5432
-<<<<<<< HEAD:config/config.yml
-  username: 'postgres'
-  password: 'password'
-  name: 'postgres'
-=======
   username: 'erp-dev'
   password: 'erp-dev'
   name: 'erp-dev'
@@ -27,8 +22,6 @@ database:
   maxOpenConnections: 10
   maxIdleConnections: 5
   maxConnectionLifetime: 300
->>>>>>> develop:config/config.example.yml
-
 jwt:
   secret: 'hgG6T23XD25N'
   accessTokenExpiresIn: 3600
