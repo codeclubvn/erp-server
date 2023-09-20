@@ -29,7 +29,7 @@ jobs:
         with:
           context: .
           outputs: type=docker,dest=/tmp/image.tar
-          image: ${{vars.REPOSITORY}}:latest
+          tags: ${{vars.REPOSITORY}}:latest
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
@@ -85,7 +85,6 @@ jobs:
         with:
           platforms: linux/amd64
           push: true
-          images: ${{vars.REPOSITORY}}:latest
           tags: ${{vars.REPOSITORY}}:${{ steps.tag.outputs.new_tag }}, ${{vars.REPOSITORY}}:latest
       - name: Deploy using ssh
         uses: appleboy/ssh-action@master
