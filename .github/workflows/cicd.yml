@@ -25,6 +25,9 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: 'Create env file'
+        run: |
+          echo "${{ secrets.ENV_FILE }}" > ./config/config.yml
       - name: Build and export to Docker
         id: build
         uses: docker/build-push-action@v5
@@ -47,6 +50,7 @@ jobs:
           go test ./test -v
 
   deploy:
+    needs: [build, test]
     environment: development
     if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
@@ -64,9 +68,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: 'Create env file'
-        run: |
-          echo "${{ secrets.ENV_FILE }}" > ./config/config.yml
       - name: Bump version and push tag
         id: tag
         uses: anothrNick/github-tag-action@1.64.0 # Don't use @master or @v1 unless you're happy to test the latest version
