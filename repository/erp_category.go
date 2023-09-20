@@ -2,16 +2,19 @@ package repository
 
 import (
 	"context"
+	"erp/dto"
 	"erp/infrastructure"
 	models "erp/models"
+	"github.com/pkg/errors"
+	"time"
 )
 
 type CategoryRepository interface {
 	Create(ctx context.Context, Category *models.Category) (err error)
 	Update(ctx context.Context, category *models.Category) (err error)
-	Delete(ctx context.Context, id string) (err error)
+	Delete(ctx context.Context, id string, userId string) (err error)
 	GetOneByID(ctx context.Context, id string) (res *models.Category, err error)
-	GetList(ctx context.Context, category models.Category) (res *models.Category, err error)
+	GetList(ctx context.Context, category dto.GetListCategoryRequest) (res *dto.CategoriesResponse, err error)
 }
 
 type categoryRepositoryImpl struct {
@@ -27,26 +30,25 @@ func NewCategoryRepository(db *infrastructure.Database) CategoryRepository {
 
 func (u *categoryRepositoryImpl) Create(ctx context.Context, category *models.Category) (err error) {
 	err = u.DB.Create(&category).Error
-	return err
+	return errors.Wrap(err, "create category failed")
 }
 
 func (u *categoryRepositoryImpl) Update(ctx context.Context, category *models.Category) (err error) {
 	err = u.DB.Updates(&category).Error
-	return err
+	return errors.Wrap(err, "update category failed")
 }
 
-func (u *categoryRepositoryImpl) Delete(ctx context.Context, id string) (err error) {
-	err = u.DB.Where("id = ?", id).Delete(&models.Category{}).Error
-	return err
+func (u *categoryRepositoryImpl) Delete(ctx context.Context, id string, userId string) (err error) {
+	err = u.DB.Where("id = ?", id).Updates(map[string]interface{}{"deleted_at": time.Time{}, "updater_id": userId}).Error
+	return errors.Wrap(err, "delete category failed")
 }
 
 func (u *categoryRepositoryImpl) GetOneByID(ctx context.Context, id string) (res *models.Category, err error) {
 	err = u.DB.Where("id = ?", id).First(&res).Error
-	return res, err
+	return res, errors.Wrap(err, "get category by id failed")
 }
 
-// todo:
-func (u *categoryRepositoryImpl) GetList(ctx context.Context, category models.Category) (res *models.Category, err error) {
-	err = u.DB.Find(&category).Error
-	return &category, err
+func (u *categoryRepositoryImpl) GetList(ctx context.Context, req dto.GetListCategoryRequest) (res *dto.CategoriesResponse, err error) {
+	err = u.DB.Find(&res).Error
+	return res, err
 }
