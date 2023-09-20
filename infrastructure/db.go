@@ -90,6 +90,7 @@ func (d Database) RegisterTables() {
 		models.Store{},
 		models.UserRole{},
 		models.Category{},
+		models.Product{},
 		models.CategoryProduct{},
 	)
 
