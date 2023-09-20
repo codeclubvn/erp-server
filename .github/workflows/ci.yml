@@ -3,6 +3,8 @@ name: ci
 on:
   pull_request:
     branches: [develop]
+  push:
+    branches: [develop]
 
 env:
   GITHUB_PR_NUMBER: ${{github.event.pull_request.number}}
@@ -30,22 +32,17 @@ jobs:
           context: .
           tags: ${{ vars.REPOSITORY }}:${{ env.GITHUB_PR_NUMBER }}
           outputs: type=docker,dest=/tmp/image.tar
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: image
-          path: /tmp/image.tar
+      # - name: Upload artifact
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: image
+      #     path: /tmp/image.tar
 
   test:
     environment: development
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: image
-          path: /tmp
       - name: Test
         run: |
           go test ./test -v
