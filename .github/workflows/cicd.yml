@@ -36,7 +36,7 @@ jobs:
           name: image
           path: /tmp/image.tar
 
-  test:
+  unit-test:
     environment: development
     needs: build
     runs-on: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
           go test ./test -v
 
   deploy:
-    needs: [build, test]
+    needs: [build, unit-test]
     environment: development
     if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
@@ -86,7 +86,7 @@ jobs:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ${{vars.REPOSITORY}}:${{ steps.tag.outputs.new_tag }}, ${{vars.REPOSITORY}}:latest
+          tags: ${{vars.REPOSITORY}}:latest, ${{vars.REPOSITORY}}:${{ steps.tag.outputs.new_tag }}
       - name: Deploy using ssh
         uses: appleboy/ssh-action@master
         with:
