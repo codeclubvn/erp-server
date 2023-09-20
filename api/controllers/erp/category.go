@@ -2,8 +2,8 @@ package erpcontroller
 
 import (
 	"erp/api"
-	"erp/dto"
-	service "erp/service"
+	"erp/dto/erp"
+	service "erp/service/erp"
 	"erp/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -27,7 +27,7 @@ func (b *ERPCategoryController) Create(c *gin.Context) {
 		return
 	}
 
-	var req dto.CreateCategoryRequest
+	var req erpdto.CreateCategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		b.ResponseValidationError(c, err)
 		return
@@ -43,9 +43,9 @@ func (b *ERPCategoryController) Create(c *gin.Context) {
 }
 
 func (b *ERPCategoryController) Update(c *gin.Context) {
-	var req dto.UpdateCategoryRequest
+	var req erpdto.UpdateCategoryRequest
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		b.ResponseValidationError(c, err)
 		return
 	}
@@ -58,15 +58,8 @@ func (b *ERPCategoryController) Update(c *gin.Context) {
 }
 
 func (b *ERPCategoryController) Delete(c *gin.Context) {
-
-	id := c.Query("id")
-
-	// todo: doi thanh function cua mnnguyen
-	userId, err := utils.CurrentUser(c.Request)
-	if err != nil {
-		b.ResponseError(c, err)
-		return
-	}
+	id := utils.ParseStringIDFromUri(c)
+	userId := utils.GetUserStringIDFromContext(c)
 
 	if err := b.categoryService.Delete(c, id, userId); err != nil {
 		b.ResponseError(c, err)
@@ -86,7 +79,7 @@ func (b *ERPCategoryController) GetOne(c *gin.Context) {
 }
 
 func (b *ERPCategoryController) GetList(c *gin.Context) {
-	var req dto.GetListCategoryRequest
+	var req erpdto.GetListCategoryRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		b.ResponseValidationError(c, err)

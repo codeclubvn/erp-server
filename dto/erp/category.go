@@ -1,4 +1,4 @@
-package dto
+package erpdto
 
 import (
 	"erp/api/request"
