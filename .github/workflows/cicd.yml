@@ -30,11 +30,6 @@ jobs:
           context: .
           outputs: type=docker,dest=/tmp/image.tar
           tags: ${{vars.REPOSITORY}}:latest
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: image
-          path: /tmp/image.tar
 
   unit-test:
     environment: development
@@ -71,15 +66,9 @@ jobs:
         uses: anothrNick/github-tag-action@1.64.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: image
-          path: /tmp
-      - name: Load image
+      - name: 'Create env file'
         run: |
-          docker load --input /tmp/image.tar
-          docker image ls -a
+          echo "${{ secrets.ENV_FILE }}" > ./config/config.yml
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
