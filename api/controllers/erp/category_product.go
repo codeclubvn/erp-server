@@ -1,105 +1,82 @@
-package controller
+package erpcontroller
 
 import (
 	"erp/api"
-	"erp/dto"
-	service "erp/service"
+	erpdto "erp/dto/erp"
+	service "erp/service/erp"
 	"erp/utils"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 	"net/http"
 )
 
-type CategoryProductController struct {
-	categoryProductService service.CategoryProductService
-	logger                 *zap.Logger
+type ERPCategoryProductController struct {
 	api.BaseController
+	categoryProductService service.ERPCategoryProductService
 }
 
-func NewCategoryProductController(c *gin.RouterGroup, categoryProductService service.CategoryProductService, logger *zap.Logger) *CategoryProductController {
-	controller := &CategoryProductController{
+func NewERPCategoryProductController(categoryProductService service.ERPCategoryProductService) *ERPCategoryProductController {
+	return &ERPCategoryProductController{
 		categoryProductService: categoryProductService,
-		logger:                 logger,
 	}
-	g := c.Group("/categories_products")
-
-	g.POST("", controller.Create)
-	g.PUT("", controller.Update)
-	g.DELETE("", controller.Delete)
-	g.GET("", controller.GetList)
-
-	return controller
 }
 
-func (b *CategoryProductController) Create(c *gin.Context) {
+func (b *ERPCategoryProductController) Create(c *gin.Context) {
 	userId, err := utils.CurrentUser(c.Request)
 	if err != nil {
-		// todo: change error to error_code
 		b.ResponseError(c, err)
 		return
 	}
 
-	var req dto.CategoryProductRequest
+	var req erpdto.CategoryProductRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		// todo: change error to error_code
-		b.ResponseError(c, err)
+		b.ResponseValidationError(c, err)
 		return
 	}
 	req.UserId = userId
 
 	res, err := b.categoryProductService.Create(c, req)
 	if err != nil {
-		// todo: change error to error_code
 		b.ResponseError(c, err)
 		return
 	}
 	b.Response(c, http.StatusOK, "", res)
 }
 
-func (b *CategoryProductController) Update(c *gin.Context) {
-	var req dto.CategoryProductRequest
+func (b *ERPCategoryProductController) Update(c *gin.Context) {
+	var req erpdto.CategoryProductRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		// todo: change error to error_code
-		b.ResponseError(c, err)
+		b.ResponseValidationError(c, err)
 		return
 	}
 	res, err := b.categoryProductService.Update(c, req)
 	if err != nil {
-		// todo: change error to error_code
 		b.ResponseError(c, err)
 		return
 	}
 	b.Response(c, http.StatusOK, "", res)
 }
 
-func (b *CategoryProductController) Delete(c *gin.Context) {
-	var req dto.DeleteCatagoryProductRequest
+func (b *ERPCategoryProductController) Delete(c *gin.Context) {
+	id := utils.ParseStringIDFromUri(c)
+	userId := utils.GetUserStringIDFromContext(c)
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		// todo: change error to error_code
-		b.ResponseError(c, err)
-		return
-	}
-	if err := b.categoryProductService.Delete(c, req); err != nil {
-		// todo: change error to error_code
+	if err := b.categoryProductService.Delete(c, id, userId); err != nil {
 		b.ResponseError(c, err)
 		return
 	}
 	b.Response(c, http.StatusOK, "delete success", nil)
 }
 
-func (b *CategoryProductController) GetList(c *gin.Context) {
-	var req dto.CategoryProductRequest
+func (b *ERPCategoryProductController) GetList(c *gin.Context) {
+	var req erpdto.GetListCatProRequest
 
-	if err := c.ShouldBindJSON(&req); err != nil {
-		// todo: change error to error_code
-		b.ResponseError(c, err)
+	if err := c.ShouldBindQuery(&req); err != nil {
+		b.ResponseValidationError(c, err)
 		return
 	}
 	res, err := b.categoryProductService.GetList(c, req)
 	if err != nil {
-		// todo: change error to error_code
 		b.ResponseError(c, err)
 		return
 	}
