@@ -10,30 +10,8 @@ env:
   GITHUB_COMMIT_ID: ${{github.sha}}
 
 jobs:
-  build:
-    environment: development
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: 'Create env file'
-        run: |
-          echo "${{ secrets.ENV_FILE }}" > ./config/config.yml
-      - name: Build and export to Docker
-        id: build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          outputs: type=docker,dest=/tmp/image.tar
-          tags: ${{vars.REPOSITORY}}:latest
-
   unit-test:
     environment: development
-    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -42,8 +20,8 @@ jobs:
         run: |
           go test ./test -v
 
-  deploy:
-    needs: [build, unit-test]
+  build-and-deploy:
+    needs: [unit-test]
     environment: development
     if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
