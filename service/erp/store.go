@@ -8,8 +8,8 @@ import (
 	"erp/models"
 	"erp/repository"
 	"erp/utils"
-	"errors"
 
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"go.uber.org/zap"
 )
@@ -53,9 +53,6 @@ func (p *erpStoreService) CreateStoreAndAssignOwner(ctx context.Context, req erp
 		ClosedAt:     req.ClosedAt,
 		Phone:        req.Phone,
 		Location:     req.Location,
-		BaseModel: models.BaseModel{
-			UpdaterID: ownerID,
-		},
 	}
 
 	err = repository.WithTransaction(p.db, func(tx *repository.TX) error {
@@ -85,10 +82,6 @@ func (p *erpStoreService) CreateStoreAndAssignOwner(ctx context.Context, req erp
 }
 
 func (p *erpStoreService) UpdateStore(ctx context.Context, storeID string, req erpdto.UpdateStoreRequest) (*models.Store, error) {
-	ownerID, err := utils.GetUserUUIDFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
 	u := &models.Store{
 		Name:         req.Name,
 		Avatar:       req.Avatar,
@@ -100,9 +93,6 @@ func (p *erpStoreService) UpdateStore(ctx context.Context, storeID string, req e
 		ClosedAt:     req.ClosedAt,
 		Phone:        req.Phone,
 		Location:     req.Location,
-		BaseModel: models.BaseModel{
-			UpdaterID: ownerID,
-		},
 	}
 
 	u.ID = uuid.FromStringOrNil(storeID)
