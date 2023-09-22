@@ -6,8 +6,9 @@ import (
 	"erp/infrastructure"
 	models "erp/models"
 	"erp/utils"
-	"github.com/pkg/errors"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type CategoryProductRepository interface {
@@ -62,7 +63,7 @@ func (u *catProRepoImpl) GetList(ctx context.Context, req erpdto.GetListCatProRe
 		query = query.Order(req.Sort)
 	}
 
-	if err = utils.QueryPagination(u.db, req.PageOptions, &res.Data).Count(&total).Error(); err != nil {
+	if err = utils.QueryPagination(query, req.PageOptions, &res.Data).Count(&total).Error(); err != nil {
 		return nil, errors.WithStack(err)
 	}
 

@@ -2,12 +2,13 @@ package repository
 
 import (
 	"context"
-	"erp/dto/erp"
+	erpdto "erp/dto/erp"
 	"erp/infrastructure"
 	models "erp/models"
 	"erp/utils"
-	"github.com/pkg/errors"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type CategoryRepository interface {
@@ -62,7 +63,7 @@ func (u *categoryRepositoryImpl) GetList(ctx context.Context, req erpdto.GetList
 		query = query.Order(req.Sort)
 	}
 
-	if err = utils.QueryPagination(u.db, req.PageOptions, &res.Data).Count(&total).Error(); err != nil {
+	if err = utils.QueryPagination(query, req.PageOptions, &res.Data).Count(&total).Error(); err != nil {
 		return nil, errors.WithStack(err)
 	}
 	return res, err

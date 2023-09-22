@@ -26,13 +26,14 @@ func NewErpPermissionRepo(db *infrastructure.Database, logger *zap.Logger) ErpPe
 func (e *erpPermissionRepo) List() ([]*models.Permission, *int64, error) {
 	var total int64 = 0
 	var res []*models.Permission
-	err := utils.QueryPagination(e.db, request.PageOptions{
+	query := e.db.Model(&models.Permission{})
+	err := utils.QueryPagination(query, request.PageOptions{
 		Limit: 1000,
 		Page:  1,
 	}, &res).Count(&total).Error()
 
 	if err != nil {
-		return nil, nil, errors.WithStack(e.db.Error)
+		return nil, nil, errors.WithStack(err)
 	}
 
 	return res, &total, nil
