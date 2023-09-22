@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"erp/api/request"
+	"erp/api_errors"
 	"erp/infrastructure"
 	"erp/models"
 	"erp/utils"
@@ -65,6 +66,9 @@ func (p *erpStoreRepository) Update(tx *TX, ctx context.Context, store *models.S
 func (p *erpStoreRepository) FindByID(ctx context.Context, id string) (*models.Store, error) {
 	var store models.Store
 	if err := p.db.WithContext(ctx).Where("id = ?", id).First(&store).Error; err != nil {
+		if utils.ErrNoRows(err) {
+			return nil, errors.New(api_errors.ErrStoreNotFound)
+		}
 		return nil, errors.Wrap(err, "Find store failed")
 	}
 

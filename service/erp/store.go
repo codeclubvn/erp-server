@@ -106,6 +106,12 @@ func (p *erpStoreService) UpdateStore(ctx context.Context, storeID string, req e
 
 func (p *erpStoreService) ListStore(ctx context.Context, req erpdto.ListStoreRequest) ([]*models.Store, *int64, error) {
 	userID := utils.GetUserStringIDFromContext(ctx)
+
+	_, err := p.erpStoreRepo.FindByID(ctx, userID)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	stores, total, err := p.erpStoreRepo.List(ctx, req.Search, req.PageOptions, userID)
 	if err != nil {
 		return nil, nil, err
