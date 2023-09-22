@@ -1,0 +1,31 @@
+---
+debug: true
+contextTimeout: 5
+
+server:
+  port: '8080'
+  host: '127.0.0.1'
+  env: 'local'
+  useRedis: false
+
+services:
+
+database:
+  driver: 'postgres'
+  host: 'localhost'
+  port: 5432
+  username: 'postgres'
+  password: 'password'
+  name: 'postgres'
+  sslmode: 'disable'
+  timezone: 'Asia/Ho_Chi_Minh'
+  maxOpenConnections: 10
+  maxIdleConnections: 5
+  maxConnectionLifetime: 300
+
+jwt:
+  secret: 'hgG6T23XD25N'
+  accessTokenExpiresIn: 3600
+  refreshTokenExpiresIn: 86400
+logger:
+  level: 'debug'
