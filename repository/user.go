@@ -15,6 +15,7 @@ type UserRepository interface {
 	GetByEmail(ctx context.Context, email string) (res *models.User, err error)
 	Create(ctx context.Context, user models.User) (res *models.User, err error)
 	GetBySocailId(ctx context.Context, socialId string) (res *models.User, err error)
+	ChangePassword(ctx context.Context, user *models.User) (res *models.User, err error)
 }
 
 type userRepositoryImpl struct {
@@ -65,4 +66,12 @@ func (u *userRepositoryImpl) GetBySocailId(ctx context.Context, socialId string)
 		return nil, err
 	}
 	return
+}
+
+func (u *userRepositoryImpl) ChangePassword(ctx context.Context, user *models.User) (res *models.User, err error) {
+	err = u.DB.Save(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

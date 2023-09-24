@@ -5,7 +5,6 @@ import (
 	"erp/api_errors"
 	config "erp/config"
 	constants "erp/constants"
-	"erp/infrastructure"
 	"net/http"
 	"strings"
 
@@ -13,7 +12,7 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func (e *GinMiddleware) JWT(config *config.Config, db *infrastructure.Database) gin.HandlerFunc {
+func (e *GinMiddleware) JWT(config *config.Config) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if config.Server.Env != constants.Dev && constants.Local != config.Server.Env {
 			auth := c.Request.Header.Get("Authorization")

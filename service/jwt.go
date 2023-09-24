@@ -11,7 +11,7 @@ import (
 
 type JwtService interface {
 	GenerateToken(userID string, tokenType constants.TokenType, expiresIn int64) (string, error)
-	ValidateToken(token string, tokenType constants.TokenType) (*string, error)
+	ValidateToken(token string) (*string, error)
 	GenerateAuthTokens(userID string) (string, string, error)
 }
 
@@ -55,7 +55,7 @@ func (j *jwtService) GenerateAuthTokens(userID string) (string, string, error) {
 	return accessToken, refreshToken, nil
 }
 
-func (j *jwtService) ValidateToken(token string, tokenType constants.TokenType) (*string, error) {
+func (j *jwtService) ValidateToken(token string) (*string, error) {
 	claims := jwt.StandardClaims{}
 	_, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(j.config.Jwt.Secret), nil
