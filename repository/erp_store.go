@@ -87,7 +87,7 @@ func (p *erpStoreRepository) List(ctx context.Context, search string, o request.
 
 	q.Order("created_at DESC")
 
-	if err := utils.QueryPagination(p.db, o, &stores).Count(&total).Error(); err != nil {
+	if err := utils.QueryPagination(q, o, &stores).Count(&total).Error(); err != nil {
 		return nil, nil, errors.WithStack(err)
 	}
 

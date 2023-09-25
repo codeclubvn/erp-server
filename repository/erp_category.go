@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"erp/dto/erp"
+	erpdto "erp/dto/erp"
 	"erp/infrastructure"
 	models "erp/models"
 	"erp/utils"
@@ -70,8 +70,8 @@ func (u *categoryRepo) GetList(ctx context.Context, req erpdto.GetListCategoryRe
 		query = query.Order(req.Sort)
 	}
 
-	if err = utils.QueryPagination(u.db, req.PageOptions, &res).Count(total).Error(); err != nil {
-		return nil, nil, errors.Wrap(err, "GetList category failed")
+	if err = utils.QueryPagination(query, req.PageOptions, &res).Count(total).Error(); err != nil {
+		return nil, nil, errors.WithStack(err)
 	}
 	return res, total, nil
 }

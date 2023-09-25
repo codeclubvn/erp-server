@@ -70,7 +70,7 @@ func (u *catProRepo) GetList(ctx context.Context, req erpdto.GetListCatProReques
 		query = query.Order(req.Sort)
 	}
 
-	if err = utils.QueryPagination(u.db, req.PageOptions, &res).Count(total).Error(); err != nil {
+	if err = utils.QueryPagination(query, req.PageOptions, &res).Count(total).Error(); err != nil {
 		return nil, nil, errors.Wrap(err, "GetList category_product failed")
 	}
 
