@@ -93,6 +93,7 @@ func (d Database) RegisterTables() {
 		models.Permission{},
 		models.Store{},
 		models.UserRole{},
+		models.Customer{},
 	)
 
 	if err != nil {
