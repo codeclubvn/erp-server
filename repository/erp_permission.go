@@ -37,5 +37,4 @@ func (e *erpPermissionRepo) List() ([]*models.Permission, *int64, error) {
 	}
 
 	return res, &total, nil
-
 }

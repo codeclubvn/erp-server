@@ -10,7 +10,7 @@ import (
 )
 
 func ErrNoRows(err error) bool {
-	return err == pgx.ErrNoRows
+	return err == gorm.ErrRecordNotFound
 }
 
 func MustHaveDb(db *infrastructure.Database) {

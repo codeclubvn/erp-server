@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"erp/api/request"
+	"erp/api_errors"
 	"erp/infrastructure"
 	"erp/models"
 	"erp/utils"
@@ -36,9 +37,7 @@ func (p *erpStoreRepository) Create(tx *TX, ctx context.Context, store *models.S
 	if err != nil {
 		return nil, err
 	}
-	if tx == nil {
-		tx = &TX{db: *p.db}
-	}
+	GetTX(tx, *p.db)
 
 	store.UpdaterID = currentUID
 
@@ -54,9 +53,7 @@ func (p *erpStoreRepository) Update(tx *TX, ctx context.Context, store *models.S
 	if err != nil {
 		return nil, err
 	}
-	if tx == nil {
-		tx = &TX{db: *p.db}
-	}
+	GetTX(tx, *p.db)
 
 	store.UpdaterID = currentUID
 	if err := tx.db.WithContext(ctx).Save(store).Error; err != nil {
@@ -69,6 +66,9 @@ func (p *erpStoreRepository) Update(tx *TX, ctx context.Context, store *models.S
 func (p *erpStoreRepository) FindByID(ctx context.Context, id string) (*models.Store, error) {
 	var store models.Store
 	if err := p.db.WithContext(ctx).Where("id = ?", id).First(&store).Error; err != nil {
+		if utils.ErrNoRows(err) {
+			return nil, errors.New(api_errors.ErrStoreNotFound)
+		}
 		return nil, errors.Wrap(err, "Find store failed")
 	}
 
@@ -95,9 +95,7 @@ func (p *erpStoreRepository) List(ctx context.Context, search string, o request.
 }
 
 func (p *erpStoreRepository) DeleteByID(tx *TX, ctx context.Context, id string) error {
-	if tx == nil {
-		tx = &TX{db: *p.db}
-	}
+	GetTX(tx, *p.db)
 
 	if err := tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Store{}).Error; err != nil {
 		return errors.Wrap(err, "Delete store failed")
