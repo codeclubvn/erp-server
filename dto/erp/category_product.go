@@ -15,11 +15,6 @@ type GetListCatProRequest struct {
 	request.PageOptions
 }
 
-type CatProductsResponse struct {
-	Data []*CatProductResponse  `json:"data"`
-	Meta map[string]interface{} `json:"meta"`
-}
-
 type CatProductResponse struct {
 	CategoryId uuid.UUID `json:"category_id"`
 	ProductId  uuid.UUID `json:"product_id"`

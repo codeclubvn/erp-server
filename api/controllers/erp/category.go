@@ -21,31 +21,24 @@ func NewERPCategoryController(categoryService service.ERPCategoryService) *ERPCa
 }
 
 func (b *ERPCategoryController) Create(c *gin.Context) {
-	userId, err := utils.CurrentUser(c.Request)
-	if err != nil {
-		b.ResponseError(c, err)
-		return
-	}
-
 	var req erpdto.CreateCategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		b.ResponseValidationError(c, err)
 		return
 	}
-	req.UserId = userId
 
 	res, err := b.categoryService.Create(c, req)
 	if err != nil {
 		b.ResponseError(c, err)
 		return
 	}
-	b.Response(c, http.StatusOK, "", res)
+	b.Response(c, http.StatusOK, "success", res)
 }
 
 func (b *ERPCategoryController) Update(c *gin.Context) {
 	var req erpdto.UpdateCategoryRequest
 
-	if err := c.ShouldBindQuery(&req); err != nil {
+	if err := c.ShouldBindJSON(&req); err != nil {
 		b.ResponseValidationError(c, err)
 		return
 	}
@@ -54,41 +47,40 @@ func (b *ERPCategoryController) Update(c *gin.Context) {
 		b.ResponseError(c, err)
 		return
 	}
-	b.Response(c, http.StatusOK, "", res)
+	b.Response(c, http.StatusOK, "success", res)
 }
 
 func (b *ERPCategoryController) Delete(c *gin.Context) {
 	id := utils.ParseStringIDFromUri(c)
-	userId := utils.GetUserStringIDFromContext(c)
-
-	if err := b.categoryService.Delete(c, id, userId); err != nil {
+	if err := b.categoryService.Delete(c, id); err != nil {
 		b.ResponseError(c, err)
 		return
 	}
-	b.Response(c, http.StatusOK, "delete success", nil)
+	b.Response(c, http.StatusOK, "success", nil)
 }
 
 func (b *ERPCategoryController) GetOne(c *gin.Context) {
 	id := utils.ParseStringIDFromUri(c)
+
 	res, err := b.categoryService.GetOne(c, id)
 	if err != nil {
 		b.ResponseError(c, err)
 		return
 	}
-	b.Response(c, http.StatusOK, "", res)
+	b.Response(c, http.StatusOK, "success", res)
 }
 
 func (b *ERPCategoryController) GetList(c *gin.Context) {
 	var req erpdto.GetListCategoryRequest
 
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err := c.ShouldBindQuery(&req); err != nil {
 		b.ResponseValidationError(c, err)
 		return
 	}
-	res, err := b.categoryService.GetList(c, req)
+	res, total, err := b.categoryService.GetList(c, req)
 	if err != nil {
 		b.ResponseError(c, err)
 		return
 	}
-	b.Response(c, http.StatusOK, "", res)
+	b.ResponseList(c, "success", total, res)
 }

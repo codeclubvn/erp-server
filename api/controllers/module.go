@@ -8,6 +8,4 @@ import (
 var Module = fx.Options(
 	fx.Provide(
 		NewHealthController, NewUserController, NewAuthController,
-		erpcontroller.NewERPCategoryController, erpcontroller.NewERPCategoryProductController,
-		erpcontroller.NewERPProductController,
 	), erpcontroller.Module)

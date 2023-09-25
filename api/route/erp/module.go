@@ -6,6 +6,5 @@ var Module = fx.Options(fx.Provide(NewERPHandler), fx.Invoke(
 	NewEmployeeManagementRoutes,
 	NewStoreRoutes,
 	NewCategoryRoutes,
-	NewCategoryProductRoutes,
 	NewProductRoutes,
 ))

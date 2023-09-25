@@ -30,11 +30,6 @@ type ProductResponse struct {
 	NumberProduct int       `json:"number_product"`
 }
 
-type ProductsResponse struct {
-	Data []*ProductResponse     `json:"data"`
-	Meta map[string]interface{} `json:"meta"`
-}
-
 type GetListProductRequest struct {
 	request.PageOptions
 }

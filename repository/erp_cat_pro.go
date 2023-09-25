@@ -7,52 +7,60 @@ import (
 	models "erp/models"
 	"erp/utils"
 	"github.com/pkg/errors"
-	"time"
 )
 
 type CategoryProductRepository interface {
 	Create(ctx context.Context, CategoryProduct *models.CategoryProduct) (err error)
-	Update(ctx context.Context, category *models.CategoryProduct) (err error)
-	Delete(ctx context.Context, id string, userId string) (err error)
+	Update(ctx context.Context, categoryProduct *models.CategoryProduct) (err error)
+	Delete(ctx context.Context, id string) (err error)
 	GetOneByID(ctx context.Context, id string) (res *models.CategoryProduct, err error)
-	GetList(ctx context.Context, req erpdto.GetListCatProRequest) (res *erpdto.CatProductsResponse, err error)
+	GetList(ctx context.Context, req erpdto.GetListCatProRequest) (res []*models.CategoryProduct, total *int64, err error)
 }
 
-type catProRepoImpl struct {
+type catProRepo struct {
 	db *infrastructure.Database
 }
 
 func NewCategoryProductRepository(db *infrastructure.Database) CategoryProductRepository {
-	if db == nil {
-		panic("Database engine is null")
+	return &catProRepo{db}
+}
+
+func (u *catProRepo) Create(ctx context.Context, categoryProduct *models.CategoryProduct) (err error) {
+	currentUID, err := utils.GetUserUUIDFromContext(ctx)
+	if err != nil {
+		return err
 	}
-	return &catProRepoImpl{db}
+	categoryProduct.UpdaterID = currentUID
+
+	err = u.db.Create(&categoryProduct).Error
+	return errors.Wrap(err, "Create category_product failed")
 }
 
-func (u *catProRepoImpl) Create(ctx context.Context, category *models.CategoryProduct) (err error) {
-	err = u.db.Create(&category).Error
-	return err
+func (u *catProRepo) Update(ctx context.Context, categoryProduct *models.CategoryProduct) (err error) {
+	currentUID, err := utils.GetUserUUIDFromContext(ctx)
+	if err != nil {
+		return err
+	}
+	categoryProduct.UpdaterID = currentUID
+
+	err = u.db.Updates(&categoryProduct).Error
+	return errors.Wrap(err, "Update category_product failed")
 }
 
-func (u *catProRepoImpl) Update(ctx context.Context, category *models.CategoryProduct) (err error) {
-	err = u.db.Updates(&category).Error
-	return err
+func (u *catProRepo) Delete(ctx context.Context, id string) (err error) {
+	if err := u.db.WithContext(ctx).Where("id = ?", id).Delete(&models.CategoryProduct{}).Error; err != nil {
+		return errors.Wrap(err, "Delete category_product failed")
+	}
+	return nil
 }
 
-func (u *catProRepoImpl) Delete(ctx context.Context, id string, userId string) (err error) {
-	err = u.db.Where("id = ?", id).Updates(map[string]interface{}{"deleted_at": time.Time{}, "updater_id": userId}).Error
-	return err
-}
-
-func (u *catProRepoImpl) GetOneByID(ctx context.Context, id string) (res *models.CategoryProduct, err error) {
+func (u *catProRepo) GetOneByID(ctx context.Context, id string) (res *models.CategoryProduct, err error) {
 	err = u.db.Where("id = ?", id).First(&res).Error
-	return res, err
+	return res, errors.Wrap(err, "GetOneByID category_product failed")
 }
 
-func (u *catProRepoImpl) GetList(ctx context.Context, req erpdto.GetListCatProRequest) (res *erpdto.CatProductsResponse, err error) {
-	var total int64 = 0
-
-	query := u.db.Model(&models.Product{})
+func (u *catProRepo) GetList(ctx context.Context, req erpdto.GetListCatProRequest) (res []*models.CategoryProduct, total *int64, err error) {
+	query := u.db.Model(&models.CategoryProduct{})
 	if req.Search != "" {
 		query = query.Where("name like ?", "%"+req.Search+"%")
 	}
@@ -62,9 +70,9 @@ func (u *catProRepoImpl) GetList(ctx context.Context, req erpdto.GetListCatProRe
 		query = query.Order(req.Sort)
 	}
 
-	if err = utils.QueryPagination(u.db, req.PageOptions, &res.Data).Count(&total).Error(); err != nil {
-		return nil, errors.WithStack(err)
+	if err = utils.QueryPagination(u.db, req.PageOptions, &res).Count(total).Error(); err != nil {
+		return nil, nil, errors.Wrap(err, "GetList category_product failed")
 	}
 
-	return res, err
+	return res, total, nil
 }

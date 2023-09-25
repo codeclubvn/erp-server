@@ -13,19 +13,19 @@ type (
 	ERPCategoryProductService interface {
 		Create(ctx context.Context, req erpdto.CategoryProductRequest) (*models.CategoryProduct, error)
 		Update(ctx context.Context, req erpdto.CategoryProductRequest) (*models.CategoryProduct, error)
-		Delete(ctx context.Context, id string, userId string) error
-		GetList(ctx context.Context, req erpdto.GetListCatProRequest) (*erpdto.CatProductsResponse, error)
+		Delete(ctx context.Context, id string) error
+		GetList(ctx context.Context, req erpdto.GetListCatProRequest) ([]*models.CategoryProduct, *int64, error)
 	}
 	CategoryProductServiceImpl struct {
-		categoryProductRepo repository.CategoryProductRepository
-		config              *config.Config
+		catProductRepo repository.CategoryProductRepository
+		config         *config.Config
 	}
 )
 
-func NewCategoryProductService(itemRepo repository.CategoryProductRepository, config *config.Config) ERPCategoryProductService {
+func NewCategoryProductService(catProductRepo repository.CategoryProductRepository, config *config.Config) ERPCategoryProductService {
 	return &CategoryProductServiceImpl{
-		categoryProductRepo: itemRepo,
-		config:              config,
+		catProductRepo: catProductRepo,
+		config:         config,
 	}
 }
 
@@ -36,7 +36,7 @@ func (u *CategoryProductServiceImpl) Create(ctx context.Context, req erpdto.Cate
 	if err = utils.Copy(req, res); err != nil {
 		return nil, err
 	}
-	if err = u.categoryProductRepo.Create(ctx, &res); err != nil {
+	if err = u.catProductRepo.Create(ctx, &res); err != nil {
 		return nil, err
 	}
 
@@ -50,20 +50,17 @@ func (u *CategoryProductServiceImpl) Update(ctx context.Context, req erpdto.Cate
 	if err = utils.Copy(req, res); err != nil {
 		return nil, err
 	}
-	if err = u.categoryProductRepo.Update(ctx, &res); err != nil {
+	if err = u.catProductRepo.Update(ctx, &res); err != nil {
 		return nil, err
 	}
 
 	return &res, err
 }
 
-func (u *CategoryProductServiceImpl) Delete(ctx context.Context, id string, userId string) error {
-	err := u.categoryProductRepo.Delete(ctx, id, userId)
-	return err
+func (u *CategoryProductServiceImpl) Delete(ctx context.Context, id string) error {
+	return u.catProductRepo.Delete(ctx, id)
 }
 
-func (u *CategoryProductServiceImpl) GetList(ctx context.Context, req erpdto.GetListCatProRequest) (*erpdto.CatProductsResponse, error) {
-	var err error
-	res, err := u.categoryProductRepo.GetList(ctx, req)
-	return res, err
+func (u *CategoryProductServiceImpl) GetList(ctx context.Context, req erpdto.GetListCatProRequest) ([]*models.CategoryProduct, *int64, error) {
+	return u.catProductRepo.GetList(ctx, req)
 }

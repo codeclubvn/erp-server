@@ -14,9 +14,9 @@ type (
 	ERPCategoryService interface {
 		Create(ctx context.Context, req erpdto.CreateCategoryRequest) (*models.Category, error)
 		Update(ctx context.Context, req erpdto.UpdateCategoryRequest) (*models.Category, error)
-		Delete(ctx context.Context, id string, userId string) error
+		Delete(ctx context.Context, id string) error
 		GetOne(ctx context.Context, id string) (*models.Category, error)
-		GetList(ctx context.Context, req erpdto.GetListCategoryRequest) (*erpdto.CategoriesResponse, error)
+		GetList(ctx context.Context, req erpdto.GetListCategoryRequest) ([]*models.Category, *int64, error)
 	}
 	categoryService struct {
 		categoryRepo repository.CategoryRepository
@@ -24,9 +24,9 @@ type (
 	}
 )
 
-func NewCategoryService(itemRepo repository.CategoryRepository, config *config.Config) ERPCategoryService {
+func NewCategoryService(categoryRepo repository.CategoryRepository, config *config.Config) ERPCategoryService {
 	return &categoryService{
-		categoryRepo: itemRepo,
+		categoryRepo: categoryRepo,
 		config:       config,
 	}
 }
@@ -59,23 +59,14 @@ func (u *categoryService) Update(ctx context.Context, req erpdto.UpdateCategoryR
 	return category, err
 }
 
-func (u *categoryService) Delete(ctx context.Context, id string, userId string) error {
-	err := u.categoryRepo.Delete(ctx, id, userId)
-	return err
+func (u *categoryService) Delete(ctx context.Context, id string) error {
+	return u.categoryRepo.Delete(ctx, id)
 }
 
 func (u *categoryService) GetOne(ctx context.Context, id string) (*models.Category, error) {
-	category := &models.Category{}
-	var err error
-
-	category, err = u.categoryRepo.GetOneByID(ctx, id)
-	return category, err
+	return u.categoryRepo.GetOneByID(ctx, id)
 }
 
-func (u *categoryService) GetList(ctx context.Context, req erpdto.GetListCategoryRequest) (*erpdto.CategoriesResponse, error) {
-	res := &erpdto.CategoriesResponse{}
-	var err error
-
-	res, err = u.categoryRepo.GetList(ctx, req)
-	return res, err
+func (u *categoryService) GetList(ctx context.Context, req erpdto.GetListCategoryRequest) ([]*models.Category, *int64, error) {
+	return u.categoryRepo.GetList(ctx, req)
 }
