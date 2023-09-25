@@ -32,9 +32,13 @@ func NewDatabase(config *config.Config, logger *zap.Logger) *Database {
 			}
 		}
 	}
-	// try to connect again
 
-	logger.Info("Database connected")
+	if err != nil {
+		logger.Fatal("Database connection error", zap.Error(err))
+	} else {
+		logger.Info("Database connected")
+	}
+
 	db := &Database{gormDB, logger}
 
 	db.RegisterTables()

@@ -5,11 +5,11 @@ import (
 	"erp/infrastructure"
 	"fmt"
 
-	"github.com/jackc/pgx/v4"
+	"gorm.io/gorm"
 )
 
 func ErrNoRows(err error) bool {
-	return err == pgx.ErrNoRows
+	return err == gorm.ErrRecordNotFound
 }
 
 func MustHaveDb(db *infrastructure.Database) {

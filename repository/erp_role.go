@@ -31,9 +31,7 @@ func NewErpRoleRepo(db *infrastructure.Database) ERPRoleRepository {
 }
 
 func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Role, error) {
-	if tx == nil {
-		tx = &TX{db: *e.db}
-	}
+	GetTX(tx, *e.db)
 
 	updaterID := utils.GetUserStringIDFromContext(ctx)
 	sid, _ := uuid.FromString(storeID)
@@ -67,9 +65,8 @@ func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string,
 }
 
 func (e *erpRoleRepository) UpdateRolePermission(tx *TX, ctx context.Context, roleID string, permissionIDs []string) error {
-	if tx == nil {
-		tx = &TX{db: *e.db}
-	}
+	GetTX(tx, *e.db)
+
 	err := tx.db.Exec("DELETE FROM role_permissions WHERE role_id = ?", roleID).Error
 	if err != nil {
 		return errors.Wrap(err, "delete role permission failed")
@@ -101,9 +98,7 @@ func (e *erpRoleRepository) FindRoleByIDs(ids []string) ([]models.Role, error) {
 
 func (e *erpRoleRepository) AssignRoleToUser(tx *TX, ctx context.Context, userID string, roleID string, storeID string, isStoreOwner bool) error {
 	currentUserID := utils.GetUserStringIDFromContext(ctx)
-	if tx == nil {
-		tx = &TX{db: *e.db}
-	}
+	GetTX(tx, *e.db)
 
 	updaterID := uuid.FromStringOrNil(currentUserID)
 

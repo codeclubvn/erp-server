@@ -1,6 +1,6 @@
 # Golang Clean Architecture
 
-## Các công nghệ sử dụng
+## Tech stack
 
 - [Golang](https://golang.org/)
 - [Gin](https://https://gin-gonic.com/)
@@ -21,7 +21,12 @@ Service layer don't need to wrap errors returned from repository layer, because 
 
 Copy file config.example.yml to config.yml to config for local environment
 
-## Cấu trúc thư mục
+## Test
+
+Write unit test for function in service layer has complex logic or should be tested
+Unit test: run `go test ./test`
+
+## Project structure
 
 ```
 ├── api
@@ -38,14 +43,10 @@ Copy file config.example.yml to config.yml to config for local environment
 ├── bootstrap
 │ └── bootstrap.go // Để khởi tạo các module
 ├── config
-│ ├── config.dev.yml // Define các config cho môi trường dev
 │ ├── config.go // Define các config
 │ └── config.yml // Define các config cho môi trường local
 ├── constants // Define các constant cho toàn bộ project
 │ ├── app.go
-│ ├── platform.go
-│ ├── role.go
-│ └── token_type.go
 ├── Dockerfile
 ├── dto // Define các struct để validate request từ client
 │ ├── auth
@@ -57,7 +58,7 @@ Copy file config.example.yml to config.yml to config for local environment
 ├── infrastructure // Các module để kết nối với các service bên ngoài
 │ ├── db.go
 │ └── module.go
-├── lib // Các module để hỗ trợ cho việc xử lý request
+├── lib // Setup các thư viện bên ngoài
 │ ├── logger.go
 │ ├── module.go
 │ └── server.go

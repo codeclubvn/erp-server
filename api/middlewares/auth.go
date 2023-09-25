@@ -32,8 +32,10 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 			c.Errors = append(c.Errors, &gin.Error{
 				Err: errors.New(api_errors.ErrTokenMissing),
 			})
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response.ResponseError{
-				Message: api_errors.MapErrorCodeMessage[api_errors.ErrTokenMissing],
+
+			mas := api_errors.MapErrorCodeMessage[api_errors.ErrTokenMissing]
+			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
+				Message: mas.Message,
 				Code:    api_errors.ErrTokenMissing,
 			})
 			return
@@ -44,8 +46,9 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 			c.Errors = append(c.Errors, &gin.Error{
 				Err: errors.WithStack(err),
 			})
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response.ResponseError{
-				Message: api_errors.MapErrorCodeMessage[err.Error()],
+			mas := api_errors.MapErrorCodeMessage[err.Error()]
+			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
+				Message: mas.Message,
 				Code:    api_errors.ErrTokenInvalid,
 			})
 			return
@@ -63,8 +66,10 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 				Err: errors.New(api_errors.ErrMissingXStoreID),
 			})
 
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response.ResponseError{
-				Message: api_errors.MapErrorCodeMessage[api_errors.ErrMissingXStoreID],
+			mas := api_errors.MapErrorCodeMessage[api_errors.ErrMissingXStoreID]
+
+			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
+				Message: mas.Message,
 				Code:    api_errors.ErrMissingXStoreID,
 			})
 			return
@@ -76,8 +81,11 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 			c.Errors = append(c.Errors, &gin.Error{
 				Err: errors.Wrap(err, "cannot find user role"),
 			})
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response.ResponseError{
-				Message: api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess],
+
+			mas := api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess]
+
+			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
+				Message: mas.Message,
 				Code:    api_errors.ErrUnauthorizedAccess,
 			})
 			return
@@ -92,10 +100,12 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 			c.Errors = append(c.Errors, &gin.Error{
 				Err: errors.Wrap(err, "cannot find role"),
 			})
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response.ResponseError{
-				Message: api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess],
 
-				Code: api_errors.ErrUnauthorizedAccess,
+			mas := api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess]
+
+			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
+				Message: mas.Message,
+				Code:    api_errors.ErrUnauthorizedAccess,
 			})
 			return
 		}
@@ -104,8 +114,11 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 			c.Errors = append(c.Errors, &gin.Error{
 				Err: errors.Wrap(err, "cannot find permission"),
 			})
-			c.AbortWithStatusJSON(http.StatusUnauthorized, response.ResponseError{
-				Message: api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess],
+
+			mas := api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess]
+
+			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
+				Message: mas.Message,
 				Code:    api_errors.ErrUnauthorizedAccess,
 			})
 			return
