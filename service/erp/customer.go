@@ -52,14 +52,11 @@ func (p *erpCustomerService) CustomerDetail(ctx context.Context, req erpdto.Cust
 }
 
 func (p *erpCustomerService) CreateCustomer(ctx context.Context, req erpdto.CreateCustomerRequest) (*models.Customer, error) {
-	customer := &models.Customer{
-		FirstName:      req.FirstName,
-		LastName:       req.LastName,
-		Gender:         req.Gender,
-		Age:            req.Age,
-		AddressStrings: req.AddressStrings,
-		PhoneNumber:    req.PhoneNumber,
-		Email:          req.Email,
+	customer := &models.Customer{}
+
+	if err := copier.Copy(&customer, &req); err != nil {
+		log.Println("Copy struct failed!")
+		return nil, err
 	}
 
 	customer, err := p.erpCustomerRepo.Create(ctx, customer)
