@@ -14,8 +14,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app/main ./main.
 FROM alpine:latest
 
 WORKDIR /app
-COPY ./config/config.release.yml /app/config/config.release.yml
-COPY ./config/config.dev.yml /app/config/config.dev.yml
 COPY ./config/config.yml /app/config/config.yml
 
 COPY --from=build-env /app/main /app/main

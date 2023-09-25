@@ -32,9 +32,8 @@ func (e *erpPermissionRepo) List() ([]*models.Permission, *int64, error) {
 	}, &res).Count(&total).Error()
 
 	if err != nil {
-		return nil, nil, errors.WithStack(e.db.Error)
+		return nil, nil, errors.WithStack(err)
 	}
 
 	return res, &total, nil
-
 }

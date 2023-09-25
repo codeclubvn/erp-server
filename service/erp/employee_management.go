@@ -78,10 +78,6 @@ func (e *erpEmployeeManagementService) CreateRole(ctx context.Context, req erpdt
 }
 
 func (e *erpEmployeeManagementService) CreateEmployee(ctx context.Context, req erpdto.CreateEmployeeRequest) (id string, err error) {
-	if err != nil {
-		return "", err
-	}
-
 	var user *models.User
 
 	err = repository.WithTransaction(e.db, func(tx *repository.TX) error {
