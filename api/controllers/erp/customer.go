@@ -4,7 +4,6 @@ import (
 	"erp/api"
 	erpdto "erp/dto/erp"
 	erpservice "erp/service/erp"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -101,10 +100,6 @@ func (p *ERPCustomerController) DeleteCustomer(c *gin.Context) {
 		p.ResponseValidationError(c, err)
 		return
 	}
-
-	fmt.Println("=======================================")
-	fmt.Println(req.ID)
-	fmt.Println("=======================================")
 
 	err := p.customerService.DeleteCustomer(c.Request.Context(), req.ID)
 	if err != nil {
