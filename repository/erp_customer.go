@@ -69,15 +69,6 @@ func (p *erpCustomerRepository) FindOne(ctx context.Context, customerId string) 
 }
 
 func (p *erpCustomerRepository) Create(ctx context.Context, customer *models.Customer) (*models.Customer, error) {
-	currentUID, err := utils.GetUserUUIDFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	customer.CreatedAt = time.Now()
-	customer.UpdatedAt = time.Now()
-	customer.UpdaterID = currentUID
-
 	if err := p.db.WithContext(ctx).Create(customer).Error; err != nil {
 		return nil, errors.Wrap(err, "Create customer failed")
 	}
@@ -86,12 +77,6 @@ func (p *erpCustomerRepository) Create(ctx context.Context, customer *models.Cus
 }
 
 func (p *erpCustomerRepository) Update(ctx context.Context, customer *models.Customer) (*models.Customer, error) {
-	currentUID, err := utils.GetUserUUIDFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	customer.UpdaterID = currentUID
 	customer.UpdatedAt = time.Now()
 
 	if err := p.db.WithContext(ctx).Where("is_deleted = ?", false).Updates(&customer).Error; err != nil {
@@ -103,15 +88,9 @@ func (p *erpCustomerRepository) Update(ctx context.Context, customer *models.Cus
 }
 
 func (p *erpCustomerRepository) Delete(ctx context.Context, customerId string) error {
-	currentUID, err := utils.GetUserUUIDFromContext(ctx)
-	if err != nil {
-		return err
-	}
-
 	now := time.Now()
 	updateData := models.Customer{
 		BaseModel: models.BaseModel{
-			UpdaterID: currentUID,
 			IsDeleted: true,
 			DeletedAt: &now,
 		},
