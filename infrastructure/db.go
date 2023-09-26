@@ -78,8 +78,8 @@ func getDatabaseInstance(config *config.Config) (db *gorm.DB, err error) {
 			config.Database.Port, config.Database.SSLMode, config.Database.TimeZone)
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 			NowFunc: func() time.Time {
-				ti, _ := time.LoadLocation("Asia/Ho_Chi_Minh")
-				return time.Now().In(ti)
+				loc, _ := time.LoadLocation("Asia/Ho_Chi_Minh")
+				return time.Now().In(loc)
 			},
 		})
 
