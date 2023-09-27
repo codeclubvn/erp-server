@@ -45,7 +45,7 @@ func (p *erpStoreRepository) Create(tx *TX, ctx context.Context, store *models.S
 func (p *erpStoreRepository) Update(tx *TX, ctx context.Context, store *models.Store) (*models.Store, error) {
 	GetTX(tx, *p.db)
 
-	if err := tx.db.WithContext(ctx).Save(store).Error; err != nil {
+	if err := tx.db.WithContext(ctx).Updates(store).Error; err != nil {
 		return nil, errors.Wrap(err, "Update store failed")
 	}
 
