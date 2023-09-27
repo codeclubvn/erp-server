@@ -5,13 +5,11 @@ import (
 	config "erp/config"
 	"erp/models"
 	"fmt"
-	"os"
-	"time"
-
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"os"
 )
 
 type Database struct {
@@ -76,12 +74,7 @@ func getDatabaseInstance(config *config.Config) (db *gorm.DB, err error) {
 		dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s TimeZone=%s",
 			config.Database.Host, config.Database.Username, config.Database.Password, config.Database.Name,
 			config.Database.Port, config.Database.SSLMode, config.Database.TimeZone)
-		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-			NowFunc: func() time.Time {
-				loc, _ := time.LoadLocation("Asia/Ho_Chi_Minh")
-				return time.Now().In(loc)
-			},
-		})
+		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 		if err != nil {
 			return nil, fmt.Errorf("failed to connect database: %w", err)
