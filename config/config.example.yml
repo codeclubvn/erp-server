@@ -22,7 +22,6 @@ database:
   maxOpenConnections: 10
   maxIdleConnections: 5
   maxConnectionLifetime: 300
-
 jwt:
   secret: 'hgG6T23XD25N'
   accessTokenExpiresIn: 3600

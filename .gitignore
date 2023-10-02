@@ -16,3 +16,9 @@
 
 .idea
 /config/config.yml
+
+/build
+docker-compose.yml
+Dockerfile-dev
+main
+Makefile

@@ -31,7 +31,7 @@ func NewErpRoleRepo(db *infrastructure.Database) ERPRoleRepository {
 }
 
 func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Role, error) {
-	GetTX(tx, *e.db)
+	tx = GetTX(tx, *e.db)
 
 	sid, _ := uuid.FromString(storeID)
 
@@ -61,7 +61,7 @@ func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string,
 }
 
 func (e *erpRoleRepository) UpdateRolePermission(tx *TX, ctx context.Context, roleID string, permissionIDs []string) error {
-	GetTX(tx, *e.db)
+	tx = GetTX(tx, *e.db)
 
 	err := tx.db.Exec("DELETE FROM role_permissions WHERE role_id = ?", roleID).Error
 	if err != nil {
@@ -93,7 +93,7 @@ func (e *erpRoleRepository) FindRoleByIDs(ids []string) ([]models.Role, error) {
 }
 
 func (e *erpRoleRepository) AssignRoleToUser(tx *TX, ctx context.Context, userID string, roleID string, storeID string, isStoreOwner bool) error {
-	GetTX(tx, *e.db)
+	tx = GetTX(tx, *e.db)
 
 	err := tx.db.Debug().Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "user_id"}, {Name: "store_id"}},

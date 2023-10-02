@@ -5,8 +5,6 @@ import (
 	erpdto "erp/dto/erp"
 	erpservice "erp/service/erp"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
-	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -46,11 +44,7 @@ func (p *ERPCustomerController) CustomerDetail(c *gin.Context) {
 
 	customer, err := p.customerService.CustomerDetail(c.Request.Context(), req)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			p.Response(c, http.StatusOK, "Customer not found", nil)
-		} else {
-			p.ResponseError(c, err)
-		}
+		p.ResponseError(c, err)
 		return
 	}
 

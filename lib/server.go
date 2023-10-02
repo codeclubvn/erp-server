@@ -8,6 +8,7 @@ import (
 	"erp/infrastructure"
 	models "erp/models"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -57,7 +58,8 @@ func NewServer(lifecycle fx.Lifecycle, zap *zap.Logger, config *config.Config, d
 
 			SeedRoutes(instance, db)
 			go func() {
-				addr := fmt.Sprint(config.Server.Host, ":", config.Server.Port)
+				//addr := fmt.Sprint(config.Server.Host, ":", config.Server.Port)
+				addr := ":" + strconv.Itoa(config.Server.Port)
 				if err := instance.Run(addr); err != nil {
 					zap.Fatal(fmt.Sprint("HTTP server failed to start %w", err))
 				}
