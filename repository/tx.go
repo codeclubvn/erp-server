@@ -22,8 +22,9 @@ func WithTransaction(db *infrastructure.Database, fn TxFn) error {
 	})
 }
 
-func GetTX(tx *TX, db infrastructure.Database) {
+func GetTX(tx *TX, db infrastructure.Database) *TX {
 	if tx == nil {
 		tx = &TX{db: db}
 	}
+	return tx
 }

@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"bytes"
+	"io"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -28,8 +29,9 @@ func (e *GinMiddleware) Logger(c *gin.Context) {
 	start := time.Now()
 	blw := &bodyLogWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
 	c.Writer = blw
+	body, _ := io.ReadAll(c.Request.Body)
+	c.Request.Body = io.NopCloser(bytes.NewReader(body))
 	c.Next()
-
 	path := c.Request.URL.Path
 	raw := c.Request.URL.RawQuery
 
@@ -42,7 +44,6 @@ func (e *GinMiddleware) Logger(c *gin.Context) {
 
 	l := e.logger.WithOptions(zap.AddStacktrace(zap.DPanicLevel))
 	logger := l.Info
-
 	if statusCode >= 400 && statusCode < 500 {
 		logger = l.Warn
 	}
@@ -53,6 +54,7 @@ func (e *GinMiddleware) Logger(c *gin.Context) {
 	logger("Request",
 		zap.String("Path", path),
 		zap.String("Raw", raw),
+		zap.String("Body", string(body)),
 		zap.String("ClientIP", clientIP),
 		zap.String("Method", method),
 		zap.Int("StatusCode", statusCode),

@@ -33,13 +33,7 @@ func NewERPStoreRepository(db *infrastructure.Database, logger *zap.Logger) ERPS
 }
 
 func (p *erpStoreRepository) Create(tx *TX, ctx context.Context, store *models.Store) (*models.Store, error) {
-	currentUID, err := utils.GetUserUUIDFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	GetTX(tx, *p.db)
-
-	store.UpdaterID = currentUID
+	tx = GetTX(tx, *p.db)
 
 	if err := tx.db.WithContext(ctx).Create(store).Error; err != nil {
 		return nil, errors.Wrap(err, "Create store failed")
@@ -49,14 +43,9 @@ func (p *erpStoreRepository) Create(tx *TX, ctx context.Context, store *models.S
 }
 
 func (p *erpStoreRepository) Update(tx *TX, ctx context.Context, store *models.Store) (*models.Store, error) {
-	currentUID, err := utils.GetUserUUIDFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	GetTX(tx, *p.db)
+	tx = GetTX(tx, *p.db)
 
-	store.UpdaterID = currentUID
-	if err := tx.db.WithContext(ctx).Save(store).Error; err != nil {
+	if err := tx.db.WithContext(ctx).Updates(store).Error; err != nil {
 		return nil, errors.Wrap(err, "Update store failed")
 	}
 
@@ -95,7 +84,7 @@ func (p *erpStoreRepository) List(ctx context.Context, search string, o request.
 }
 
 func (p *erpStoreRepository) DeleteByID(tx *TX, ctx context.Context, id string) error {
-	GetTX(tx, *p.db)
+	tx = GetTX(tx, *p.db)
 
 	if err := tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Store{}).Error; err != nil {
 		return errors.Wrap(err, "Delete store failed")
