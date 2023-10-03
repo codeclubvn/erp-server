@@ -5,12 +5,11 @@ import (
 	config "erp/config"
 	"erp/models"
 	"fmt"
-	"os"
-
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"os"
 )
 
 type Database struct {
@@ -96,6 +95,7 @@ func (d Database) RegisterTables() {
 		models.Category{},
 		models.Product{},
 		models.CategoryProduct{},
+		models.Customer{},
 	)
 
 	if err != nil {
