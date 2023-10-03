@@ -74,3 +74,7 @@ func (u *productService) GetOne(ctx context.Context, id string) (*models.Product
 func (u *productService) GetList(ctx context.Context, req erpdto.GetListProductRequest) ([]*models.Product, *int64, error) {
 	return u.productRepo.GetList(ctx, req)
 }
+
+func (u *productService) GetListProductById(ctx context.Context, productIds []string, storeId string) ([]*models.Product, error) {
+	return u.productRepo.GetListProductById(ctx, productIds, storeId)
+}

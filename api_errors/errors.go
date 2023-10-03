@@ -19,6 +19,8 @@ var (
 	ErrPermissionDenied     = "10013"
 	ErrInvalidPassword      = "10014"
 	ErrStoreNotFound        = "10015"
+	ErrOrderItemRequired    = "10016"
+	ErrTypeInvalid          = "10017"
 )
 
 type MessageAndStatus struct {
@@ -43,4 +45,6 @@ var MapErrorCodeMessage = map[string]MessageAndStatus{
 	ErrPermissionDenied:     {"Permission Denied", http.StatusForbidden},
 	ErrInvalidPassword:      {"Invalid Password", http.StatusBadRequest},
 	ErrStoreNotFound:        {"Store Not Found", http.StatusNotFound},
+	ErrOrderItemRequired:    {"Order Item Required", http.StatusBadRequest},
+	ErrTypeInvalid:          {"Only accept type 'percent' or 'amount'", http.StatusBadRequest},
 }

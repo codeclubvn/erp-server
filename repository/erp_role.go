@@ -31,9 +31,8 @@ func NewErpRoleRepo(db *infrastructure.Database) ERPRoleRepository {
 }
 
 func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Role, error) {
-	GetTX(tx, *e.db)
+	tx = GetTX(tx, *e.db)
 
-	updaterID := utils.GetUserStringIDFromContext(ctx)
 	sid, _ := uuid.FromString(storeID)
 
 	extendsRole := make([]models.Role, 0)
@@ -48,9 +47,6 @@ func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string,
 	role := &models.Role{
 		Name:    name,
 		StoreID: sid,
-		BaseModel: models.BaseModel{
-			UpdaterID: uuid.FromStringOrNil(updaterID),
-		},
 	}
 
 	if err := tx.db.Create(role).Error; err != nil {
@@ -65,7 +61,7 @@ func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string,
 }
 
 func (e *erpRoleRepository) UpdateRolePermission(tx *TX, ctx context.Context, roleID string, permissionIDs []string) error {
-	GetTX(tx, *e.db)
+	tx = GetTX(tx, *e.db)
 
 	err := tx.db.Exec("DELETE FROM role_permissions WHERE role_id = ?", roleID).Error
 	if err != nil {
@@ -97,10 +93,7 @@ func (e *erpRoleRepository) FindRoleByIDs(ids []string) ([]models.Role, error) {
 }
 
 func (e *erpRoleRepository) AssignRoleToUser(tx *TX, ctx context.Context, userID string, roleID string, storeID string, isStoreOwner bool) error {
-	currentUserID := utils.GetUserStringIDFromContext(ctx)
-	GetTX(tx, *e.db)
-
-	updaterID := uuid.FromStringOrNil(currentUserID)
+	tx = GetTX(tx, *e.db)
 
 	err := tx.db.Debug().Clauses(clause.OnConflict{
 		Columns: []clause.Column{{Name: "user_id"}, {Name: "store_id"}},
@@ -108,7 +101,6 @@ func (e *erpRoleRepository) AssignRoleToUser(tx *TX, ctx context.Context, userID
 			"role_id": roleID,
 		}),
 	}).Create(&models.UserRole{
-		UpdaterID:    updaterID,
 		IsStoreOwner: isStoreOwner,
 		UserID:       uuid.FromStringOrNil(userID),
 		RoleID:       uuid.FromStringOrNil(roleID),

@@ -3,7 +3,7 @@ package infrastructure
 import (
 	"database/sql"
 	config "erp/config"
-	models "erp/models"
+	"erp/models"
 	"fmt"
 	"os"
 

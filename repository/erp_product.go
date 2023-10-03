@@ -15,6 +15,7 @@ type ERPProductRepository interface {
 	Delete(ctx context.Context, id string) (err error)
 	GetOneByID(ctx context.Context, id string) (res *models.Product, err error)
 	GetList(ctx context.Context, product erpdto.GetListProductRequest) (res []*models.Product, total *int64, err error)
+	GetListProductById(ctx context.Context, productIds []string, storeId string) (res []*models.Product, err error)
 }
 
 type productRepo struct {
@@ -74,4 +75,11 @@ func (u *productRepo) GetList(ctx context.Context, req erpdto.GetListProductRequ
 		return nil, nil, errors.WithStack(err)
 	}
 	return res, total, err
+}
+
+func (u *productRepo) GetListProductById(ctx context.Context, productIds []string, storeId string) (res []*models.Product, err error) {
+	if err = u.db.Model(&models.Product{}).Where("id in (?) and store_id = ?", productIds, storeId).Error; err != nil {
+		return nil, errors.Wrap(err, "get product by id failed")
+	}
+	return res, nil
 }
