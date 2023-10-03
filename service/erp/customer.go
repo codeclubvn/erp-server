@@ -34,7 +34,7 @@ func NewERPCustomerService(erpCustomerRepo repository.ERPCustomerRepository, db 
 }
 
 func (p *erpCustomerService) ListCustomer(ctx context.Context, req erpdto.ListCustomerRequest) ([]*models.Customer, *int64, error) {
-	customers, total, err := p.erpCustomerRepo.List(ctx, req.Search, req.PageOptions)
+	customers, total, err := p.erpCustomerRepo.List(ctx, req)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -43,7 +43,7 @@ func (p *erpCustomerService) ListCustomer(ctx context.Context, req erpdto.ListCu
 }
 
 func (p *erpCustomerService) CustomerDetail(ctx context.Context, req erpdto.CustomerUriRequest) (*models.Customer, error) {
-	customers, err := p.erpCustomerRepo.FindOne(ctx, req.ID)
+	customers, err := p.erpCustomerRepo.FindOneByID(ctx, req.ID)
 	if err != nil {
 		return nil, err
 	}

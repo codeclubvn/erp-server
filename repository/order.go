@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type ERPOrderRepository interface {
+type OrderRepo interface {
 	Create(ctx context.Context, order *models.Order) error
 }
 
@@ -19,7 +19,7 @@ type erpOrderRepository struct {
 	logger *zap.Logger
 }
 
-func NewERPOrderRepository(db *infrastructure.Database, logger *zap.Logger) ERPOrderRepository {
+func NewOrderRepository(db *infrastructure.Database, logger *zap.Logger) OrderRepo {
 	return &erpOrderRepository{
 		db:     db,
 		logger: logger,
@@ -35,7 +35,7 @@ func (p *erpOrderRepository) Create(ctx context.Context, order *models.Order) er
 	order.UpdaterID = currentUID
 
 	if err := p.db.WithContext(ctx).Create(order).Error; err != nil {
-		return errors.Wrap(err, "create order failed")
+		return errors.Wrap(err, "Create order failed")
 	}
 
 	return nil

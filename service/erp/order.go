@@ -18,7 +18,7 @@ type OrderService interface {
 }
 
 type erpOrderService struct {
-	erpOrderRepo       repository.ERPOrderRepository
+	erpOrderRepo       repository.OrderRepo
 	db                 *infrastructure.Database
 	logger             *zap.Logger
 	customerService    ERPCustomerService
@@ -28,8 +28,8 @@ type erpOrderService struct {
 	orderItemService   orderItemService
 }
 
-func NewERPOrderService(
-	erpOrderRepo repository.ERPOrderRepository,
+func NewOrderService(
+	erpOrderRepo repository.OrderRepo,
 	db *infrastructure.Database,
 	logger *zap.Logger,
 	customerService ERPCustomerService,
