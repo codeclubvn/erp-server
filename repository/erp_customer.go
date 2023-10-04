@@ -60,7 +60,7 @@ func (p *erpCustomerRepository) FindOneByID(ctx context.Context, customerId stri
 
 func (p *erpCustomerRepository) Create(ctx context.Context, customer *models.Customer) (*models.Customer, error) {
 	if err := p.db.WithContext(ctx).Create(customer).Error; err != nil {
-		return nil, errors.Wrap(err, "Create customer failed")
+		return nil, errors.Wrap(err, "CreateFlow customer failed")
 	}
 
 	return customer, nil

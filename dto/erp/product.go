@@ -6,13 +6,14 @@ import (
 )
 
 type CreateProductRequest struct {
-	UserId        string  `json:"user_id"`
-	Name          string  `json:"name"`
-	Description   string  `json:"description"`
-	Image         string  `json:"image"`
-	Price         float64 `json:"price"`
-	Status        bool    `json:"status"`
-	NumberProduct int     `json:"number_product"`
+	UserId      string
+	Name        string  `json:"name" binding:"required"`
+	Description string  `json:"description"`
+	Image       string  `json:"image"`
+	Price       float64 `json:"price" binding:"required,numeric,gte=0"` // gte: greater than or equal
+	Status      bool    `json:"status"`
+	Quantity    *int    `json:"quantity"`
+	StoreId     string
 }
 
 type UpdateProductRequest struct {
@@ -21,13 +22,13 @@ type UpdateProductRequest struct {
 }
 
 type ProductResponse struct {
-	ID            uuid.UUID `json:"id"`
-	Name          string    `json:"name"`
-	Description   string    `json:"description"`
-	Image         string    `json:"image"`
-	Price         float64   `json:"price"`
-	Status        bool      `json:"status"`
-	NumberProduct int       `json:"number_product"`
+	ID          uuid.UUID `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Image       string    `json:"image"`
+	Price       float64   `json:"price"`
+	Status      bool      `json:"status"`
+	Quantity    int       `json:"quantity"`
 }
 
 type GetListProductRequest struct {

@@ -34,7 +34,12 @@ func NewERPCustomerService(erpCustomerRepo repository.ERPCustomerRepository, db 
 }
 
 func (p *erpCustomerService) ListCustomer(ctx context.Context, req erpdto.ListCustomerRequest) ([]*models.Customer, *int64, error) {
-	return p.erpCustomerRepo.List(ctx, req)
+	customers, total, err := p.erpCustomerRepo.List(ctx, req)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return customers, total, nil
 }
 
 func (p *erpCustomerService) CustomerDetail(ctx context.Context, req erpdto.CustomerUriRequest) (*models.Customer, error) {

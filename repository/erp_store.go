@@ -36,7 +36,7 @@ func (p *erpStoreRepository) Create(tx *TX, ctx context.Context, store *models.S
 	tx = GetTX(tx, *p.db)
 
 	if err := tx.db.WithContext(ctx).Create(store).Error; err != nil {
-		return nil, errors.Wrap(err, "Create store failed")
+		return nil, errors.Wrap(err, "create store failed")
 	}
 
 	return store, nil

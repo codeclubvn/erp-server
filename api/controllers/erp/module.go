@@ -8,4 +8,6 @@ var Module = fx.Options(fx.Provide(
 	NewERPProductController,
 	NewERPCategoryController,
 	NewERPCustomerController,
+	NewOrderController,
+	NewPromoteController,
 ))

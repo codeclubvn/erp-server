@@ -4,6 +4,7 @@ import (
 	"context"
 	config "erp/config"
 	erpdto "erp/dto/erp"
+	"erp/infrastructure"
 	models "erp/models"
 	repository "erp/repository"
 	"erp/utils"
@@ -12,23 +13,27 @@ import (
 )
 
 type (
-	ERPProductService interface {
+	IProductService interface {
 		Create(ctx context.Context, req erpdto.CreateProductRequest) (*models.Product, error)
 		Update(ctx context.Context, req erpdto.UpdateProductRequest) (*models.Product, error)
+		UpdateMulti(ctx context.Context, req []*models.Product) error
 		Delete(ctx context.Context, id string) error
 		GetOne(ctx context.Context, id string) (*models.Product, error)
 		GetList(ctx context.Context, req erpdto.GetListProductRequest) ([]*models.Product, *int64, error)
+		GetListProductById(ctx context.Context, productIds []string, storeId string) ([]*models.Product, error)
 	}
 	productService struct {
 		productRepo repository.ERPProductRepository
 		config      *config.Config
+		db          *infrastructure.Database
 	}
 )
 
-func NewERPProductService(productRepo repository.ERPProductRepository, config *config.Config) ERPProductService {
+func NewProductService(productRepo repository.ERPProductRepository, config *config.Config, db *infrastructure.Database) IProductService {
 	return &productService{
 		productRepo: productRepo,
 		config:      config,
+		db:          db,
 	}
 }
 
@@ -56,11 +61,32 @@ func (u *productService) Update(ctx context.Context, req erpdto.UpdateProductReq
 	}
 	product.UpdaterID = uuid.FromStringOrNil(req.UserId)
 
-	if err = u.productRepo.Update(ctx, product); err != nil {
+	err = repository.WithTransaction(u.db, func(tx *repository.TX) error {
+		if err = u.productRepo.Update(ctx, tx, product); err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
 		return nil, err
 	}
 
 	return product, err
+}
+
+func (u *productService) UpdateMulti(ctx context.Context, req []*models.Product) error {
+	err := repository.WithTransaction(u.db, func(tx *repository.TX) error {
+		for _, product := range req {
+			if err := u.productRepo.Update(ctx, tx, product); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (u *productService) Delete(ctx context.Context, id string) error {
@@ -73,4 +99,8 @@ func (u *productService) GetOne(ctx context.Context, id string) (*models.Product
 
 func (u *productService) GetList(ctx context.Context, req erpdto.GetListProductRequest) ([]*models.Product, *int64, error) {
 	return u.productRepo.GetList(ctx, req)
+}
+
+func (u *productService) GetListProductById(ctx context.Context, productIds []string, storeId string) ([]*models.Product, error) {
+	return u.productRepo.GetListProductById(ctx, productIds, storeId)
 }

@@ -33,7 +33,7 @@ func (u *catProRepo) Create(ctx context.Context, categoryProduct *models.Categor
 	categoryProduct.UpdaterID = currentUID
 
 	err = u.db.Create(&categoryProduct).Error
-	return errors.Wrap(err, "Create category_product failed")
+	return errors.Wrap(err, "create category_product failed")
 }
 
 func (u *catProRepo) Update(ctx context.Context, categoryProduct *models.CategoryProduct) (err error) {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"erp/api_errors"
 	"errors"
+	"github.com/gin-gonic/gin"
 
 	uuid "github.com/satori/go.uuid"
 )
@@ -37,4 +38,10 @@ func GetPageCount(total int64, limit int64) int64 {
 	}
 
 	return total / limit
+}
+func GetRequest[E any](c *gin.Context, req E) (E, error) {
+	if err := c.ShouldBindJSON(&req); err != nil {
+		return req, err
+	}
+	return req, nil
 }
