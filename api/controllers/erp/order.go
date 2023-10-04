@@ -3,7 +3,6 @@ package erpcontroller
 import (
 	"erp/api"
 	"erp/api_errors"
-	"erp/constants"
 	erpdto "erp/dto/erp"
 	erpservice "erp/service/erp"
 	"erp/utils"
@@ -27,23 +26,31 @@ func NewOrderController(orderService erpservice.OrderService) *OrderController {
 func (h *OrderController) Create(c *gin.Context) {
 	req, err := utils.GetRequest(c, erpdto.CreateOrderRequest{})
 	if err != nil {
-		h.ResponseValidationError(c, err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
 		return
 	}
 
-	req.StoreId = utils.GetStoreIDFromContext(c)
+	req.StoreId = utils.GetStoreIDFromContext(c.Request.Context())
+
+	if req.DiscountType != "" {
+		if ok := req.DiscountType.CheckValid(); !ok {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": req.DiscountType.ErrorMessage(),
+			})
+			return
+		}
+	}
+
+	if ok := req.Status.CheckValid(); !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": req.Status.ErrorMessage(),
+		})
+		return
+	}
 
 	if err := h.validateOrderItem(req.OrderItems); err != nil {
-		h.ResponseError(c, err)
-		return
-	}
-
-	if err := validateType(req.DiscountType); err != nil {
-		h.ResponseError(c, err)
-		return
-	}
-
-	if err := validateType(req.PromoteType); err != nil {
 		h.ResponseError(c, err)
 		return
 	}
@@ -60,15 +67,6 @@ func (h *OrderController) Create(c *gin.Context) {
 func (h *OrderController) validateOrderItem(req []erpdto.OrderItemRequest) (err error) {
 	if len(req) == 0 {
 		return errors.New(api_errors.ErrOrderItemRequired)
-	}
-	return nil
-}
-
-func validateType[E string](t E) (err error) {
-	if t != "" {
-		if t != constants.TypePercent && t != constants.TypeAmount {
-			return errors.New(api_errors.ErrTypeInvalid)
-		}
 	}
 	return nil
 }

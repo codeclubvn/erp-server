@@ -3,6 +3,7 @@ package utils
 import (
 	"crypto/rand"
 	"math/big"
+	"time"
 )
 
 func GenerateCode(n int) string {
@@ -16,4 +17,11 @@ func GenerateCode(n int) string {
 		ret[i] = letters[num.Int64()]
 	}
 	return string(ret)
+}
+
+func IsBetweenDate(startDate, endDate, date time.Time) bool {
+	if date.Before(startDate) || date.After(endDate) {
+		return false
+	}
+	return true
 }

@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-type TransactionService interface {
+type ITransactionService interface {
 	Create(ctx context.Context, req erpdto.CreateTransactionRequest) (*models.Transaction, error)
 }
 
@@ -17,7 +17,7 @@ type transactionService struct {
 	transactionRepo repository.TransactionRepo
 }
 
-func NewTransactionService(transactionRepo repository.TransactionRepo) TransactionService {
+func NewTransactionService(transactionRepo repository.TransactionRepo) ITransactionService {
 	return &transactionService{
 		transactionRepo: transactionRepo,
 	}

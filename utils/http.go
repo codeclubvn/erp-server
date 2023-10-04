@@ -41,7 +41,7 @@ func GetPageCount(total int64, limit int64) int64 {
 }
 func GetRequest[E any](c *gin.Context, req E) (E, error) {
 	if err := c.ShouldBindJSON(&req); err != nil {
-		return req, errors.New(api_errors.ErrValidation)
+		return req, err
 	}
 	return req, nil
 }

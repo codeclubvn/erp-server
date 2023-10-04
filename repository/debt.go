@@ -16,7 +16,7 @@ type debtRepo struct {
 	logger *zap.Logger
 }
 
-func NewDebtRepository(db *infrastructure.Database, logger *zap.Logger) DebtRepo {
+func NewDebtRepo(db *infrastructure.Database, logger *zap.Logger) DebtRepo {
 	return &debtRepo{
 		db:     db,
 		logger: logger,

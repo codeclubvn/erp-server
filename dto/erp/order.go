@@ -3,26 +3,26 @@ package erpdto
 import uuid "github.com/satori/go.uuid"
 
 type CreateOrderRequest struct {
-	Status string `json:"status"`
-	Note   string `json:"note"`
+	OrderId uuid.UUID
 
-	Amount        float64 `json:"amount" validate:"required"` // total amount of order items
-	Total         float64 `json:"total" validate:"required"`  // grand total
-	Payment       float64 `json:"payment" validate:"required"`
-	PaymentMethod string  `json:"payment_method" validate:"required"`
+	Status StatusCreateOrder `json:"status" binding:"required"` // confirmed, delivered, completed, canceled
+	Note   *string           `json:"note"`                      // note for order
 
-	CustomerID uuid.UUID `json:"customer_id"`
-	Code       string    `json:"code"`
+	Amount        float64 `json:"amount"` // total amount of order items
+	Total         float64 `json:"total"`  // grand total
+	Payment       float64 `json:"payment"`
+	PaymentMethod string  `json:"payment_method" binding:"required"`
 
-	ContactId   uuid.UUID `json:"contact_id"`
-	DeliveryFee float64   `json:"delivery_fee"`
+	CustomerId *string `json:"customer_id"`
+	Code       string
 
-	Discount     float64 `json:"discount"`
-	DiscountType string  `json:"discount_type"`
+	DeliveryFee *float64 `json:"delivery_fee"`
 
-	PromoteFee  float64   `json:"promote_fee"`
-	PromoteType string    `json:"promote_type"`
-	PromoteId   uuid.UUID `json:"promote_id"`
+	Discount     *float64     `json:"discount"`
+	DiscountType DiscountType `json:"discount_type"`
+
+	PromoteCode *string `json:"promote_code"`
+	PromoteFee  *float64
 
 	OrderItems []OrderItemRequest `json:"order_items"`
 
@@ -30,19 +30,51 @@ type CreateOrderRequest struct {
 }
 
 type OrderItemRequest struct {
-	ProductId uuid.UUID `json:"product_id" validate:"required"`
-	Quantity  float64   `json:"quantity" validate:"required"`
-	Price     float64   `json:"price" validate:"required"`
-
-	PromoteFee float64   `json:"promote_fee"`
-	PromoteId  uuid.UUID `json:"promote_id"`
-
-	OrderItems []OrderItem `json:"order_items"`
+	ProductId uuid.UUID `json:"product_id" binding:"required"`
+	Quantity  int       `json:"quantity" binding:"required"`
+	Price     float64   `json:"price" binding:"required"`
 }
 
-type OrderItem struct {
-	ProductId uuid.UUID `json:"product_id"`
-	Quantity  float64   `json:"quantity"`
-	Price     float64   `json:"price"`
-	Amount    float64   `json:"amount"`
+// enum promote method
+type DiscountType string
+
+const (
+	DiscountPercent DiscountType = "percent"
+	DiscountAmount  DiscountType = "amount"
+)
+
+func (u DiscountType) ErrorMessage() string {
+	return "Error: DiscountType expected [percent,amount]"
+}
+
+func (d DiscountType) CheckValid() bool {
+	tCheck := []DiscountType{DiscountPercent, DiscountAmount}
+	for _, v := range tCheck {
+		if v == d {
+			return true
+		}
+	}
+	return false
+}
+
+// enum status order
+type StatusCreateOrder string
+
+const (
+	Delivery StatusCreateOrder = "delivered"
+	Complete StatusCreateOrder = "completed"
+)
+
+func (u StatusCreateOrder) ErrorMessage() string {
+	return "Error: Status expected [delivered,completed]"
+}
+
+func (d StatusCreateOrder) CheckValid() bool {
+	tCheck := []StatusCreateOrder{Delivery, Complete}
+	for _, v := range tCheck {
+		if v == d {
+			return true
+		}
+	}
+	return false
 }

@@ -10,11 +10,11 @@ import (
 )
 
 type ERPProductController struct {
-	productService service.ERPProductService
+	productService service.IProductService
 	api.BaseController
 }
 
-func NewERPProductController(productService service.ERPProductService) *ERPProductController {
+func NewERPProductController(productService service.IProductService) *ERPProductController {
 	return &ERPProductController{
 		productService: productService,
 	}
@@ -26,6 +26,8 @@ func (b *ERPProductController) Create(c *gin.Context) {
 		b.ResponseValidationError(c, err)
 		return
 	}
+
+	req.StoreId = utils.GetStoreIDFromContext(c.Request.Context())
 
 	res, err := b.productService.Create(c, req)
 	if err != nil {

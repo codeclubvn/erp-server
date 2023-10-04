@@ -11,7 +11,8 @@ import (
 
 type ERPProductRepository interface {
 	Create(ctx context.Context, ERPProduct *models.Product) (err error)
-	Update(ctx context.Context, product *models.Product) (err error)
+	Update(ctx context.Context, tx *TX, product *models.Product) (err error)
+	UpdateMulti(ctx context.Context, product []*models.Product) (err error)
 	Delete(ctx context.Context, id string) (err error)
 	GetOneByID(ctx context.Context, id string) (res *models.Product, err error)
 	GetList(ctx context.Context, product erpdto.GetListProductRequest) (res []*models.Product, total *int64, err error)
@@ -26,42 +27,36 @@ func NewERPProductRepository(db *infrastructure.Database) ERPProductRepository {
 	return &productRepo{db}
 }
 
-func (u *productRepo) Create(ctx context.Context, product *models.Product) (err error) {
-	currentUID, err := utils.GetUserUUIDFromContext(ctx)
-	if err != nil {
-		return err
-	}
-	product.UpdaterID = currentUID
-
-	err = u.db.Create(&product).Error
+func (r *productRepo) Create(ctx context.Context, product *models.Product) (err error) {
+	err = r.db.Create(&product).Error
 	return errors.Wrap(err, "create product failed")
 }
 
-func (u *productRepo) Update(ctx context.Context, product *models.Product) (err error) {
-	currentUID, err := utils.GetUserUUIDFromContext(ctx)
-	if err != nil {
-		return err
-	}
-	product.UpdaterID = currentUID
-
-	err = u.db.Updates(&product).Error
+func (r *productRepo) Update(ctx context.Context, tx *TX, product *models.Product) (err error) {
+	tx = GetTX(tx, *r.db)
+	err = tx.db.Updates(&product).Error
 	return errors.Wrap(err, "update product failed")
 }
 
-func (u *productRepo) Delete(ctx context.Context, id string) (err error) {
-	if err := u.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Product{}).Error; err != nil {
+func (r *productRepo) UpdateMulti(ctx context.Context, product []*models.Product) (err error) {
+	err = r.db.Updates(&product).Error
+	return errors.Wrap(err, "update product failed")
+}
+
+func (r *productRepo) Delete(ctx context.Context, id string) (err error) {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Product{}).Error; err != nil {
 		return errors.Wrap(err, "Delete product failed")
 	}
 	return nil
 }
 
-func (u *productRepo) GetOneByID(ctx context.Context, id string) (res *models.Product, err error) {
-	err = u.db.Where("id = ?", id).First(&res).Error
+func (r *productRepo) GetOneByID(ctx context.Context, id string) (res *models.Product, err error) {
+	err = r.db.Where("id = ?", id).First(&res).Error
 	return res, errors.Wrap(err, "get product by id failed")
 }
 
-func (u *productRepo) GetList(ctx context.Context, req erpdto.GetListProductRequest) (res []*models.Product, total *int64, err error) {
-	query := u.db.Model(&models.Product{})
+func (r *productRepo) GetList(ctx context.Context, req erpdto.GetListProductRequest) (res []*models.Product, total *int64, err error) {
+	query := r.db.Model(&models.Product{})
 	if req.Search != "" {
 		query = query.Where("name like ?", "%"+req.Search+"%")
 	}
@@ -77,8 +72,8 @@ func (u *productRepo) GetList(ctx context.Context, req erpdto.GetListProductRequ
 	return res, total, err
 }
 
-func (u *productRepo) GetListProductById(ctx context.Context, productIds []string, storeId string) (res []*models.Product, err error) {
-	if err = u.db.Model(&models.Product{}).Where("id in (?) and store_id = ?", productIds, storeId).Error; err != nil {
+func (r *productRepo) GetListProductById(ctx context.Context, productIds []string, storeId string) (res []*models.Product, err error) {
+	if err = r.db.Model(&models.Product{}).Where("store_id = ? and id in (?)", storeId, productIds).Find(&res).Error; err != nil {
 		return nil, errors.Wrap(err, "get product by id failed")
 	}
 	return res, nil

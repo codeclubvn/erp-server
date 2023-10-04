@@ -9,7 +9,7 @@ import (
 	"log"
 )
 
-type DebtService interface {
+type IDebtService interface {
 	Create(ctx context.Context, req erpdto.CreateDebtRequest) (*models.Debt, error)
 }
 
@@ -17,7 +17,7 @@ type debtService struct {
 	debtRepo repository.DebtRepo
 }
 
-func NewDebtService(debtRepo repository.DebtRepo) DebtService {
+func NewDebtService(debtRepo repository.DebtRepo) IDebtService {
 	return &debtService{
 		debtRepo: debtRepo,
 	}

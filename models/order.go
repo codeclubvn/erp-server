@@ -11,15 +11,15 @@ type Order struct {
 
 	Amount        float64 `json:"amount" gorm:"default:0.0"`
 	Total         float64 `json:"total" gorm:"default:0.0"`
-	Payment       float64 `json:"payment"`
-	PaymentMethod string  `json:"payment_method"`
+	Payment       float64 `json:"payment" gorm:"default:0.0"`
+	PaymentMethod string  `json:"payment_method" gorm:"not null"`
 
-	ContactId   uuid.UUID `json:"contact_id"`
-	DeliveryFee float64   `json:"delivery_fee"`
+	CustomerId  *uuid.UUID `json:"customer_id,omitempty" gorm:"default:null;"`
+	DeliveryFee *float64   `json:"delivery_fee,omitempty"`
 
-	Discount     float64 `json:"discount"`
-	DiscountType string  `json:"discount_type"`
+	Discount     *float64 `json:"discount,omitempty"`
+	DiscountType string   `json:"discount_type" gorm:"default:null;"`
 
-	PromoteFee float64   `json:"promote_fee"`
-	PromoteId  uuid.UUID `json:"promote_id"`
+	PromoteFee  *float64 `json:"promote_fee,omitempty"`
+	PromoteCode *string  `json:"promote_code,omitempty"`
 }

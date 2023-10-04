@@ -11,5 +11,4 @@ var Module = fx.Options(fx.Provide(
 	NewJwtService,
 	erpservice.NewCategoryService,
 	erpservice.NewCategoryProductService,
-	erpservice.NewERPProductService,
 ), erpservice.Module)

@@ -35,7 +35,7 @@ func (p *erpOrderRepository) Create(ctx context.Context, order *models.Order) er
 	order.UpdaterID = currentUID
 
 	if err := p.db.WithContext(ctx).Create(order).Error; err != nil {
-		return errors.Wrap(err, "Create order failed")
+		return errors.Wrap(err, "CreateFlow order failed")
 	}
 
 	return nil

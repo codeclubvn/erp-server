@@ -6,13 +6,14 @@ import (
 )
 
 type CreateProductRequest struct {
-	UserId      string  `json:"user_id"`
-	Name        string  `json:"name"`
+	UserId      string
+	Name        string  `json:"name" binding:"required"`
 	Description string  `json:"description"`
 	Image       string  `json:"image"`
-	Price       float64 `json:"price"`
+	Price       float64 `json:"price" binding:"required,numeric,gte=0"` // gte: greater than or equal
 	Status      bool    `json:"status"`
-	Quantity    int     `json:"quantity"`
+	Quantity    *int    `json:"quantity"`
+	StoreId     string
 }
 
 type UpdateProductRequest struct {
