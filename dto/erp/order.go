@@ -5,11 +5,11 @@ import uuid "github.com/satori/go.uuid"
 type CreateOrderRequest struct {
 	OrderId uuid.UUID
 
-	Status StatusCreateOrder `json:"status" binding:"required"` // confirmed, delivered, completed, canceled
-	Note   *string           `json:"note"`                      // note for order
+	Status StatusOrder `json:"status" binding:"required"` // confirm, delivery, complete, cancel
+	Note   *string     `json:"note"`                      // note for order
 
-	Amount        float64 `json:"amount"` // total amount of order items
-	Total         float64 `json:"total"`  // grand total
+	Amount        float64 // total amount of order items
+	Total         float64 `json:"total"` // grand total
 	Payment       float64 `json:"payment"`
 	PaymentMethod string  `json:"payment_method" binding:"required"`
 
@@ -32,7 +32,6 @@ type CreateOrderRequest struct {
 type OrderItemRequest struct {
 	ProductId uuid.UUID `json:"product_id" binding:"required"`
 	Quantity  int       `json:"quantity" binding:"required"`
-	Price     float64   `json:"price" binding:"required"`
 }
 
 // enum promote method
@@ -58,23 +57,36 @@ func (d DiscountType) CheckValid() bool {
 }
 
 // enum status order
-type StatusCreateOrder string
+type StatusOrder string
 
 const (
-	Delivery StatusCreateOrder = "delivered"
-	Complete StatusCreateOrder = "completed"
+	OrderDelivery StatusOrder = "delivery"
+	OrderComplete StatusOrder = "complete"
+	OrderCancel   StatusOrder = "cancel"
 )
 
-func (u StatusCreateOrder) ErrorMessage() string {
-	return "Error: Status expected [delivered,completed]"
+func (u StatusOrder) ErrorCreateMessage() string {
+	return "Error: Status expected [delivery,complete]"
 }
 
-func (d StatusCreateOrder) CheckValid() bool {
-	tCheck := []StatusCreateOrder{Delivery, Complete}
+func (u StatusOrder) ErrorUpdateMessage() string {
+	return "Error: Status expected [delivery,complete, cancel]"
+}
+
+func (d StatusOrder) CheckValid() bool {
+	tCheck := []StatusOrder{OrderDelivery, OrderComplete, OrderCancel}
 	for _, v := range tCheck {
 		if v == d {
 			return true
 		}
 	}
 	return false
+}
+
+type UpdateOrderRequest struct {
+	OrderId uuid.UUID `json:"order_id" binding:"required"`
+
+	Status  StatusOrder `json:"status" binding:"required"` // confirm, delivery, complete, cancel
+	Payment float64     `json:"payment"`
+	StoreId string
 }

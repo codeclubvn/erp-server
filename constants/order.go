@@ -15,4 +15,9 @@ const (
 	TransactionStatusOut = "out"
 
 	InActive = "inactive"
+
+	Confirm  = "confirm"
+	Delivery = "delivery"
+	Complete = "complete"
+	Cancel   = "cancel"
 )

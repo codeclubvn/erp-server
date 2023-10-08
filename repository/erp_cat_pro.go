@@ -44,7 +44,7 @@ func (u *catProRepo) Update(ctx context.Context, categoryProduct *models.Categor
 	categoryProduct.UpdaterID = currentUID
 
 	err = u.db.Updates(&categoryProduct).Error
-	return errors.Wrap(err, "Update category_product failed")
+	return errors.Wrap(err, "UpdateById category_product failed")
 }
 
 func (u *catProRepo) Delete(ctx context.Context, id string) (err error) {

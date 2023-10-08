@@ -8,3 +8,11 @@ type CreateDebtRequest struct {
 	Status     string    `json:"status"`
 	CustomerId uuid.UUID `json:"customer_id"`
 }
+
+type UpdateDebtRequest struct {
+	ID         uuid.UUID `json:"id"`
+	OrderId    uuid.UUID `json:"order_id"`
+	Amount     float64   `json:"amount"`
+	Status     string    `json:"status"`
+	CustomerId uuid.UUID `json:"customer_id"`
+}

@@ -45,7 +45,7 @@ func (h *OrderController) Create(c *gin.Context) {
 
 	if ok := req.Status.CheckValid(); !ok {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": req.Status.ErrorMessage(),
+			"error": req.Status.ErrorCreateMessage(),
 		})
 		return
 	}
@@ -62,6 +62,33 @@ func (h *OrderController) Create(c *gin.Context) {
 	}
 
 	h.Response(c, http.StatusCreated, "Success", order)
+}
+
+func (h *OrderController) Update(c *gin.Context) {
+	req, err := utils.GetRequest(c, erpdto.UpdateOrderRequest{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	req.StoreId = utils.GetStoreIDFromContext(c.Request.Context())
+
+	if ok := req.Status.CheckValid(); !ok {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": req.Status.ErrorUpdateMessage(),
+		})
+		return
+	}
+
+	order, err := h.orderService.UpdateFlow(c.Request.Context(), req)
+	if err != nil {
+		h.ResponseError(c, err)
+		return
+	}
+
+	h.Response(c, http.StatusOK, "Success", order)
 }
 
 func (h *OrderController) validateOrderItem(req []erpdto.OrderItemRequest) (err error) {

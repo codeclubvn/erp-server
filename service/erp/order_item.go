@@ -11,7 +11,8 @@ import (
 )
 
 type IOrderItemService interface {
-	CreateOrderItemFlow(ctx context.Context, req []erpdto.OrderItemRequest, orderId uuid.UUID) error
+	CreateOrderItemFlow(tx *repository.TX, ctx context.Context, req []erpdto.OrderItemRequest, orderId uuid.UUID) error
+	GetOrderItemByOrderId(ctx context.Context, orderId string) ([]*models.OrderItem, error)
 }
 
 type orderItemService struct {
@@ -28,15 +29,15 @@ func NewOrderItemService(orderItemRepo repository.OrderItemRepo, db *infrastruct
 	}
 }
 
-func (s *orderItemService) CreateOrderItemFlow(ctx context.Context, req []erpdto.OrderItemRequest, orderId uuid.UUID) error {
-	orderItem, err := s.mapOrderItem(ctx, req, orderId)
+func (s *orderItemService) CreateOrderItemFlow(tx *repository.TX, ctx context.Context, req []erpdto.OrderItemRequest, orderId uuid.UUID) error {
+	orderItem, err := s.mapCreateOrderItem(ctx, req, orderId)
 	if err != nil {
 		return err
 	}
-	return s.orderItemRepo.CreateMultiple(ctx, orderItem)
+	return s.orderItemRepo.CreateMultiple(tx, ctx, orderItem)
 }
 
-func (s *orderItemService) mapOrderItem(ctx context.Context, req []erpdto.OrderItemRequest, orderId uuid.UUID) ([]*models.OrderItem, error) {
+func (s *orderItemService) mapCreateOrderItem(ctx context.Context, req []erpdto.OrderItemRequest, orderId uuid.UUID) ([]*models.OrderItem, error) {
 	orderItem := []*models.OrderItem{}
 	for _, item := range req {
 		orderItem = append(orderItem, &models.OrderItem{
@@ -48,6 +49,6 @@ func (s *orderItemService) mapOrderItem(ctx context.Context, req []erpdto.OrderI
 	return orderItem, nil
 }
 
-func (s *orderItemService) create(ctx context.Context, req []*models.OrderItem) error {
-	return s.orderItemRepo.CreateMultiple(ctx, req)
+func (s *orderItemService) GetOrderItemByOrderId(ctx context.Context, orderId string) ([]*models.OrderItem, error) {
+	return s.orderItemRepo.GetOrderItemByOrderId(ctx, orderId)
 }

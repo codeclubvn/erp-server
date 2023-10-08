@@ -36,6 +36,7 @@ var (
 	ErrProductInvalid              = "10030"
 	ErrPromoteCodeMaxUse           = "10031"
 	ErrPromoteCodeRequiredCustomer = "10032"
+	ErrOrderStatus                 = "10033"
 )
 
 type MessageAndStatus struct {
@@ -77,4 +78,5 @@ var MapErrorCodeMessage = map[string]MessageAndStatus{
 	ErrProductInvalid:              {"Product is invalid", http.StatusBadRequest},
 	ErrPromoteCodeMaxUse:           {"Promote code max used", http.StatusBadRequest},
 	ErrPromoteCodeRequiredCustomer: {"Promote code is required customer", http.StatusBadRequest},
+	ErrOrderStatus:                 {"Order status invalid", http.StatusBadRequest},
 }
