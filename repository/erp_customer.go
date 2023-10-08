@@ -71,7 +71,7 @@ func (p *erpCustomerRepository) Update(ctx context.Context, customer *models.Cus
 
 	if err := p.db.WithContext(ctx).Updates(&customer).Error; err != nil {
 		fmt.Println(err)
-		return nil, errors.Wrap(err, "Update customer failed")
+		return nil, errors.Wrap(err, "UpdateById customer failed")
 	}
 
 	return customer, nil

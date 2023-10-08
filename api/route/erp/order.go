@@ -13,6 +13,7 @@ func NewOrderRoutes(handler *ERPHandler, controller *erpcontroller.OrderControll
 	g := handler.Group("/orders")
 
 	g.POST("/", middleware.Auth(true), controller.Create)
+	g.PUT("/", middleware.Auth(true), controller.Update)
 
 	return &OrderRoutes{
 		handler: handler,

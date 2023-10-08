@@ -43,12 +43,8 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 
 		claims, err := parseToken(jwtToken, e.config.Jwt.Secret)
 		if err != nil {
-			c.Errors = append(c.Errors, &gin.Error{
-				Err: errors.WithStack(err),
-			})
-			mas := api_errors.MapErrorCodeMessage[err.Error()]
-			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
-				Message: mas.Message,
+			c.AbortWithStatusJSON(http.StatusUnauthorized, response.ResponseError{
+				Message: err.Error(),
 				Code:    api_errors.ErrTokenInvalid,
 			})
 			return

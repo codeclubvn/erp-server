@@ -10,7 +10,10 @@ import (
 )
 
 type IDebtService interface {
-	Create(ctx context.Context, req erpdto.CreateDebtRequest) (*models.Debt, error)
+	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateDebtRequest) (*models.Debt, error)
+	Update(tx *repository.TX, ctx context.Context, debt *models.Debt) error
+	Delete(ctx context.Context, id string) error
+	GetDebtByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Debt, error)
 }
 
 type debtService struct {
@@ -23,7 +26,7 @@ func NewDebtService(debtRepo repository.DebtRepo) IDebtService {
 	}
 }
 
-func (s *debtService) Create(ctx context.Context, req erpdto.CreateDebtRequest) (*models.Debt, error) {
+func (s *debtService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateDebtRequest) (*models.Debt, error) {
 	debt := &models.Debt{}
 
 	if err := copier.Copy(&debt, &req); err != nil {
@@ -31,9 +34,21 @@ func (s *debtService) Create(ctx context.Context, req erpdto.CreateDebtRequest) 
 		return nil, err
 	}
 
-	if err := s.debtRepo.Create(ctx, debt); err != nil {
+	if err := s.debtRepo.Create(tx, ctx, debt); err != nil {
 		return nil, err
 	}
 
 	return debt, nil
+}
+
+func (s *debtService) GetDebtByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Debt, error) {
+	return s.debtRepo.GetDebtByOrderId(tx, ctx, orderId)
+}
+
+func (s *debtService) Update(tx *repository.TX, ctx context.Context, debt *models.Debt) error {
+	return s.debtRepo.UpdateById(tx, ctx, debt)
+}
+
+func (s *debtService) Delete(ctx context.Context, id string) error {
+	return s.debtRepo.Delete(ctx, id)
 }

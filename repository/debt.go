@@ -8,7 +8,10 @@ import (
 )
 
 type DebtRepo interface {
-	Create(ctx context.Context, trans *models.Debt) error
+	Create(tx *TX, ctx context.Context, debt *models.Debt) error
+	UpdateById(tx *TX, ctx context.Context, debt *models.Debt) error
+	Delete(ctx context.Context, id string) error
+	GetDebtByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Debt, error)
 }
 
 type debtRepo struct {
@@ -23,6 +26,23 @@ func NewDebtRepo(db *infrastructure.Database, logger *zap.Logger) DebtRepo {
 	}
 }
 
-func (p *debtRepo) Create(ctx context.Context, trans *models.Debt) error {
-	return p.db.WithContext(ctx).Create(trans).Error
+func (r *debtRepo) Create(tx *TX, ctx context.Context, debt *models.Debt) error {
+	return tx.db.WithContext(ctx).Create(debt).Error
+}
+
+func (r *debtRepo) UpdateById(tx *TX, ctx context.Context, debt *models.Debt) error {
+	return tx.db.WithContext(ctx).Where("id = ?", debt.ID).Updates(debt).Error
+}
+
+func (r *debtRepo) GetDebtByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Debt, error) {
+	debt := &models.Debt{}
+	if err := r.db.WithContext(ctx).Where("order_id = ?", orderId).First(debt).Error; err != nil {
+		return nil, err
+	}
+
+	return debt, nil
+}
+
+func (r *debtRepo) Delete(ctx context.Context, id string) error {
+	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Debt{}).Error
 }

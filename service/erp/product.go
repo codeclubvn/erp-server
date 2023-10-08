@@ -16,7 +16,7 @@ type (
 	IProductService interface {
 		Create(ctx context.Context, req erpdto.CreateProductRequest) (*models.Product, error)
 		Update(ctx context.Context, req erpdto.UpdateProductRequest) (*models.Product, error)
-		UpdateMulti(ctx context.Context, req []*models.Product) error
+		UpdateMulti(tx *repository.TX, ctx context.Context, req []*models.Product) error
 		Delete(ctx context.Context, id string) error
 		GetOne(ctx context.Context, id string) (*models.Product, error)
 		GetList(ctx context.Context, req erpdto.GetListProductRequest) ([]*models.Product, *int64, error)
@@ -74,17 +74,11 @@ func (u *productService) Update(ctx context.Context, req erpdto.UpdateProductReq
 	return product, err
 }
 
-func (u *productService) UpdateMulti(ctx context.Context, req []*models.Product) error {
-	err := repository.WithTransaction(u.db, func(tx *repository.TX) error {
-		for _, product := range req {
-			if err := u.productRepo.Update(ctx, tx, product); err != nil {
-				return err
-			}
+func (u *productService) UpdateMulti(tx *repository.TX, ctx context.Context, req []*models.Product) error {
+	for _, product := range req {
+		if err := u.productRepo.Update(ctx, tx, product); err != nil {
+			return err
 		}
-		return nil
-	})
-	if err != nil {
-		return err
 	}
 	return nil
 }
