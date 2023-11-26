@@ -12,11 +12,11 @@ services:
 
 database:
   driver: 'postgres'
-  host: 'localhost'
+  host: 'host.docker.internal'
   port: 5432
-  username: 'erp-dev'
-  password: 'erp-dev'
-  name: 'erp-dev'
+  username: 'postgres'
+  password: 'password'
+  name: 'erp_server'
   sslmode: 'disable'
   timezone: 'Asia/Ho_Chi_Minh'
   maxOpenConnections: 10
