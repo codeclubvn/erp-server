@@ -1,0 +1,23 @@
+version: '3.9'
+services:
+  database:
+    image: postgres:16
+    container_name: erp_database
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: erp_server
+    ports:
+      - 5432:5432
+
+  server:
+    image: erp_server:latest
+    container_name: erp_server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8008:8008
+    depends_on:
+      - database
+    restart: always
