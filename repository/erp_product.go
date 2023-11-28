@@ -15,7 +15,7 @@ type ERPProductRepository interface {
 	UpdateMulti(ctx context.Context, product []*models.Product) (err error)
 	Delete(ctx context.Context, id string) (err error)
 	GetOneByID(ctx context.Context, id string) (res *models.Product, err error)
-	GetList(ctx context.Context, product erpdto.GetListProductRequest) (res []*models.Product, total *int64, err error)
+	GetList(ctx context.Context, req erpdto.GetListProductRequest) (res []*models.Product, total int64, err error)
 	GetListProductById(ctx context.Context, productIds []string, storeId string) (res []*models.Product, err error)
 }
 
@@ -52,13 +52,13 @@ func (r *productRepo) Delete(ctx context.Context, id string) (err error) {
 
 func (r *productRepo) GetOneByID(ctx context.Context, id string) (res *models.Product, err error) {
 	err = r.db.Where("id = ?", id).First(&res).Error
-	return res, errors.Wrap(err, "get product by id failed")
+	return res, err
 }
 
-func (r *productRepo) GetList(ctx context.Context, req erpdto.GetListProductRequest) (res []*models.Product, total *int64, err error) {
+func (r *productRepo) GetList(ctx context.Context, req erpdto.GetListProductRequest) (res []*models.Product, total int64, err error) {
 	query := r.db.Model(&models.Product{})
 	if req.Search != "" {
-		query = query.Where("name like ?", "%"+req.Search+"%")
+		query = query.Where("name ilike ?", "%"+req.Search+"%")
 	}
 
 	switch req.Sort {
@@ -66,8 +66,8 @@ func (r *productRepo) GetList(ctx context.Context, req erpdto.GetListProductRequ
 		query = query.Order(req.Sort)
 	}
 
-	if err = utils.QueryPagination(query, req.PageOptions, &res).Count(total).Error(); err != nil {
-		return nil, nil, errors.WithStack(err)
+	if err = utils.QueryPagination(query, req.PageOptions, &res).Count(&total).Error(); err != nil {
+		return nil, 0, errors.WithStack(err)
 	}
 	return res, total, err
 }

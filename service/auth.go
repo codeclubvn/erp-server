@@ -4,7 +4,6 @@ import (
 	"context"
 	"erp/api_errors"
 	config "erp/config"
-	"erp/constants"
 	dto "erp/dto/auth"
 	models "erp/models"
 
@@ -61,12 +60,12 @@ func (a *authService) Login(ctx context.Context, req dto.LoginRequest) (res *dto
 		return nil, err
 	}
 
-	if req.RequestFrom == string(constants.Erp) {
-		// account is not for erp will not have role id
-		if user.RoleID == nil {
-			return nil, errors.New(api_errors.ErrUnauthorizedAccess)
-		}
-	}
+	//if req.RequestFrom == string(constants.Erp) {
+	//	// account is not for erp will not have role id
+	//	if user.RoleID == nil {
+	//		return nil, errors.New(api_errors.ErrUnauthorizedAccess)
+	//	}
+	//}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 

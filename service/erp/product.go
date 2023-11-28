@@ -19,7 +19,7 @@ type (
 		UpdateMulti(tx *repository.TX, ctx context.Context, req []*models.Product) error
 		Delete(ctx context.Context, id string) error
 		GetOne(ctx context.Context, id string) (*models.Product, error)
-		GetList(ctx context.Context, req erpdto.GetListProductRequest) ([]*models.Product, *int64, error)
+		GetList(ctx context.Context, req erpdto.GetListProductRequest) ([]*models.Product, int64, error)
 		GetListProductById(ctx context.Context, productIds []string, storeId string) ([]*models.Product, error)
 	}
 	productService struct {
@@ -91,7 +91,7 @@ func (u *productService) GetOne(ctx context.Context, id string) (*models.Product
 	return u.productRepo.GetOneByID(ctx, id)
 }
 
-func (u *productService) GetList(ctx context.Context, req erpdto.GetListProductRequest) ([]*models.Product, *int64, error) {
+func (u *productService) GetList(ctx context.Context, req erpdto.GetListProductRequest) ([]*models.Product, int64, error) {
 	return u.productRepo.GetList(ctx, req)
 }
 

@@ -3,9 +3,9 @@ package dto
 import uuid "github.com/satori/go.uuid"
 
 type LoginRequest struct {
-	Email       string `json:"email" binding:"required" validate:"email"`
-	Password    string `json:"password" binding:"required" validate:"min=6,max=20"`
-	RequestFrom string `json:"request_from" binding:"required" enums:"erp/,web,app"`
+	Email    string `json:"email" binding:"required" validate:"email"`
+	Password string `json:"password" binding:"required" validate:"min=6,max=20"`
+	//RequestFrom string `json:"request_from" binding:"required" enums:"erp/,web,app"`
 }
 
 type LoginResponse struct {

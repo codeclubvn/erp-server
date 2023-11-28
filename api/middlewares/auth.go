@@ -5,7 +5,6 @@ import (
 	"erp/api/response"
 	"erp/api_errors"
 	dto "erp/dto/auth"
-	"erp/models"
 	"net/http"
 	"strings"
 
@@ -56,69 +55,69 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 			return
 		}
 
-		storeID := c.Request.Header.Get("x-store-id")
-		if storeID == "" {
-			c.Errors = append(c.Errors, &gin.Error{
-				Err: errors.New(api_errors.ErrMissingXStoreID),
-			})
+		//storeID := c.Request.Header.Get("x-store-id")
+		//if storeID == "" {
+		//	c.Errors = append(c.Errors, &gin.Error{
+		//		Err: errors.New(api_errors.ErrMissingXStoreID),
+		//	})
+		//
+		//	mas := api_errors.MapErrorCodeMessage[api_errors.ErrMissingXStoreID]
+		//
+		//	c.AbortWithStatusJSON(mas.Status, response.ResponseError{
+		//		Message: mas.Message,
+		//		Code:    api_errors.ErrMissingXStoreID,
+		//	})
+		//	return
+		//}
+		//c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), "x-store-id", storeID))
 
-			mas := api_errors.MapErrorCodeMessage[api_errors.ErrMissingXStoreID]
+		//ur := new(models.UserRole)
+		//if err = e.db.Model(models.UserRole{}).Where("user_id = ? AND store_id = ?", claims.Subject, storeID).First(ur).Error; err != nil {
+		//	c.Errors = append(c.Errors, &gin.Error{
+		//		Err: errors.Wrap(err, "cannot find user role"),
+		//	})
+		//
+		//	mas := api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess]
+		//
+		//	c.AbortWithStatusJSON(mas.Status, response.ResponseError{
+		//		Message: mas.Message,
+		//		Code:    api_errors.ErrUnauthorizedAccess,
+		//	})
+		//	return
+		//}
+		//if ur.IsStoreOwner {
+		//	c.Next()
+		//	return
+		//}
 
-			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
-				Message: mas.Message,
-				Code:    api_errors.ErrMissingXStoreID,
-			})
-			return
-		}
-		c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), "x-store-id", storeID))
-
-		ur := new(models.UserRole)
-		if err = e.db.Model(models.UserRole{}).Where("user_id = ? AND store_id = ?", claims.Subject, storeID).First(ur).Error; err != nil {
-			c.Errors = append(c.Errors, &gin.Error{
-				Err: errors.Wrap(err, "cannot find user role"),
-			})
-
-			mas := api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess]
-
-			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
-				Message: mas.Message,
-				Code:    api_errors.ErrUnauthorizedAccess,
-			})
-			return
-		}
-		if ur.IsStoreOwner {
-			c.Next()
-			return
-		}
-
-		role := new(models.Role)
-		if err = e.db.Model(models.Role{}).Where("id = ?", ur.RoleID).First(role).Error; err != nil {
-			c.Errors = append(c.Errors, &gin.Error{
-				Err: errors.Wrap(err, "cannot find role"),
-			})
-
-			mas := api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess]
-
-			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
-				Message: mas.Message,
-				Code:    api_errors.ErrUnauthorizedAccess,
-			})
-			return
-		}
-		up := new(models.Permission)
-		if err = e.db.Model(models.Permission{}).Where("role_id = ? AND route_path = ?", ur.RoleID, c.Request.URL.Path).First(up).Error; err != nil {
-			c.Errors = append(c.Errors, &gin.Error{
-				Err: errors.Wrap(err, "cannot find permission"),
-			})
-
-			mas := api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess]
-
-			c.AbortWithStatusJSON(mas.Status, response.ResponseError{
-				Message: mas.Message,
-				Code:    api_errors.ErrUnauthorizedAccess,
-			})
-			return
-		}
+		//role := new(models.Role)
+		//if err = e.db.Model(models.Role{}).Where("id = ?", ur.RoleID).First(role).Error; err != nil {
+		//	c.Errors = append(c.Errors, &gin.Error{
+		//		Err: errors.Wrap(err, "cannot find role"),
+		//	})
+		//
+		//	mas := api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess]
+		//
+		//	c.AbortWithStatusJSON(mas.Status, response.ResponseError{
+		//		Message: mas.Message,
+		//		Code:    api_errors.ErrUnauthorizedAccess,
+		//	})
+		//	return
+		//}
+		//up := new(models.Permission)
+		//if err = e.db.Model(models.Permission{}).Where("role_id = ? AND route_path = ?", ur.RoleID, c.Request.URL.Path).First(up).Error; err != nil {
+		//	c.Errors = append(c.Errors, &gin.Error{
+		//		Err: errors.Wrap(err, "cannot find permission"),
+		//	})
+		//
+		//	mas := api_errors.MapErrorCodeMessage[api_errors.ErrUnauthorizedAccess]
+		//
+		//	c.AbortWithStatusJSON(mas.Status, response.ResponseError{
+		//		Message: mas.Message,
+		//		Code:    api_errors.ErrUnauthorizedAccess,
+		//	})
+		//	return
+		//}
 
 		c.Next()
 	}
