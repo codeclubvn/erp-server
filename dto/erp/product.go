@@ -11,7 +11,7 @@ type CreateProductRequest struct {
 	Description string  `json:"description"`
 	Image       string  `json:"image"`
 	Price       float64 `json:"price" binding:"required,numeric,gte=0"` // gte: greater than or equal
-	Status      bool    `json:"status"`
+	Status      bool    `json:"status"`                                 // true: active, false: inactive
 	Quantity    *int    `json:"quantity"`
 	StoreId     string
 }

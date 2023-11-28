@@ -27,7 +27,7 @@ func (b *ERPProductController) Create(c *gin.Context) {
 		return
 	}
 
-	req.StoreId = utils.GetStoreIDFromContext(c.Request.Context())
+	//req.StoreId = utils.GetStoreIDFromContext(c.Request.Context())
 
 	res, err := b.productService.Create(c, req)
 	if err != nil {
@@ -83,5 +83,5 @@ func (b *ERPProductController) GetList(c *gin.Context) {
 		b.ResponseError(c, err)
 		return
 	}
-	b.ResponseList(c, "success", total, res)
+	b.ResponseList(c, "success", &total, res)
 }
