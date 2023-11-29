@@ -69,6 +69,7 @@ func NewRoute(
 
 	handler.POST("/v1/order/", middleware.Auth(true), orderController.Create)
 	handler.PUT("/v1/order/", middleware.Auth(true), orderController.Update)
+	handler.GET("/v1/order/", middleware.Auth(true), orderController.GetList)
 
 	handler.POST("/v1/promote/", middleware.Auth(true), promoteController.Create)
 

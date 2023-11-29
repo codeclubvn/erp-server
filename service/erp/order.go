@@ -19,6 +19,7 @@ import (
 type OrderService interface {
 	CreateFlow(ctx context.Context, req erpdto.CreateOrderRequest) (*models.Order, error)
 	UpdateFlow(ctx context.Context, req erpdto.UpdateOrderRequest) (*models.Order, error)
+	GetList(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.Order, error)
 }
 
 type erpOrderService struct {
@@ -70,7 +71,7 @@ func (s *erpOrderService) CreateFlow(ctx context.Context, req erpdto.CreateOrder
 	productIds, mapOrderItem := s.getProductIdsAndMapOrderItem(ctx, req.OrderItems)
 
 	// get list product
-	products, err := s.productService.GetListProductById(ctx, productIds, req.StoreId)
+	products, err := s.productService.GetListProductById(ctx, productIds)
 	if err != nil {
 		return nil, err
 	}
@@ -295,9 +296,13 @@ func (s *erpOrderService) handlePayment(tx *repository.TX, ctx context.Context, 
 	return nil
 }
 
-func (s *erpOrderService) GetDiscount(ctx context.Context, discountType erpdto.DiscountType, total, discountReq float64) (float64, error) {
+func (s *erpOrderService) GetDiscount(ctx context.Context, discountType *erpdto.DiscountType, total, discountReq float64) (float64, error) {
+	if discountType == nil {
+		return 0, nil
+	}
+
 	discount := discountReq
-	switch discountType {
+	switch *discountType {
 	case constants.TypePercent:
 		if discountReq <= 0 || discountReq > constants.MaxOfPercent {
 			return 0, errors.New(api_errors.ErrDiscountPercentInvalid)
@@ -451,14 +456,17 @@ func (s *erpOrderService) UpdateFlow(ctx context.Context, req erpdto.UpdateOrder
 	err = repository.WithTransaction(s.db, func(tx *repository.TX) error {
 
 		// if status == delivery, complete check payment
-		if err := s.handlePayment(tx, ctx, erpdto.CreateOrderRequest{
-			OrderId:    req.OrderId,
-			Status:     req.Status,
-			Payment:    req.Payment,
-			CustomerId: utils.StringPointer(order.CustomerId.String()),
-			Total:      order.Total,
-		}); err != nil {
-			return err
+		if order.CustomerId != nil {
+			customerId := utils.ValidUUID(order.CustomerId)
+			if err := s.handlePayment(tx, ctx, erpdto.CreateOrderRequest{
+				OrderId:    req.OrderId,
+				Status:     req.Status,
+				Payment:    req.Payment,
+				CustomerId: utils.StringPointer(customerId.String()),
+				Total:      order.Total,
+			}); err != nil {
+				return err
+			}
 		}
 		// if status == canceled, update order, update product quantity, sold
 		if req.Status == constants.Cancel {
@@ -520,7 +528,7 @@ func (s *erpOrderService) cancelOrder(tx *repository.TX, ctx context.Context, or
 	productIds, mapOrderItem := s.mapCancelOrderItem(orderItems)
 
 	// get product
-	products, err := s.productService.GetListProductById(ctx, productIds, order.StoreId.String())
+	products, err := s.productService.GetListProductById(ctx, productIds)
 
 	// update product quantity, sold
 	if err := s.updateCancelProQuantity(tx, ctx, products, mapOrderItem); err != nil {
@@ -584,4 +592,12 @@ func (s *erpOrderService) updateCancelProQuantity(tx *repository.TX, ctx context
 		return err
 	}
 	return nil
+}
+
+func (s *erpOrderService) GetList(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.Order, error) {
+	orders, err := s.erpOrderRepo.GetList(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return orders, nil
 }

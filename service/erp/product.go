@@ -20,7 +20,7 @@ type (
 		Delete(ctx context.Context, id string) error
 		GetOne(ctx context.Context, id string) (*models.Product, error)
 		GetList(ctx context.Context, req erpdto.GetListProductRequest) ([]*models.Product, int64, error)
-		GetListProductById(ctx context.Context, productIds []string, storeId string) ([]*models.Product, error)
+		GetListProductById(ctx context.Context, productIds []string) ([]*models.Product, error)
 	}
 	productService struct {
 		productRepo repository.ERPProductRepository
@@ -95,6 +95,6 @@ func (u *productService) GetList(ctx context.Context, req erpdto.GetListProductR
 	return u.productRepo.GetList(ctx, req)
 }
 
-func (u *productService) GetListProductById(ctx context.Context, productIds []string, storeId string) ([]*models.Product, error) {
-	return u.productRepo.GetListProductById(ctx, productIds, storeId)
+func (u *productService) GetListProductById(ctx context.Context, productIds []string) ([]*models.Product, error) {
+	return u.productRepo.GetListProductById(ctx, productIds)
 }

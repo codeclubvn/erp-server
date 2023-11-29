@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"erp/api_errors"
+	erpdto "erp/dto/erp"
 	"erp/infrastructure"
 	"erp/models"
 	"erp/utils"
@@ -15,6 +16,7 @@ type OrderRepo interface {
 	Create(tx *TX, ctx context.Context, order *models.Order) error
 	Update(tx *TX, ctx context.Context, order *models.Order) error
 	GetOrderById(ctx context.Context, id string) (*models.Order, error)
+	GetList(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.Order, error)
 }
 
 type erpOrderRepository struct {
@@ -47,4 +49,20 @@ func (r *erpOrderRepository) GetOrderById(ctx context.Context, id string) (*mode
 	}
 
 	return &res, nil
+}
+
+func (r *erpOrderRepository) GetList(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.Order, error) {
+	var res []*models.Order
+	var count int64
+	query := r.db.WithContext(ctx).Model(&models.Order{})
+
+	if err := query.Count(&count).Error; err != nil {
+		return nil, errors.Wrap(err, "Count order failed")
+	}
+
+	if err := query.Offset(req.Page).Limit(req.Limit).Find(&res).Error; err != nil {
+		return nil, errors.Wrap(err, "Find order failed")
+	}
+
+	return res, nil
 }

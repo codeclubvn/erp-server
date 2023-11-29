@@ -3,11 +3,11 @@ package bootstrap
 import (
 	controller "erp/api/controllers"
 	"erp/api/middlewares"
-	"erp/api/route"
 	config "erp/config"
 	infrastructure "erp/infrastructure"
 	"erp/lib"
 	repository "erp/repository"
+	"erp/route"
 	service "erp/service"
 	utils "erp/utils"
 

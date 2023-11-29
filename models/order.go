@@ -20,7 +20,7 @@ type Order struct {
 	Discount     *float64 `json:"discount,omitempty"`
 	DiscountType string   `json:"discount_type" gorm:"default:null;"`
 
-	PromoteFee  *float64  `json:"promote_fee,omitempty"`
-	PromoteCode *string   `json:"promote_code,omitempty"`
-	StoreId     uuid.UUID `json:"store_id" gorm:"not null"`
+	PromoteFee  *float64 `json:"promote_fee,omitempty"`
+	PromoteCode *string  `json:"promote_code,omitempty"`
+	//StoreId     uuid.UUID `json:"store_id" gorm:"not null"`
 }

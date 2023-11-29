@@ -55,7 +55,7 @@ var MapErrorCodeMessage = map[string]MessageAndStatus{
 	ErrPermissionDenied:  {"Permission Denied", http.StatusForbidden},
 	ErrInvalidPassword:   {"Invalid Password", http.StatusBadRequest},
 	ErrStoreNotFound:     {"Store Not Found", http.StatusNotFound},
-	ErrOrderItemRequired: {"Order Item Required", http.StatusBadRequest},
+	ErrOrderItemRequired: {"order_items Required", http.StatusBadRequest},
 	ErrTypeInvalid:       {"Only accept type 'percent' or 'amount'", http.StatusBadRequest},
 	ErrNotFound:          {"Status Not Found", http.StatusNotFound},
 	ErrDateNotBetween:    {"Date Not Between", http.StatusBadRequest},

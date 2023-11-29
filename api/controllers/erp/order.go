@@ -32,9 +32,9 @@ func (h *OrderController) Create(c *gin.Context) {
 		return
 	}
 
-	req.StoreId = utils.GetStoreIDFromContext(c.Request.Context())
+	//req.StoreId = utils.GetStoreIDFromContext(c.Request.Context())
 
-	if req.DiscountType != "" {
+	if req.DiscountType != nil {
 		if ok := req.DiscountType.CheckValid(); !ok {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": req.DiscountType.ErrorMessage(),
@@ -73,7 +73,7 @@ func (h *OrderController) Update(c *gin.Context) {
 		return
 	}
 
-	req.StoreId = utils.GetStoreIDFromContext(c.Request.Context())
+	//req.StoreId = utils.GetStoreIDFromContext(c.Request.Context())
 
 	if ok := req.Status.CheckValid(); !ok {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -89,6 +89,24 @@ func (h *OrderController) Update(c *gin.Context) {
 	}
 
 	h.Response(c, http.StatusOK, "Success", order)
+}
+
+func (h *OrderController) GetList(c *gin.Context) {
+	req, err := utils.GetRequest(c, erpdto.GetListOrderRequest{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	orders, err := h.orderService.GetList(c.Request.Context(), req)
+	if err != nil {
+		h.ResponseError(c, err)
+		return
+	}
+
+	h.Response(c, http.StatusOK, "Success", orders)
 }
 
 func (h *OrderController) validateOrderItem(req []erpdto.OrderItemRequest) (err error) {

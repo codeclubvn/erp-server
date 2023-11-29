@@ -4,29 +4,27 @@ import uuid "github.com/satori/go.uuid"
 
 type CreateOrderRequest struct {
 	OrderId uuid.UUID
+	Code    string
 
 	Status StatusOrder `json:"status" binding:"required"` // confirm, delivery, complete, cancel
-	Note   *string     `json:"note"`                      // note for order
 
-	Amount        float64 // total amount of order items
-	Total         float64 `json:"total"` // grand total
-	Payment       float64 `json:"payment"`
+	Note    *string `json:"note"` // note for order
+	Amount  float64 // tổng tiền của toàn bộ sản phẩm
+	Total   float64 `json:"total"`   // grand total
+	Payment float64 `json:"payment"` // COD | Online
+
 	PaymentMethod string  `json:"payment_method" binding:"required"`
-
-	CustomerId *string `json:"customer_id"`
-	Code       string
+	CustomerId    *string `json:"customer_id"`
 
 	DeliveryFee *float64 `json:"delivery_fee"`
 
-	Discount     *float64     `json:"discount"`
-	DiscountType DiscountType `json:"discount_type"`
+	Discount     *float64      `json:"discount"` // chiết khấu
+	DiscountType *DiscountType `json:"discount_type"`
 
-	PromoteCode *string `json:"promote_code"`
+	PromoteCode *string `json:"promote_code"` // mã giảm giá
 	PromoteFee  *float64
 
 	OrderItems []OrderItemRequest `json:"order_items"`
-
-	StoreId string
 }
 
 type OrderItemRequest struct {
@@ -89,4 +87,11 @@ type UpdateOrderRequest struct {
 	Status  StatusOrder `json:"status" binding:"required"` // confirm, delivery, complete, cancel
 	Payment float64     `json:"payment"`
 	StoreId string
+}
+
+type GetListOrderRequest struct {
+	Limit  int    `json:"limit" form:"limit"`
+	Page   int    `json:"page" form:"page"`
+	Sort   string `json:"sort" form:"sort"`
+	Search string `json:"search" form:"search"`
 }
