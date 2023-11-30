@@ -1,10 +1,10 @@
-package erpcontroller
+package controller
 
 import (
 	"erp/api"
 	"erp/api_errors"
 	erpdto "erp/dto/erp"
-	erpservice "erp/service/erp"
+	erpservice "erp/service"
 	"erp/utils"
 	"errors"
 
@@ -92,21 +92,30 @@ func (h *OrderController) Update(c *gin.Context) {
 }
 
 func (h *OrderController) GetList(c *gin.Context) {
-	req, err := utils.GetRequest(c, erpdto.GetListOrderRequest{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+	var req erpdto.GetListOrderRequest
+
+	if err := c.ShouldBindQuery(&req); err != nil {
+		h.ResponseValidationError(c, err)
 		return
 	}
 
-	orders, err := h.orderService.GetList(c.Request.Context(), req)
+	res, total, err := h.orderService.GetList(c.Request.Context(), req)
 	if err != nil {
 		h.ResponseError(c, err)
 		return
 	}
 
-	h.Response(c, http.StatusOK, "Success", orders)
+	h.ResponseList(c, "success", &total, res)
+}
+
+func (b *OrderController) GetOne(c *gin.Context) {
+	id := utils.ParseStringIDFromUri(c)
+	res, err := b.orderService.GetOne(c, id)
+	if err != nil {
+		b.ResponseError(c, err)
+		return
+	}
+	b.Response(c, http.StatusOK, "success", res)
 }
 
 func (h *OrderController) validateOrderItem(req []erpdto.OrderItemRequest) (err error) {

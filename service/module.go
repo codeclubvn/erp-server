@@ -1,14 +1,13 @@
 package service
 
 import (
-	erpservice "erp/service/erp"
 	"go.uber.org/fx"
 )
 
 var Module = fx.Options(fx.Provide(
-	NewAuthService,
-	NewUserService,
-	NewJwtService,
-	erpservice.NewCategoryService,
-	erpservice.NewCategoryProductService,
-), erpservice.Module)
+	NewAuthService, NewUserService, NewJwtService,
+	NewCategoryService, NewCategoryProductService, NewProductService,
+	NewCustomerService, NewOrderService, NewOrderItemService,
+	NewPromoteService, NewStoreService, NewERPEmployeeManagementService,
+	NewDebtService, NewTransactionService,
+))

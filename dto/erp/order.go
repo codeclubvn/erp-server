@@ -1,6 +1,9 @@
 package erpdto
 
-import uuid "github.com/satori/go.uuid"
+import (
+	"erp/api/request"
+	uuid "github.com/satori/go.uuid"
+)
 
 type CreateOrderRequest struct {
 	OrderId uuid.UUID
@@ -90,8 +93,5 @@ type UpdateOrderRequest struct {
 }
 
 type GetListOrderRequest struct {
-	Limit  int    `json:"limit" form:"limit"`
-	Page   int    `json:"page" form:"page"`
-	Sort   string `json:"sort" form:"sort"`
-	Search string `json:"search" form:"search"`
+	request.PageOptions
 }

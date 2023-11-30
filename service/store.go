@@ -1,4 +1,4 @@
-package erpservice
+package service
 
 import (
 	"context"
@@ -28,7 +28,7 @@ type erpStoreService struct {
 	logger       *zap.Logger
 }
 
-func NewERPStoreService(erpStoreRepo repository.ERPStoreRepository, erpRoleRepo repository.ERPRoleRepository, db *infrastructure.Database, logger *zap.Logger) ERPStoreService {
+func NewStoreService(erpStoreRepo repository.ERPStoreRepository, erpRoleRepo repository.ERPRoleRepository, db *infrastructure.Database, logger *zap.Logger) ERPStoreService {
 	return &erpStoreService{
 		erpStoreRepo: erpStoreRepo,
 		erpRoleRepo:  erpRoleRepo,

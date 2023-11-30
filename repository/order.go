@@ -16,30 +16,31 @@ type OrderRepo interface {
 	Create(tx *TX, ctx context.Context, order *models.Order) error
 	Update(tx *TX, ctx context.Context, order *models.Order) error
 	GetOrderById(ctx context.Context, id string) (*models.Order, error)
-	GetList(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.Order, error)
+	GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.Order, total int64, err error)
+	GetOneByID(ctx context.Context, id string) (res *models.Order, err error)
 }
 
-type erpOrderRepository struct {
+type orderRepo struct {
 	db     *infrastructure.Database
 	logger *zap.Logger
 }
 
 func NewOrderRepository(db *infrastructure.Database, logger *zap.Logger) OrderRepo {
-	return &erpOrderRepository{
+	return &orderRepo{
 		db:     db,
 		logger: logger,
 	}
 }
 
-func (r *erpOrderRepository) Create(tx *TX, ctx context.Context, order *models.Order) error {
+func (r *orderRepo) Create(tx *TX, ctx context.Context, order *models.Order) error {
 	return tx.db.WithContext(ctx).Create(order).Error
 }
 
-func (r *erpOrderRepository) Update(tx *TX, ctx context.Context, order *models.Order) error {
+func (r *orderRepo) Update(tx *TX, ctx context.Context, order *models.Order) error {
 	return tx.db.WithContext(ctx).Updates(order).Error
 }
 
-func (r *erpOrderRepository) GetOrderById(ctx context.Context, id string) (*models.Order, error) {
+func (r *orderRepo) GetOrderById(ctx context.Context, id string) (*models.Order, error) {
 	var res models.Order
 	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&res).Error; err != nil {
 		if utils.ErrNoRows(err) {
@@ -51,18 +52,24 @@ func (r *erpOrderRepository) GetOrderById(ctx context.Context, id string) (*mode
 	return &res, nil
 }
 
-func (r *erpOrderRepository) GetList(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.Order, error) {
-	var res []*models.Order
-	var count int64
-	query := r.db.WithContext(ctx).Model(&models.Order{})
-
-	if err := query.Count(&count).Error; err != nil {
-		return nil, errors.Wrap(err, "Count order failed")
+func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.Order, total int64, err error) {
+	query := r.db.Model(&models.Order{})
+	if req.Search != "" {
+		query = query.Where("name ilike ?", "%"+req.Search+"%")
 	}
 
-	if err := query.Offset(req.Page).Limit(req.Limit).Find(&res).Error; err != nil {
-		return nil, errors.Wrap(err, "Find order failed")
+	switch req.Sort {
+	default:
+		query = query.Order(req.Sort)
 	}
 
-	return res, nil
+	if err = utils.QueryPagination(query, req.PageOptions, &res).Count(&total).Error(); err != nil {
+		return nil, 0, errors.WithStack(err)
+	}
+	return res, total, err
+}
+
+func (r *orderRepo) GetOneByID(ctx context.Context, id string) (res *models.Order, err error) {
+	err = r.db.Where("id = ?", id).First(&res).Error
+	return res, err
 }

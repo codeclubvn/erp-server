@@ -1,9 +1,9 @@
-package erpcontroller
+package controller
 
 import (
 	"erp/api"
 	erpdto "erp/dto/erp"
-	service "erp/service/erp"
+	"erp/service"
 	"erp/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"

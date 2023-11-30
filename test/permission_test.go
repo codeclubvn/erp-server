@@ -2,7 +2,7 @@ package test
 
 import (
 	"erp/models"
-	erpservice "erp/service/erp"
+	erpservice "erp/service"
 	"testing"
 
 	uuid "github.com/satori/go.uuid"

@@ -2,7 +2,6 @@ package route
 
 import (
 	controller "erp/api/controllers"
-	erpcontroller "erp/api/controllers/erp"
 	"erp/api/middlewares"
 	"erp/lib"
 	"go.uber.org/fx"
@@ -14,28 +13,28 @@ var Module = fx.Options(fx.Invoke(
 
 type Route struct {
 	handler            *lib.Handler
-	categoryController *erpcontroller.ERPCategoryController
-	customerController *erpcontroller.ERPCustomerController
+	categoryController *controller.ERPCategoryController
+	customerController *controller.ERPCustomerController
 	authController     *controller.AuthController
-	employeeController *erpcontroller.ERPEmployeeManagementController
-	orderController    *erpcontroller.OrderController
-	productController  *erpcontroller.ERPProductController
-	promoteController  *erpcontroller.PromoteController
-	storeController    *erpcontroller.ERPStoreController
+	employeeController *controller.ERPEmployeeManagementController
+	orderController    *controller.OrderController
+	productController  *controller.ERPProductController
+	promoteController  *controller.PromoteController
+	storeController    *controller.ERPStoreController
 	healthController   *controller.HealthController
 	middleware         *middlewares.GinMiddleware
 }
 
 func NewRoute(
 	handler *lib.Handler,
-	categoryController *erpcontroller.ERPCategoryController,
-	customerController *erpcontroller.ERPCustomerController,
+	categoryController *controller.ERPCategoryController,
+	customerController *controller.ERPCustomerController,
 	authController *controller.AuthController,
-	employeeController *erpcontroller.ERPEmployeeManagementController,
-	orderController *erpcontroller.OrderController,
-	productController *erpcontroller.ERPProductController,
-	promoteController *erpcontroller.PromoteController,
-	storeController *erpcontroller.ERPStoreController,
+	employeeController *controller.ERPEmployeeManagementController,
+	orderController *controller.OrderController,
+	productController *controller.ERPProductController,
+	promoteController *controller.PromoteController,
+	storeController *controller.ERPStoreController,
 	healthController *controller.HealthController,
 	middleware *middlewares.GinMiddleware,
 ) *Route {
@@ -70,6 +69,7 @@ func NewRoute(
 	handler.POST("/v1/order/", middleware.Auth(true), orderController.Create)
 	handler.PUT("/v1/order/", middleware.Auth(true), orderController.Update)
 	handler.GET("/v1/order/", middleware.Auth(true), orderController.GetList)
+	handler.GET("/v1/order/:id", middleware.Auth(true), orderController.GetOne)
 
 	handler.POST("/v1/promote/", middleware.Auth(true), promoteController.Create)
 

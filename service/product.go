@@ -1,4 +1,4 @@
-package erpservice
+package service
 
 import (
 	"context"
