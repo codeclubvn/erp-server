@@ -2,7 +2,7 @@ package models
 
 import uuid "github.com/satori/go.uuid"
 
-type Transaction struct {
+type Revenue struct {
 	BaseModel
 	OrderId uuid.UUID `gorm:"column:order_id;type:varchar(255);not null"`
 	Amount  float64   `gorm:"column:amount;type:float;not null"`

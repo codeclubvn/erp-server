@@ -36,7 +36,7 @@ func (u *CategoryProductServiceImpl) Create(ctx context.Context, req erpdto.Cate
 	if err = utils.Copy(req, res); err != nil {
 		return nil, err
 	}
-	if err = u.catProductRepo.Create(ctx, &res); err != nil {
+	if err = u.catProductRepo.Create(nil, ctx, &res); err != nil {
 		return nil, err
 	}
 
@@ -50,7 +50,7 @@ func (u *CategoryProductServiceImpl) Update(ctx context.Context, req erpdto.Cate
 	if err = utils.Copy(req, res); err != nil {
 		return nil, err
 	}
-	if err = u.catProductRepo.Update(ctx, &res); err != nil {
+	if err = u.catProductRepo.Update(nil, ctx, &res); err != nil {
 		return nil, err
 	}
 
@@ -58,7 +58,7 @@ func (u *CategoryProductServiceImpl) Update(ctx context.Context, req erpdto.Cate
 }
 
 func (u *CategoryProductServiceImpl) Delete(ctx context.Context, id string) error {
-	return u.catProductRepo.Delete(ctx, id)
+	return u.catProductRepo.Delete(nil, ctx, id)
 }
 
 func (u *CategoryProductServiceImpl) GetList(ctx context.Context, req erpdto.GetListCatProRequest) ([]*models.CategoryProduct, *int64, error) {

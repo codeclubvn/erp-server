@@ -11,8 +11,8 @@ const (
 	DebtStatusOut = "out"
 	DebtStatusIn  = "in"
 
-	TransactionStatusIn  = "in"
-	TransactionStatusOut = "out"
+	RevenueStatusIn  = "in"
+	RevenueStatusOut = "out"
 
 	InActive = "inactive"
 

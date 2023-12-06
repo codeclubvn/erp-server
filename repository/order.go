@@ -37,7 +37,7 @@ func (r *orderRepo) Create(tx *TX, ctx context.Context, order *models.Order) err
 }
 
 func (r *orderRepo) Update(tx *TX, ctx context.Context, order *models.Order) error {
-	return tx.db.WithContext(ctx).Updates(order).Error
+	return tx.db.WithContext(ctx).Save(order).Error
 }
 
 func (r *orderRepo) GetOrderById(ctx context.Context, id string) (*models.Order, error) {
@@ -63,13 +63,17 @@ func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest)
 		query = query.Order(req.Sort)
 	}
 
-	if err = utils.QueryPagination(query, req.PageOptions, &res).Count(&total).Error(); err != nil {
+	query = query.Preload("OrderItems")
+
+	if err = utils.QueryPagination(query, req.PageOptions, &res).
+		Count(&total).Error(); err != nil {
 		return nil, 0, errors.WithStack(err)
 	}
 	return res, total, err
 }
 
 func (r *orderRepo) GetOneByID(ctx context.Context, id string) (res *models.Order, err error) {
-	err = r.db.Where("id = ?", id).First(&res).Error
+	err = r.db.Where("id = ?", id).
+		Preload("OrderItems").First(&res).Error
 	return res, err
 }

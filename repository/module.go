@@ -14,7 +14,7 @@ var Module = fx.Options(fx.Provide(
 	NewERPProductRepository,
 	NewERPCustomerRepository,
 	NewOrderRepository,
-	NewTransactionRepository,
+	NewRevenueRepository,
 	NewDebtRepo,
 	NewOrderItemRepo,
 	NewPromoteRepo,

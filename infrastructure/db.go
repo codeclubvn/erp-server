@@ -98,7 +98,7 @@ func (d Database) RegisterTables() {
 		models.Product{},
 		models.CategoryProduct{},
 		models.Customer{},
-		models.Transaction{},
+		models.Revenue{},
 		models.Order{},
 		models.Debt{},
 		models.OrderItem{},

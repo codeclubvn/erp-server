@@ -24,15 +24,16 @@ type OrderService interface {
 }
 
 type orderService struct {
-	erpOrderRepo       repository.OrderRepo
-	db                 *infrastructure.Database
-	logger             *zap.Logger
-	customerService    ERPCustomerService
-	productService     IProductService
-	transactionService ITransactionService
-	debtService        IDebtService
-	orderItemService   IOrderItemService
-	promoteService     IPromoteService
+	erpOrderRepo     repository.OrderRepo
+	db               *infrastructure.Database
+	logger           *zap.Logger
+	customerService  ERPCustomerService
+	productService   IProductService
+	debtService      IDebtService
+	orderItemService IOrderItemService
+	promoteService   IPromoteService
+	revenueRepo      repository.RevenueRepository
+	revenueService   RevenueService
 }
 
 func NewOrderService(
@@ -41,21 +42,23 @@ func NewOrderService(
 	logger *zap.Logger,
 	customerService ERPCustomerService,
 	productService IProductService,
-	transactionService ITransactionService,
+	revenueRepo repository.RevenueRepository,
+	revenueService RevenueService,
 	debtService IDebtService,
 	orderItemService IOrderItemService,
 	promoteService IPromoteService,
 ) OrderService {
 	return &orderService{
-		erpOrderRepo:       erpOrderRepo,
-		db:                 db,
-		logger:             logger,
-		customerService:    customerService,
-		productService:     productService,
-		transactionService: transactionService,
-		debtService:        debtService,
-		orderItemService:   orderItemService,
-		promoteService:     promoteService,
+		erpOrderRepo:     erpOrderRepo,
+		db:               db,
+		logger:           logger,
+		customerService:  customerService,
+		productService:   productService,
+		revenueRepo:      revenueRepo,
+		debtService:      debtService,
+		orderItemService: orderItemService,
+		promoteService:   promoteService,
+		revenueService:   revenueService,
 	}
 }
 
@@ -158,24 +161,24 @@ func (s *orderService) updateCreateProQuantity(tx *repository.TX, ctx context.Co
 	return nil
 }
 
-func (s *orderService) createUserTransaction(tx *repository.TX, ctx context.Context, req erpdto.CreateOrderRequest) error {
+func (s *orderService) createUserRevenue(tx *repository.TX, ctx context.Context, req erpdto.CreateOrderRequest) error {
 	if req.Payment <= 0 {
 		return nil
 	}
 
-	transRequest := erpdto.CreateTransactionRequest{
+	transRequest := erpdto.CreateRevenueRequest{
 		OrderId: req.OrderId,
 		Amount:  req.Payment,
-		Status:  constants.TransactionStatusIn,
+		Status:  constants.RevenueStatusIn,
 	}
 
 	if req.Payment > req.Total {
 		transRequest.Amount = req.Total
 	}
-	_, err := s.transactionService.Create(tx, ctx, transRequest)
+	_, err := s.revenueService.Create(tx, ctx, transRequest)
 	return err
 }
-func (s *orderService) updateUserTransaction(tx *repository.TX, ctx context.Context, trans *models.Transaction, req erpdto.CreateOrderRequest) error {
+func (s *orderService) updateUserRevenue(tx *repository.TX, ctx context.Context, trans *models.Revenue, req erpdto.CreateOrderRequest) error {
 	trans.Amount = req.Payment
 	if req.Payment <= 0 {
 		return nil
@@ -185,7 +188,7 @@ func (s *orderService) updateUserTransaction(tx *repository.TX, ctx context.Cont
 		trans.Amount = req.Total
 	}
 
-	return s.transactionService.Update(tx, ctx, trans)
+	return s.revenueRepo.Update(tx, ctx, trans)
 }
 
 func (s *orderService) getOrderCode(ctx context.Context) string {
@@ -208,6 +211,7 @@ func (s *orderService) validateOrderItem(orderItems []erpdto.OrderItemRequest, p
 
 func (s *orderService) create(tx *repository.TX, ctx context.Context, req erpdto.CreateOrderRequest) (*models.Order, error) {
 	order := &models.Order{}
+
 	if err := utils.Copy(order, req); err != nil {
 		return order, err
 	}
@@ -277,20 +281,20 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 		}
 	}
 
-	// create user transaction if payment > 0
-	// check transaction exist
-	trans, err := s.transactionService.GetTransactionByOrderId(tx, ctx, req.OrderId.String())
+	// create user revenue if payment > 0
+	// check revenue exist
+	trans, err := s.revenueRepo.GetRevenueByOrderId(tx, ctx, req.OrderId.String())
 	if err != nil {
 		if !utils.ErrNoRows(err) {
 			return err
 		}
 	}
 	if trans != nil {
-		if err := s.updateUserTransaction(tx, ctx, trans, req); err != nil {
+		if err := s.updateUserRevenue(tx, ctx, trans, req); err != nil {
 			return err
 		}
 	} else {
-		if err := s.createUserTransaction(tx, ctx, req); err != nil {
+		if err := s.createUserRevenue(tx, ctx, req); err != nil {
 			return err
 		}
 	}
@@ -536,14 +540,14 @@ func (s *orderService) cancelOrder(tx *repository.TX, ctx context.Context, order
 		return err
 	}
 
-	// update debt, transaction
-	if err := s.updateCancelDebtAndTransaction(tx, ctx, order); err != nil {
+	// update debt, revenue
+	if err := s.updateCancelDebtAndRevenue(tx, ctx, order); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *orderService) updateCancelDebtAndTransaction(tx *repository.TX, ctx context.Context, order *models.Order) error {
+func (s *orderService) updateCancelDebtAndRevenue(tx *repository.TX, ctx context.Context, order *models.Order) error {
 	// get debt
 	debt, err := s.debtService.GetDebtByOrderId(tx, ctx, order.ID.String())
 	if err != nil {
@@ -555,14 +559,14 @@ func (s *orderService) updateCancelDebtAndTransaction(tx *repository.TX, ctx con
 		return err
 	}
 
-	// get transaction
-	transaction, err := s.transactionService.GetTransactionByOrderId(tx, ctx, order.ID.String())
+	// get revenue
+	revenue, err := s.revenueRepo.GetRevenueByOrderId(tx, ctx, order.ID.String())
 	if err != nil {
 		return err
 	}
 
-	// delete transaction
-	if err := s.transactionService.Delete(tx, ctx, transaction.ID.String()); err != nil {
+	// delete revenue
+	if err := s.revenueRepo.Delete(tx, ctx, revenue.ID.String()); err != nil {
 		return err
 	}
 	return nil

@@ -69,7 +69,7 @@ func (p *erpCustomerRepository) Create(ctx context.Context, customer *models.Cus
 func (p *erpCustomerRepository) Update(ctx context.Context, customer *models.Customer) (*models.Customer, error) {
 	customer.UpdatedAt = time.Now()
 
-	if err := p.db.WithContext(ctx).Updates(&customer).Error; err != nil {
+	if err := p.db.WithContext(ctx).Save(&customer).Error; err != nil {
 		fmt.Println(err)
 		return nil, errors.Wrap(err, "UpdateById customer failed")
 	}

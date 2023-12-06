@@ -34,12 +34,12 @@ func (r *productRepo) Create(ctx context.Context, product *models.Product) (err 
 
 func (r *productRepo) Update(ctx context.Context, tx *TX, product *models.Product) (err error) {
 	tx = GetTX(tx, *r.db)
-	err = tx.db.Updates(&product).Error
+	err = tx.db.Save(&product).Error
 	return errors.Wrap(err, "update product failed")
 }
 
 func (r *productRepo) UpdateMulti(ctx context.Context, product []*models.Product) (err error) {
-	err = r.db.Updates(&product).Error
+	err = r.db.Save(&product).Error
 	return errors.Wrap(err, "update product failed")
 }
 

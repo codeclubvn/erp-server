@@ -50,5 +50,5 @@ func (s *debtService) Update(tx *repository.TX, ctx context.Context, debt *model
 }
 
 func (s *debtService) Delete(ctx context.Context, id string) error {
-	return s.debtRepo.Delete(ctx, id)
+	return s.debtRepo.Delete(nil, ctx, id)
 }

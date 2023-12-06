@@ -13,9 +13,12 @@ import (
 
 type ERPRoleRepository interface {
 	UpdateRolePermission(tx *TX, ctx context.Context, roleID string, permissionIDs []string) error
-	CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Role, error)
-	AssignRoleToUser(tx *TX, ctx context.Context, userID string, roleID string, storeID string, isStoreOwner bool) error
+	CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Revenue, error)
+	AssignRevenueToUser(tx *TX, ctx context.Context, userID string, roleID string, storeID string, isStoreOwner bool) error
+	FindRevenueByIDs(ids []string) ([]models.Revenue, error)
+	GetRevenueByRevenueID(ctx context.Context, id string) (*models.Revenue, error)
 	FindRoleByIDs(ids []string) ([]models.Role, error)
+	AssignRoleToUser(tx *TX, ctx context.Context, userID string, roleID string, storeID string, isStoreOwner bool) error
 	FindRoleByID(ctx context.Context, id string) (*models.Role, error)
 	FindUserRoleByStoreIDAndUserID(ctx context.Context, storeID string, userID string) (*models.UserRole, error)
 }
@@ -24,41 +27,62 @@ type erpRoleRepository struct {
 	db *infrastructure.Database
 }
 
+func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Revenue, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (e *erpRoleRepository) AssignRevenueToUser(tx *TX, ctx context.Context, userID string, roleID string, storeID string, isStoreOwner bool) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (e *erpRoleRepository) FindRevenueByIDs(ids []string) ([]models.Revenue, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (e *erpRoleRepository) GetRevenueByRevenueID(ctx context.Context, id string) (*models.Revenue, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewErpRoleRepo(db *infrastructure.Database) ERPRoleRepository {
 	return &erpRoleRepository{
 		db,
 	}
 }
 
-func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Role, error) {
-	tx = GetTX(tx, *e.db)
-
-	sid, _ := uuid.FromString(storeID)
-
-	extendsRole := make([]models.Role, 0)
-	for _, id := range extends {
-		extendsRole = append(extendsRole, models.Role{
-			BaseModel: models.BaseModel{
-				ID: uuid.FromStringOrNil(id),
-			},
-		})
-	}
-
-	role := &models.Role{
-		Name:    name,
-		StoreID: sid,
-	}
-
-	if err := tx.db.Create(role).Error; err != nil {
-		return nil, errors.Wrap(err, "create role failed")
-	}
-
-	if err := tx.db.Model(role).Omit("Extends.*").Association("Extends").Append(extendsRole); err != nil {
-		return nil, errors.Wrap(err, "create role failed")
-	}
-
-	return role, nil
-}
+//
+//func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Role, error) {
+//	tx = GetTX(tx, *e.db)
+//
+//	sid, _ := uuid.FromString(storeID)
+//
+//	extendsRole := make([]models.Role, 0)
+//	for _, id := range extends {
+//		extendsRole = append(extendsRole, models.Role{
+//			BaseModel: models.BaseModel{
+//				ID: uuid.FromStringOrNil(id),
+//			},
+//		})
+//	}
+//
+//	role := &models.Role{
+//		Name:    name,
+//		StoreID: sid,
+//	}
+//
+//	if err := tx.db.Create(role).Error; err != nil {
+//		return nil, errors.Wrap(err, "create role failed")
+//	}
+//
+//	if err := tx.db.Model(role).Omit("Extends.*").Association("Extends").Append(extendsRole); err != nil {
+//		return nil, errors.Wrap(err, "create role failed")
+//	}
+//
+//	return role, nil
+//}
 
 func (e *erpRoleRepository) UpdateRolePermission(tx *TX, ctx context.Context, roleID string, permissionIDs []string) error {
 	tx = GetTX(tx, *e.db)

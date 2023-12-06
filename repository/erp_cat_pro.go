@@ -10,9 +10,9 @@ import (
 )
 
 type CategoryProductRepository interface {
-	Create(ctx context.Context, CategoryProduct *models.CategoryProduct) (err error)
-	Update(ctx context.Context, categoryProduct *models.CategoryProduct) (err error)
-	Delete(ctx context.Context, id string) (err error)
+	Create(tx *TX, ctx context.Context, CategoryProduct *models.CategoryProduct) (err error)
+	Update(tx *TX, ctx context.Context, categoryProduct *models.CategoryProduct) (err error)
+	Delete(tx *TX, ctx context.Context, id string) (err error)
 	GetOneByID(ctx context.Context, id string) (res *models.CategoryProduct, err error)
 	GetList(ctx context.Context, req erpdto.GetListCatProRequest) (res []*models.CategoryProduct, total *int64, err error)
 }
@@ -25,42 +25,45 @@ func NewCategoryProductRepository(db *infrastructure.Database) CategoryProductRe
 	return &catProRepo{db}
 }
 
-func (u *catProRepo) Create(ctx context.Context, categoryProduct *models.CategoryProduct) (err error) {
+func (r *catProRepo) Create(tx *TX, ctx context.Context, categoryProduct *models.CategoryProduct) (err error) {
+	tx = GetTX(tx, *r.db)
 	currentUID, err := utils.GetUserUUIDFromContext(ctx)
 	if err != nil {
 		return err
 	}
 	categoryProduct.UpdaterID = currentUID
 
-	err = u.db.Create(&categoryProduct).Error
+	err = r.db.Create(&categoryProduct).Error
 	return errors.Wrap(err, "create category_product failed")
 }
 
-func (u *catProRepo) Update(ctx context.Context, categoryProduct *models.CategoryProduct) (err error) {
+func (r *catProRepo) Update(tx *TX, ctx context.Context, categoryProduct *models.CategoryProduct) (err error) {
+	tx = GetTX(tx, *r.db)
 	currentUID, err := utils.GetUserUUIDFromContext(ctx)
 	if err != nil {
 		return err
 	}
 	categoryProduct.UpdaterID = currentUID
 
-	err = u.db.Updates(&categoryProduct).Error
+	err = r.db.Save(&categoryProduct).Error
 	return errors.Wrap(err, "UpdateById category_product failed")
 }
 
-func (u *catProRepo) Delete(ctx context.Context, id string) (err error) {
-	if err := u.db.WithContext(ctx).Where("id = ?", id).Delete(&models.CategoryProduct{}).Error; err != nil {
+func (r *catProRepo) Delete(tx *TX, ctx context.Context, id string) (err error) {
+	tx = GetTX(tx, *r.db)
+	if err := r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.CategoryProduct{}).Error; err != nil {
 		return errors.Wrap(err, "Delete category_product failed")
 	}
 	return nil
 }
 
-func (u *catProRepo) GetOneByID(ctx context.Context, id string) (res *models.CategoryProduct, err error) {
-	err = u.db.Where("id = ?", id).First(&res).Error
+func (r *catProRepo) GetOneByID(ctx context.Context, id string) (res *models.CategoryProduct, err error) {
+	err = r.db.Where("id = ?", id).First(&res).Error
 	return res, errors.Wrap(err, "GetOneByID category_product failed")
 }
 
-func (u *catProRepo) GetList(ctx context.Context, req erpdto.GetListCatProRequest) (res []*models.CategoryProduct, total *int64, err error) {
-	query := u.db.Model(&models.CategoryProduct{})
+func (r *catProRepo) GetList(ctx context.Context, req erpdto.GetListCatProRequest) (res []*models.CategoryProduct, total *int64, err error) {
+	query := r.db.Model(&models.CategoryProduct{})
 	if req.Search != "" {
 		query = query.Where("name like ?", "%"+req.Search+"%")
 	}

@@ -23,6 +23,7 @@ type Route struct {
 	storeController    *controller.ERPStoreController
 	healthController   *controller.HealthController
 	middleware         *middlewares.GinMiddleware
+	revenueController  *controller.RevenueController
 }
 
 func NewRoute(
@@ -37,6 +38,7 @@ func NewRoute(
 	storeController *controller.ERPStoreController,
 	healthController *controller.HealthController,
 	middleware *middlewares.GinMiddleware,
+	revenueController *controller.RevenueController,
 ) *Route {
 
 	handler.POST("/v1/auth/register", authController.Register)
@@ -73,10 +75,15 @@ func NewRoute(
 
 	handler.POST("/v1/promote/", middleware.Auth(true), promoteController.Create)
 
-	handler.POST("/v1/store/", middleware.Auth(false), storeController.CreateStore)
-	handler.PUT("/v1/store/", middleware.Auth(true), storeController.UpdateStore)
-	handler.GET("/v1/store/", middleware.Auth(false), storeController.ListStore)
-	handler.DELETE("/v1/store/", middleware.Auth(true), storeController.DeleteStore)
+	handler.POST("/v1/store/", middleware.Auth(false), storeController.Create)
+	handler.PUT("/v1/store/", middleware.Auth(true), storeController.Update)
+	handler.GET("/v1/store/", middleware.Auth(false), storeController.List)
+	handler.DELETE("/v1/store/", middleware.Auth(true), storeController.Delete)
+
+	handler.POST("/v1/revenue/", middleware.Auth(false), revenueController.Create)
+	handler.PUT("/v1/revenue/", middleware.Auth(true), revenueController.Update)
+	handler.GET("/v1/revenue/", middleware.Auth(false), revenueController.List)
+	handler.DELETE("/v1/revenue/", middleware.Auth(true), revenueController.Delete)
 
 	handler.GET("/v1/health/", healthController.Health)
 

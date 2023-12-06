@@ -43,7 +43,7 @@ func (u *categoryRepo) Update(ctx context.Context, category *models.Category) (e
 	}
 	category.UpdaterID = currentUID
 
-	err = u.db.Updates(&category).Error
+	err = u.db.Save(&category).Error
 	return errors.Wrap(err, "update category failed")
 }
 

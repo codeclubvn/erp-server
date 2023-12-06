@@ -10,7 +10,7 @@ import (
 type DebtRepo interface {
 	Create(tx *TX, ctx context.Context, debt *models.Debt) error
 	UpdateById(tx *TX, ctx context.Context, debt *models.Debt) error
-	Delete(ctx context.Context, id string) error
+	Delete(tx *TX, ctx context.Context, id string) error
 	GetDebtByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Debt, error)
 }
 
@@ -27,11 +27,13 @@ func NewDebtRepo(db *infrastructure.Database, logger *zap.Logger) DebtRepo {
 }
 
 func (r *debtRepo) Create(tx *TX, ctx context.Context, debt *models.Debt) error {
+	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Create(debt).Error
 }
 
 func (r *debtRepo) UpdateById(tx *TX, ctx context.Context, debt *models.Debt) error {
-	return tx.db.WithContext(ctx).Where("id = ?", debt.ID).Updates(debt).Error
+	tx = GetTX(tx, *r.db)
+	return tx.db.WithContext(ctx).Where("id = ?", debt.ID).Save(debt).Error
 }
 
 func (r *debtRepo) GetDebtByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Debt, error) {
@@ -43,6 +45,7 @@ func (r *debtRepo) GetDebtByOrderId(tx *TX, ctx context.Context, orderId string)
 	return debt, nil
 }
 
-func (r *debtRepo) Delete(ctx context.Context, id string) error {
-	return r.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Debt{}).Error
+func (r *debtRepo) Delete(tx *TX, ctx context.Context, id string) error {
+	tx = GetTX(tx, *r.db)
+	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Debt{}).Error
 }

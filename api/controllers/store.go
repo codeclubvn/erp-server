@@ -21,7 +21,7 @@ func NewERPStoreController(storeService erpservice.ERPStoreService) *ERPStoreCon
 	}
 }
 
-func (p *ERPStoreController) CreateStore(c *gin.Context) {
+func (p *ERPStoreController) Create(c *gin.Context) {
 	var req erpdto.CreateStoreRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
@@ -37,7 +37,7 @@ func (p *ERPStoreController) CreateStore(c *gin.Context) {
 	p.Response(c, http.StatusCreated, "Success", store.ID)
 }
 
-func (p *ERPStoreController) UpdateStore(c *gin.Context) {
+func (p *ERPStoreController) Update(c *gin.Context) {
 	var req erpdto.UpdateStoreRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
@@ -54,7 +54,7 @@ func (p *ERPStoreController) UpdateStore(c *gin.Context) {
 	p.Response(c, http.StatusOK, "Success", nil)
 }
 
-func (p *ERPStoreController) ListStore(c *gin.Context) {
+func (p *ERPStoreController) List(c *gin.Context) {
 	var req erpdto.ListStoreRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		p.ResponseValidationError(c, err)
@@ -70,7 +70,7 @@ func (p *ERPStoreController) ListStore(c *gin.Context) {
 	p.ResponseList(c, "Success", total, stores)
 }
 
-func (p *ERPStoreController) DeleteStore(c *gin.Context) {
+func (p *ERPStoreController) Delete(c *gin.Context) {
 	storeID := utils.GetStoreIDFromContext(c.Request.Context())
 	err := p.storeService.DeleteStore(c.Request.Context(), storeID)
 	if err != nil {

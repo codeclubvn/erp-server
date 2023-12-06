@@ -9,5 +9,5 @@ var Module = fx.Options(fx.Provide(
 	NewCategoryService, NewCategoryProductService, NewProductService,
 	NewCustomerService, NewOrderService, NewOrderItemService,
 	NewPromoteService, NewStoreService, NewERPEmployeeManagementService,
-	NewDebtService, NewTransactionService,
+	NewDebtService, NewRevenueService,
 ))

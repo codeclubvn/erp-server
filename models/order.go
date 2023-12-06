@@ -23,4 +23,5 @@ type Order struct {
 	PromoteFee  *float64 `json:"promote_fee,omitempty"`
 	PromoteCode *string  `json:"promote_code,omitempty"`
 	//StoreId     uuid.UUID `json:"store_id" gorm:"not null"`
+	OrderItems []*OrderItem `json:"order_item,omitempty" gorm:"foreignkey:OrderId;association_foreignkey:ID"`
 }
