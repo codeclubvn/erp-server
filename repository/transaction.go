@@ -11,12 +11,12 @@ import (
 )
 
 type RevenueRepository interface {
-	Create(tx *TX, ctx context.Context, trans *models.Revenue) error
-	Update(tx *TX, ctx context.Context, trans *models.Revenue) error
+	Create(tx *TX, ctx context.Context, trans *models.Transaction) error
+	Update(tx *TX, ctx context.Context, trans *models.Transaction) error
 	Delete(tx *TX, ctx context.Context, id string) error
-	GetOneById(ctx context.Context, id string) (*models.Revenue, error)
-	GetRevenueByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Revenue, error)
-	GetList(ctx context.Context, req erpdto.ListRevenueRequest) (res []*models.Revenue, total int64, err error)
+	GetOneById(ctx context.Context, id string) (*models.Transaction, error)
+	GetRevenueByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Transaction, error)
+	GetList(ctx context.Context, req erpdto.ListRevenueRequest) (res []*models.Transaction, total int64, err error)
 }
 
 type revenueRepo struct {
@@ -31,26 +31,26 @@ func NewRevenueRepository(db *infrastructure.Database, logger *zap.Logger) Reven
 	}
 }
 
-func (r *revenueRepo) Create(tx *TX, ctx context.Context, trans *models.Revenue) error {
+func (r *revenueRepo) Create(tx *TX, ctx context.Context, trans *models.Transaction) error {
 	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Create(trans).Error
 }
 
-func (r *revenueRepo) GetOneById(ctx context.Context, id string) (*models.Revenue, error) {
-	trans := &models.Revenue{}
+func (r *revenueRepo) GetOneById(ctx context.Context, id string) (*models.Transaction, error) {
+	trans := &models.Transaction{}
 	err := r.db.WithContext(ctx).Where("id = ?", id).First(trans).Error
 	return trans, err
 }
 
-func (r *revenueRepo) GetRevenueByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Revenue, error) {
+func (r *revenueRepo) GetRevenueByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Transaction, error) {
 	tx = GetTX(tx, *r.db)
-	trans := &models.Revenue{}
+	trans := &models.Transaction{}
 	err := tx.db.WithContext(ctx).Where("order_id = ?", orderId).First(trans).Error
 	return trans, err
 }
 
-func (r *revenueRepo) GetList(ctx context.Context, req erpdto.ListRevenueRequest) (res []*models.Revenue, total int64, err error) {
-	query := r.db.Model(&models.Order{})
+func (r *revenueRepo) GetList(ctx context.Context, req erpdto.ListRevenueRequest) (res []*models.Transaction, total int64, err error) {
+	query := r.db.Model(&models.Transaction{})
 	if req.Search != "" {
 		query = query.Where("name ilike ?", "%"+req.Search+"%")
 	}
@@ -67,12 +67,12 @@ func (r *revenueRepo) GetList(ctx context.Context, req erpdto.ListRevenueRequest
 	return res, total, err
 }
 
-func (r *revenueRepo) Update(tx *TX, ctx context.Context, trans *models.Revenue) error {
+func (r *revenueRepo) Update(tx *TX, ctx context.Context, trans *models.Transaction) error {
 	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Where("id = ?", trans.ID).Save(trans).Error
 }
 
 func (r *revenueRepo) Delete(tx *TX, ctx context.Context, id string) error {
 	tx = GetTX(tx, *r.db)
-	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Revenue{}).Error
+	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Transaction{}).Error
 }

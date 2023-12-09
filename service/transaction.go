@@ -11,11 +11,12 @@ import (
 )
 
 type RevenueService interface {
-	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateRevenueRequest) (*models.Revenue, error)
-	Update(ctx context.Context, req erpdto.UpdateRevenueRequest) (*models.Revenue, error)
-	GetList(ctx context.Context, req erpdto.ListRevenueRequest) ([]*models.Revenue, int64, error)
+	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateRevenueRequest) (*models.Transaction, error)
+	Update(ctx context.Context, req erpdto.UpdateRevenueRequest) (*models.Transaction, error)
+	GetList(ctx context.Context, req erpdto.ListRevenueRequest) ([]*models.Transaction, int64, error)
 	Delete(ctx context.Context, revenueID string) error
-	GetRevenueByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Revenue, error)
+	GetRevenueByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Transaction, error)
+	GetOne(ctx context.Context, id string) (*models.Transaction, error)
 }
 
 type revenueService struct {
@@ -32,8 +33,8 @@ func NewRevenueService(revenueRepo repository.RevenueRepository, db *infrastruct
 	}
 }
 
-func (p *revenueService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateRevenueRequest) (*models.Revenue, error) {
-	output := &models.Revenue{}
+func (p *revenueService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateRevenueRequest) (*models.Transaction, error) {
+	output := &models.Transaction{}
 	if err := copier.Copy(&output, &req); err != nil {
 		return nil, err
 	}
@@ -44,7 +45,7 @@ func (p *revenueService) Create(tx *repository.TX, ctx context.Context, req erpd
 	return output, nil
 }
 
-func (p *revenueService) Update(ctx context.Context, req erpdto.UpdateRevenueRequest) (*models.Revenue, error) {
+func (p *revenueService) Update(ctx context.Context, req erpdto.UpdateRevenueRequest) (*models.Transaction, error) {
 	output, err := p.revenueRepo.GetOneById(ctx, req.Id.String())
 	if err != nil {
 		return nil, err
@@ -60,11 +61,15 @@ func (p *revenueService) Update(ctx context.Context, req erpdto.UpdateRevenueReq
 	return output, nil
 }
 
-func (p *revenueService) GetList(ctx context.Context, req erpdto.ListRevenueRequest) ([]*models.Revenue, int64, error) {
+func (p *revenueService) GetList(ctx context.Context, req erpdto.ListRevenueRequest) ([]*models.Transaction, int64, error) {
 	return p.revenueRepo.GetList(ctx, req)
 }
 
-func (p *revenueService) GetRevenueByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Revenue, error) {
+func (p *revenueService) GetOne(ctx context.Context, id string) (*models.Transaction, error) {
+	return p.revenueRepo.GetOneById(ctx, id)
+}
+
+func (p *revenueService) GetRevenueByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Transaction, error) {
 	return p.revenueRepo.GetRevenueByOrderId(tx, ctx, orderId)
 }
 

@@ -79,3 +79,13 @@ func (p *RevenueController) Delete(c *gin.Context) {
 
 	p.Response(c, http.StatusOK, "Success", nil)
 }
+
+func (p *RevenueController) GetOne(c *gin.Context) {
+	id := utils.ParseStringIDFromUri(c)
+	res, err := p.revenueService.GetOne(c, id)
+	if err != nil {
+		p.ResponseError(c, err)
+		return
+	}
+	p.Response(c, http.StatusOK, "success", res)
+}
