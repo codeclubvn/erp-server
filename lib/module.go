@@ -2,4 +2,4 @@ package lib
 
 import "go.uber.org/fx"
 
-var Module = fx.Options(fx.Provide(NewZapLogger), fx.Provide(NewServerGroup), fx.Provide(NewServer))
+var Module = fx.Options(fx.Provide(NewZapLogger, NewServer, NewServerGroup))

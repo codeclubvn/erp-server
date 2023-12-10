@@ -10,55 +10,59 @@ import (
 	"go.uber.org/zap"
 )
 
-type TransactionRepository interface {
-	Create(tx *TX, ctx context.Context, trans *models.Transaction) error
-	Update(tx *TX, ctx context.Context, trans *models.Transaction) error
+type BudgetRepository interface {
+	Create(tx *TX, ctx context.Context, input *models.Budget) error
+	Update(tx *TX, ctx context.Context, input *models.Budget) error
 	Delete(tx *TX, ctx context.Context, id string) error
-	GetOneById(ctx context.Context, id string) (*models.Transaction, error)
-	GetTransactionByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Transaction, error)
-	GetList(ctx context.Context, req erpdto.ListTransactionRequest) (res []*models.Transaction, total int64, err error)
+	GetOneById(ctx context.Context, id string) (*models.Budget, error)
+	GetList(ctx context.Context, req erpdto.ListBudgetRequest) (res []*models.Budget, total int64, err error)
 }
 
-type transactionRepo struct {
+type budgetRepo struct {
 	db     *infrastructure.Database
 	logger *zap.Logger
 }
 
-func NewTransactionRepository(db *infrastructure.Database, logger *zap.Logger) TransactionRepository {
-	return &transactionRepo{
+func NewBudgetRepository(db *infrastructure.Database, logger *zap.Logger) BudgetRepository {
+	return &budgetRepo{
 		db:     db,
 		logger: logger,
 	}
 }
 
-func (r *transactionRepo) Create(tx *TX, ctx context.Context, trans *models.Transaction) error {
+func (r *budgetRepo) Create(tx *TX, ctx context.Context, input *models.Budget) error {
 	tx = GetTX(tx, *r.db)
-	return tx.db.WithContext(ctx).Create(trans).Error
+	return tx.db.WithContext(ctx).Create(input).Error
 }
 
-func (r *transactionRepo) GetOneById(ctx context.Context, id string) (*models.Transaction, error) {
-	trans := &models.Transaction{}
-	err := r.db.WithContext(ctx).Where("id = ?", id).First(trans).Error
-	return trans, err
+func (r *budgetRepo) GetOneById(ctx context.Context, id string) (*models.Budget, error) {
+	output := &models.Budget{}
+	err := r.db.WithContext(ctx).
+		Select("budgets.*, sum(transactions.amount) as spent").
+		Joins(`left join transactions on transactions.transaction_category_id = budgets.transaction_category_id 
+			AND (transactions.date_time BETWEEN budgets.start_time AND budgets.end_time OR budgets.start_time IS NULL OR budgets.end_time IS NULL)`).
+		Where("budgets.id = ?", id).
+		Preload("TransactionCategory").
+		Group("budgets.id").
+		First(output).Error
+	return output, err
 }
 
-func (r *transactionRepo) GetTransactionByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Transaction, error) {
-	tx = GetTX(tx, *r.db)
-	trans := &models.Transaction{}
-	err := tx.db.WithContext(ctx).Where("order_id = ?", orderId).First(trans).Error
-	return trans, err
-}
-
-func (r *transactionRepo) GetList(ctx context.Context, req erpdto.ListTransactionRequest) (res []*models.Transaction, total int64, err error) {
-	query := r.db.Model(&models.Transaction{})
+func (r *budgetRepo) GetList(ctx context.Context, req erpdto.ListBudgetRequest) (res []*models.Budget, total int64, err error) {
+	query := r.db.Model(&models.Budget{}).Debug().
+		Select("budgets.*, sum(transactions.amount) as spent").
+		Joins(`left join transactions on transactions.transaction_category_id = budgets.transaction_category_id 
+			AND (transactions.date_time BETWEEN budgets.start_time AND budgets.end_time OR budgets.start_time IS NULL OR budgets.end_time IS NULL)`)
 	if req.Search != "" {
-		query = query.Where("name ilike ?", "%"+req.Search+"%")
+		query = query.Where("transactions.name ilike ?", "%"+req.Search+"%")
 	}
 
 	switch req.Sort {
 	default:
 		query = query.Order(req.Sort)
 	}
+
+	query = query.Preload("TransactionCategory").Group("budgets.id")
 
 	if err = utils.QueryPagination(query, req.PageOptions, &res).
 		Count(&total).Error(); err != nil {
@@ -67,12 +71,12 @@ func (r *transactionRepo) GetList(ctx context.Context, req erpdto.ListTransactio
 	return res, total, err
 }
 
-func (r *transactionRepo) Update(tx *TX, ctx context.Context, trans *models.Transaction) error {
+func (r *budgetRepo) Update(tx *TX, ctx context.Context, input *models.Budget) error {
 	tx = GetTX(tx, *r.db)
-	return tx.db.WithContext(ctx).Where("id = ?", trans.ID).Save(trans).Error
+	return tx.db.WithContext(ctx).Where("id = ?", input.ID).Save(input).Error
 }
 
-func (r *transactionRepo) Delete(tx *TX, ctx context.Context, id string) error {
+func (r *budgetRepo) Delete(tx *TX, ctx context.Context, id string) error {
 	tx = GetTX(tx, *r.db)
-	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Transaction{}).Error
+	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Budget{}).Error
 }

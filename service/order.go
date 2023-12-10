@@ -9,6 +9,7 @@ import (
 	"erp/models"
 	"erp/repository"
 	"erp/utils"
+	"erp/utils/valid_pointer"
 	"errors"
 	"github.com/jinzhu/copier"
 	uuid "github.com/satori/go.uuid"
@@ -32,8 +33,8 @@ type orderService struct {
 	debtService      IDebtService
 	orderItemService IOrderItemService
 	promoteService   IPromoteService
-	revenueRepo      repository.RevenueRepository
-	revenueService   RevenueService
+	revenueRepo      repository.TransactionRepository
+	revenueService   TransactionService
 }
 
 func NewOrderService(
@@ -42,8 +43,8 @@ func NewOrderService(
 	logger *zap.Logger,
 	customerService ERPCustomerService,
 	productService IProductService,
-	revenueRepo repository.RevenueRepository,
-	revenueService RevenueService,
+	revenueRepo repository.TransactionRepository,
+	revenueService TransactionService,
 	debtService IDebtService,
 	orderItemService IOrderItemService,
 	promoteService IPromoteService,
@@ -166,10 +167,10 @@ func (s *orderService) createUserRevenue(tx *repository.TX, ctx context.Context,
 		return nil
 	}
 
-	transRequest := erpdto.CreateRevenueRequest{
-		OrderId: req.OrderId,
+	transRequest := erpdto.CreateTransactionRequest{
+		OrderId: valid_pointer.UUIDPointer(req.OrderId),
 		Amount:  req.Payment,
-		Status:  constants.RevenueStatusIn,
+		Status:  constants.StatusIn,
 	}
 
 	if req.Payment > req.Total {
@@ -178,7 +179,7 @@ func (s *orderService) createUserRevenue(tx *repository.TX, ctx context.Context,
 	_, err := s.revenueService.Create(tx, ctx, transRequest)
 	return err
 }
-func (s *orderService) updateUserRevenue(tx *repository.TX, ctx context.Context, trans *models.Revenue, req erpdto.CreateOrderRequest) error {
+func (s *orderService) updateUserRevenue(tx *repository.TX, ctx context.Context, trans *models.Transaction, req erpdto.CreateOrderRequest) error {
 	trans.Amount = req.Payment
 	if req.Payment <= 0 {
 		return nil
@@ -256,7 +257,7 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 			debtRequest := erpdto.CreateDebtRequest{
 				OrderId:    req.OrderId,
 				Amount:     req.Total - req.Payment,
-				Status:     constants.DebtStatusOut,
+				Status:     constants.StatusOut,
 				CustomerId: uuid.FromStringOrNil(utils.ValidString(req.CustomerId)),
 			}
 
@@ -283,7 +284,7 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 
 	// create user revenue if payment > 0
 	// check revenue exist
-	trans, err := s.revenueRepo.GetRevenueByOrderId(tx, ctx, req.OrderId.String())
+	trans, err := s.revenueRepo.GetTransactionByOrderId(tx, ctx, req.OrderId.String())
 	if err != nil {
 		if !utils.ErrNoRows(err) {
 			return err
@@ -489,11 +490,7 @@ func (s *orderService) UpdateFlow(ctx context.Context, req erpdto.UpdateOrderReq
 		return nil
 	})
 
-	if err != nil {
-		return nil, err
-	}
-
-	return order, nil
+	return order, err
 }
 
 func (s *orderService) checkOrderStatus(ctx context.Context, order *models.Order, req erpdto.UpdateOrderRequest) error {
@@ -560,7 +557,7 @@ func (s *orderService) updateCancelDebtAndRevenue(tx *repository.TX, ctx context
 	}
 
 	// get revenue
-	revenue, err := s.revenueRepo.GetRevenueByOrderId(tx, ctx, order.ID.String())
+	revenue, err := s.revenueRepo.GetTransactionByOrderId(tx, ctx, order.ID.String())
 	if err != nil {
 		return err
 	}

@@ -5,21 +5,18 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-type CreateTransactionRequest struct {
-	OrderId uuid.UUID `json:"order_id"`
-	Amount  float64   `json:"amount" binding:"required"`
-	Status  string    `json:"status" binding:"required"`
-	Note    string    `json:"note" binding:"required"`
+type CreateTransactionCategoryRequest struct {
+	Name string `json:"name" binding:"required"`
+	Type string `json:"type" binding:"required"` // expense, income, debt
 }
 
-type UpdateTransactionRequest struct {
-	Id      uuid.UUID `json:"id"`
-	OrderId uuid.UUID `json:"order_id"`
-	Amount  float64   `json:"amount" binding:"required"`
-	Status  string    `json:"status" binding:"required"`
-	Note    string    `json:"note" binding:"required"`
+type UpdateTransactionCategoryRequest struct {
+	Id   uuid.UUID `json:"id"`
+	Name string    `json:"name" binding:"required"`
+	Type string    `json:"type" binding:"required"` // expense, income, debt
+
 }
 
-type ListTransactionRequest struct {
+type ListTransactionCategoryRequest struct {
 	request.PageOptions
 }

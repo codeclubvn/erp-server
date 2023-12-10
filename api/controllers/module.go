@@ -9,5 +9,6 @@ var Module = fx.Options(
 		NewHealthController, NewUserController, NewAuthController,
 		NewERPCategoryController, NewERPCustomerController, NewERPEmployeeManagementController,
 		NewERPProductController, NewERPStoreController, NewOrderController, NewPromoteController,
-		NewRevenueController,
+		NewTransactionController, NewTransactionCategoryController, NewWalletController,
+		NewBudgetController,
 	))

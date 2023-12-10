@@ -23,7 +23,7 @@ type Route struct {
 	storeController    *controller.ERPStoreController
 	healthController   *controller.HealthController
 	middleware         *middlewares.GinMiddleware
-	revenueController  *controller.RevenueController
+	revenueController  *controller.TransactionController
 }
 
 func NewRoute(
@@ -38,7 +38,10 @@ func NewRoute(
 	storeController *controller.ERPStoreController,
 	healthController *controller.HealthController,
 	middleware *middlewares.GinMiddleware,
-	revenueController *controller.RevenueController,
+	transactionController *controller.TransactionController,
+	walletController *controller.WalletController,
+	budgetController *controller.BudgetController,
+	transactionCategoryController *controller.TransactionCategoryController,
 ) *Route {
 
 	handler.POST("/v1/auth/register", authController.Register)
@@ -56,13 +59,13 @@ func NewRoute(
 	handler.GET("/v1/category/:id", middleware.Auth(false), categoryController.GetOne)
 	handler.DELETE("/v1/category/:id", middleware.Auth(true), categoryController.Delete)
 
-	handler.GET("/v1/customer/", middleware.Auth(false), customerController.ListCustomer)
-	handler.GET("/v1/customer/:id", middleware.Auth(false), customerController.CustomerDetail)
-	handler.POST("/v1/customer/", middleware.Auth(false), customerController.CreateCustomer)
-	handler.PUT("/v1/customer/:id", middleware.Auth(false), customerController.UpdateCustomer)
-	handler.DELETE("/v1/customer/:id", middleware.Auth(false), customerController.DeleteCustomer)
+	handler.GET("/v1/customer/", middleware.Auth(false), customerController.GetList)
+	handler.GET("/v1/customer/:id", middleware.Auth(false), customerController.GetOne)
+	handler.POST("/v1/customer/", middleware.Auth(false), customerController.Create)
+	handler.PUT("/v1/customer/:id", middleware.Auth(false), customerController.Update)
+	handler.DELETE("/v1/customer/:id", middleware.Auth(false), customerController.Delete)
 
-	handler.GET("/v1/permission/", middleware.Auth(false), employeeController.ListPermission)
+	handler.GET("/v1/permission/", middleware.Auth(false), employeeController.GetList)
 
 	handler.POST("/v1/role/", middleware.Auth(true), employeeController.CreateRole)
 
@@ -80,10 +83,35 @@ func NewRoute(
 	handler.GET("/v1/store/", middleware.Auth(false), storeController.List)
 	handler.DELETE("/v1/store/", middleware.Auth(true), storeController.Delete)
 
-	handler.POST("/v1/revenue/", middleware.Auth(false), revenueController.Create)
-	handler.PUT("/v1/revenue/", middleware.Auth(true), revenueController.Update)
-	handler.GET("/v1/revenue/", middleware.Auth(false), revenueController.List)
-	handler.DELETE("/v1/revenue/", middleware.Auth(true), revenueController.Delete)
+	handler.POST("/v1/cashbook/", middleware.Auth(false), transactionController.Create)
+	handler.PUT("/v1/cashbook/", middleware.Auth(true), transactionController.Update)
+	handler.GET("/v1/cashbook/", middleware.Auth(false), transactionController.List)
+	handler.DELETE("/v1/cashbook/:id", middleware.Auth(true), transactionController.Delete)
+	handler.GET("/v1/cashbook/:id", middleware.Auth(true), transactionController.GetOne)
+
+	handler.POST("/v1/debt-book/", middleware.Auth(false), transactionController.Create)
+	handler.PUT("/v1/debt-book/", middleware.Auth(true), transactionController.Update)
+	handler.GET("/v1/debt-book/", middleware.Auth(false), transactionController.List)
+	handler.DELETE("/v1/debt-book/:id", middleware.Auth(true), transactionController.Delete)
+	handler.GET("/v1/debt-book/:id", middleware.Auth(true), transactionController.GetOne)
+
+	handler.POST("/v1/wallet/", middleware.Auth(false), walletController.Create)
+	handler.PUT("/v1/wallet/", middleware.Auth(true), walletController.Update)
+	handler.GET("/v1/wallet/", middleware.Auth(false), walletController.List)
+	handler.DELETE("/v1/wallet/:id", middleware.Auth(true), walletController.Delete)
+	handler.GET("/v1/wallet/:id", middleware.Auth(true), walletController.GetOne)
+
+	handler.POST("/v1/budget/", middleware.Auth(false), budgetController.Create)
+	handler.PUT("/v1/budget/", middleware.Auth(true), budgetController.Update)
+	handler.GET("/v1/budget/", middleware.Auth(false), budgetController.List)
+	handler.DELETE("/v1/budget/:id", middleware.Auth(true), budgetController.Delete)
+	handler.GET("/v1/budget/:id", middleware.Auth(true), budgetController.GetOne)
+
+	handler.POST("/v1/transaction_category/", middleware.Auth(false), transactionCategoryController.Create)
+	handler.PUT("/v1/transaction_category/", middleware.Auth(true), transactionCategoryController.Update)
+	handler.GET("/v1/transaction_category/", middleware.Auth(false), transactionCategoryController.List)
+	handler.DELETE("/v1/transaction_category/:id", middleware.Auth(true), transactionCategoryController.Delete)
+	handler.GET("/v1/transaction_category/:id", middleware.Auth(true), transactionCategoryController.GetOne)
 
 	handler.GET("/v1/health/", healthController.Health)
 

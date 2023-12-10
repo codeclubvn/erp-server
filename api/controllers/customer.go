@@ -19,7 +19,7 @@ func NewERPCustomerController(customerService erpservice.ERPCustomerService) *ER
 	}
 }
 
-func (p *ERPCustomerController) ListCustomer(c *gin.Context) {
+func (p *ERPCustomerController) GetList(c *gin.Context) {
 	var req erpdto.ListCustomerRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		p.ResponseValidationError(c, err)
@@ -35,7 +35,7 @@ func (p *ERPCustomerController) ListCustomer(c *gin.Context) {
 	p.ResponseList(c, "Success", total, customer)
 }
 
-func (p *ERPCustomerController) CustomerDetail(c *gin.Context) {
+func (p *ERPCustomerController) GetOne(c *gin.Context) {
 	var req erpdto.CustomerUriRequest
 	if err := c.ShouldBindUri(&req); err != nil {
 		p.ResponseValidationError(c, err)
@@ -51,7 +51,7 @@ func (p *ERPCustomerController) CustomerDetail(c *gin.Context) {
 	p.Response(c, http.StatusOK, "Success", customer)
 }
 
-func (p *ERPCustomerController) CreateCustomer(c *gin.Context) {
+func (p *ERPCustomerController) Create(c *gin.Context) {
 	var req erpdto.CreateCustomerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
@@ -67,7 +67,7 @@ func (p *ERPCustomerController) CreateCustomer(c *gin.Context) {
 	p.Response(c, http.StatusCreated, "Success", customer.ID)
 }
 
-func (p *ERPCustomerController) UpdateCustomer(c *gin.Context) {
+func (p *ERPCustomerController) Update(c *gin.Context) {
 	var req erpdto.UpdateCustomerRequest
 
 	if err := c.ShouldBindUri(&req); err != nil {
@@ -88,7 +88,7 @@ func (p *ERPCustomerController) UpdateCustomer(c *gin.Context) {
 	p.Response(c, http.StatusCreated, "Success", nil)
 }
 
-func (p *ERPCustomerController) DeleteCustomer(c *gin.Context) {
+func (p *ERPCustomerController) Delete(c *gin.Context) {
 	var req erpdto.CustomerUriRequest
 	if err := c.ShouldBindUri(&req); err != nil {
 		p.ResponseValidationError(c, err)

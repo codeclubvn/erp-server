@@ -89,21 +89,12 @@ func getDatabaseInstance(config *config.Config) (db *gorm.DB, err error) {
 
 func (d Database) RegisterTables() {
 	err := d.DB.AutoMigrate(
-		models.User{},
-		models.Role{},
-		models.Permission{},
-		models.Store{},
-		models.UserRole{},
-		models.Category{},
-		models.Product{},
-		models.CategoryProduct{},
-		models.Customer{},
-		models.Revenue{},
-		models.Order{},
-		models.Debt{},
-		models.OrderItem{},
-		models.Promote{},
-		models.PromoteUse{},
+		models.User{}, models.Role{}, models.Permission{},
+		models.Store{}, models.UserRole{}, models.Category{},
+		models.Product{}, models.CategoryProduct{}, models.Customer{},
+		models.Transaction{}, models.Order{}, models.Debt{},
+		models.OrderItem{}, models.Promote{}, models.PromoteUse{},
+		models.Wallet{}, models.TransactionCategory{}, models.Budget{},
 	)
 
 	if err != nil {

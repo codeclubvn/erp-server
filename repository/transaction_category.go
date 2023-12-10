@@ -10,47 +10,39 @@ import (
 	"go.uber.org/zap"
 )
 
-type TransactionRepository interface {
-	Create(tx *TX, ctx context.Context, trans *models.Transaction) error
-	Update(tx *TX, ctx context.Context, trans *models.Transaction) error
+type TransactionCategoryRepository interface {
+	Create(tx *TX, ctx context.Context, trans *models.TransactionCategory) error
+	Update(tx *TX, ctx context.Context, trans *models.TransactionCategory) error
 	Delete(tx *TX, ctx context.Context, id string) error
-	GetOneById(ctx context.Context, id string) (*models.Transaction, error)
-	GetTransactionByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Transaction, error)
-	GetList(ctx context.Context, req erpdto.ListTransactionRequest) (res []*models.Transaction, total int64, err error)
+	GetOneById(ctx context.Context, id string) (*models.TransactionCategory, error)
+	GetList(ctx context.Context, req erpdto.ListTransactionCategoryRequest) (res []*models.TransactionCategory, total int64, err error)
 }
 
-type transactionRepo struct {
+type transactionCategoryRepo struct {
 	db     *infrastructure.Database
 	logger *zap.Logger
 }
 
-func NewTransactionRepository(db *infrastructure.Database, logger *zap.Logger) TransactionRepository {
-	return &transactionRepo{
+func NewTransactionCategoryRepository(db *infrastructure.Database, logger *zap.Logger) TransactionCategoryRepository {
+	return &transactionCategoryRepo{
 		db:     db,
 		logger: logger,
 	}
 }
 
-func (r *transactionRepo) Create(tx *TX, ctx context.Context, trans *models.Transaction) error {
+func (r *transactionCategoryRepo) Create(tx *TX, ctx context.Context, trans *models.TransactionCategory) error {
 	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Create(trans).Error
 }
 
-func (r *transactionRepo) GetOneById(ctx context.Context, id string) (*models.Transaction, error) {
-	trans := &models.Transaction{}
+func (r *transactionCategoryRepo) GetOneById(ctx context.Context, id string) (*models.TransactionCategory, error) {
+	trans := &models.TransactionCategory{}
 	err := r.db.WithContext(ctx).Where("id = ?", id).First(trans).Error
 	return trans, err
 }
 
-func (r *transactionRepo) GetTransactionByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Transaction, error) {
-	tx = GetTX(tx, *r.db)
-	trans := &models.Transaction{}
-	err := tx.db.WithContext(ctx).Where("order_id = ?", orderId).First(trans).Error
-	return trans, err
-}
-
-func (r *transactionRepo) GetList(ctx context.Context, req erpdto.ListTransactionRequest) (res []*models.Transaction, total int64, err error) {
-	query := r.db.Model(&models.Transaction{})
+func (r *transactionCategoryRepo) GetList(ctx context.Context, req erpdto.ListTransactionCategoryRequest) (res []*models.TransactionCategory, total int64, err error) {
+	query := r.db.Model(&models.TransactionCategory{})
 	if req.Search != "" {
 		query = query.Where("name ilike ?", "%"+req.Search+"%")
 	}
@@ -67,12 +59,12 @@ func (r *transactionRepo) GetList(ctx context.Context, req erpdto.ListTransactio
 	return res, total, err
 }
 
-func (r *transactionRepo) Update(tx *TX, ctx context.Context, trans *models.Transaction) error {
+func (r *transactionCategoryRepo) Update(tx *TX, ctx context.Context, trans *models.TransactionCategory) error {
 	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Where("id = ?", trans.ID).Save(trans).Error
 }
 
-func (r *transactionRepo) Delete(tx *TX, ctx context.Context, id string) error {
+func (r *transactionCategoryRepo) Delete(tx *TX, ctx context.Context, id string) error {
 	tx = GetTX(tx, *r.db)
-	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Transaction{}).Error
+	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.TransactionCategory{}).Error
 }

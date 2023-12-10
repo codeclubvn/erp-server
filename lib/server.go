@@ -5,15 +5,12 @@ import (
 	"erp/api/middlewares"
 	config "erp/config"
 	constants "erp/constants"
-	"erp/infrastructure"
-	models "erp/models"
 	"fmt"
-	"strings"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-
 	"go.uber.org/fx"
+	"go.uber.org/zap"
+	"time"
 )
 
 type Handler struct {
@@ -26,7 +23,18 @@ func NewServerGroup(instance *gin.Engine) *Handler {
 	}
 }
 
-func NewServer(lifecycle fx.Lifecycle, zap *zap.Logger, config *config.Config, db *infrastructure.Database, middlewares *middlewares.GinMiddleware) *gin.Engine {
+func CORS() gin.HandlerFunc {
+	return cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"PUT", "PATCH", "GET", "POST", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
+		AllowCredentials: false,
+		MaxAge:           12 * time.Hour,
+	})
+}
+
+func NewServer(lifecycle fx.Lifecycle, zap *zap.Logger, config *config.Config, middlewares *middlewares.GinMiddleware) *gin.Engine {
 	switch config.Server.Env {
 	case constants.Dev, constants.Local:
 		gin.SetMode(gin.DebugMode)
@@ -46,7 +54,7 @@ func NewServer(lifecycle fx.Lifecycle, zap *zap.Logger, config *config.Config, d
 	//instance.Use(gozap.RecoveryWithZap(zap, true))
 
 	instance.Use(middlewares.JSONMiddleware)
-	instance.Use(middlewares.CORS)
+	instance.Use(CORS())
 	instance.Use(middlewares.Logger)
 	instance.Use(middlewares.ErrorHandler)
 	// instance.Use(middlewares.JWT(config, db))
@@ -55,7 +63,9 @@ func NewServer(lifecycle fx.Lifecycle, zap *zap.Logger, config *config.Config, d
 		OnStart: func(ctx context.Context) error {
 			zap.Info("Starting HTTP server")
 
-			SeedRoutes(instance, db)
+			//if err := SeedRoutes(instance, db); err != nil {
+			//	zap.Fatal(fmt.Sprint("HTTP server failed to start %w", err))
+			//}
 			go func() {
 				addr := fmt.Sprint(config.Server.Host, ":", config.Server.Port)
 				if err := instance.Run(addr); err != nil {
@@ -71,71 +81,4 @@ func NewServer(lifecycle fx.Lifecycle, zap *zap.Logger, config *config.Config, d
 	})
 
 	return instance
-}
-
-func SeedRoutes(engine *gin.Engine, db *infrastructure.Database) error {
-	// Seed permissions
-	permissions := []models.Permission{}
-	newPermissions := []models.Permission{}
-	db.Find(&permissions)
-
-	mapRoutes := make(map[string]models.Permission)
-	for _, r := range permissions {
-		mapRoutes[r.RoutePath] = r
-	}
-
-	for _, r := range engine.Routes() {
-		// permission name
-		// if method is GET, path is /api/v1/erp/users, permission name is get:users
-		// if method is POST, path is /api/v1/erp/users, permission name is create:users
-		// ...
-
-		_, isPublic := constants.PublicRoutes[r.Path]
-		_, isExist := mapRoutes[r.Path]
-
-		s := strings.Split(r.Path, "/")
-
-		if isExist {
-			continue
-		}
-
-		if isPublic || s[1]+"/"+s[2]+"/"+s[3] != "v1/api/erp" {
-			continue
-		}
-
-		last := s[len(s)-1]
-		if last == "" {
-			s = s[:len(s)-1]
-		}
-
-		permissionPrefix := ""
-		switch r.Method {
-		case "GET":
-			permissionPrefix = "get"
-		case "POST":
-			permissionPrefix = "create"
-		case "PUT":
-			permissionPrefix = "update"
-		case "DELETE":
-			permissionPrefix = "delete"
-		}
-
-		pn := permissionPrefix + ":" + s[len(s)-1]
-
-		newPermissions = append(newPermissions, models.Permission{
-			Method:    r.Method,
-			RoutePath: r.Path,
-			Name:      pn,
-		})
-	}
-
-	if len(newPermissions) == 0 {
-		return nil
-	}
-
-	err := db.DB.Create(&newPermissions).Error
-	if err != nil {
-		panic(err)
-	}
-	return nil
 }

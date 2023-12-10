@@ -10,41 +10,41 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type TransactionController struct {
+type WalletController struct {
 	api.BaseController
-	TransactionService erpservice.TransactionService
+	WalletService erpservice.WalletService
 }
 
-func NewTransactionController(transactionService erpservice.TransactionService) *TransactionController {
-	return &TransactionController{
-		TransactionService: transactionService,
+func NewWalletController(walletService erpservice.WalletService) *WalletController {
+	return &WalletController{
+		WalletService: walletService,
 	}
 }
 
-func (p *TransactionController) Create(c *gin.Context) {
-	var req erpdto.CreateTransactionRequest
+func (p *WalletController) Create(c *gin.Context) {
+	var req erpdto.CreateWalletRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
 		return
 	}
 
-	transaction, err := p.TransactionService.Create(nil, c.Request.Context(), req)
+	wallet, err := p.WalletService.Create(nil, c.Request.Context(), req)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
 	}
 
-	p.Response(c, http.StatusCreated, "Success", transaction.ID)
+	p.Response(c, http.StatusCreated, "Success", wallet.ID)
 }
 
-func (p *TransactionController) Update(c *gin.Context) {
-	var req erpdto.UpdateTransactionRequest
+func (p *WalletController) Update(c *gin.Context) {
+	var req erpdto.UpdateWalletRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
 		return
 	}
 
-	_, err := p.TransactionService.Update(c.Request.Context(), req)
+	_, err := p.WalletService.Update(c.Request.Context(), req)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
@@ -53,25 +53,25 @@ func (p *TransactionController) Update(c *gin.Context) {
 	p.Response(c, http.StatusOK, "Success", nil)
 }
 
-func (p *TransactionController) List(c *gin.Context) {
-	var req erpdto.ListTransactionRequest
+func (p *WalletController) List(c *gin.Context) {
+	var req erpdto.ListWalletRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		p.ResponseValidationError(c, err)
 		return
 	}
 
-	transactions, total, err := p.TransactionService.GetList(c.Request.Context(), req)
+	wallets, total, err := p.WalletService.GetList(c.Request.Context(), req)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
 	}
 
-	p.ResponseList(c, "Success", &total, transactions)
+	p.ResponseList(c, "Success", &total, wallets)
 }
 
-func (p *TransactionController) Delete(c *gin.Context) {
+func (p *WalletController) Delete(c *gin.Context) {
 	id := utils.ParseStringIDFromUri(c)
-	err := p.TransactionService.Delete(c.Request.Context(), id)
+	err := p.WalletService.Delete(c.Request.Context(), id)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
@@ -80,9 +80,9 @@ func (p *TransactionController) Delete(c *gin.Context) {
 	p.Response(c, http.StatusOK, "Success", nil)
 }
 
-func (p *TransactionController) GetOne(c *gin.Context) {
+func (p *WalletController) GetOne(c *gin.Context) {
 	id := utils.ParseStringIDFromUri(c)
-	res, err := p.TransactionService.GetOne(c, id)
+	res, err := p.WalletService.GetOne(c, id)
 	if err != nil {
 		p.ResponseError(c, err)
 		return

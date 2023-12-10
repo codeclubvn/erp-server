@@ -5,12 +5,9 @@ import "net/http"
 var (
 	ErrInternalServerError         = "10000"
 	ErrUnauthorizedAccess          = "10001"
-	ErrTokenBadSignedMethod        = "10002"
 	ErrTokenExpired                = "10003"
 	ErrTokenInvalid                = "10004"
-	ErrTokenMalformed              = "10005"
 	ErrUserNotFound                = "10006"
-	ErrProductNotFound             = "10007"
 	ErrRequestTimeout              = "10008"
 	ErrTokenMissing                = "10009"
 	ErrValidation                  = "10010"
@@ -30,14 +27,12 @@ var (
 	ErrDiscountAmountInvalid       = "10024"
 	ErrDeliveryFeeInvalid          = "10025"
 	ErrOrderItemInvalid            = "10026"
-	ErrPriceOfProductInvalid       = "10027"
-	ErrAmountIsNotMatched          = "10028"
 	ErrQuantityIsNotEnough         = "10029"
 	ErrProductInvalid              = "10030"
 	ErrPromoteCodeMaxUse           = "10031"
 	ErrPromoteCodeRequiredCustomer = "10032"
 	ErrOrderStatus                 = "10033"
-	ErrRecordNotFound              = "record not found"
+	ErrWalletNameAlreadyExist      = "10034"
 )
 
 type MessageAndStatus struct {
@@ -46,17 +41,17 @@ type MessageAndStatus struct {
 }
 
 var MapErrorCodeMessage = map[string]MessageAndStatus{
-	ErrRecordNotFound:    {"record not found", http.StatusNotFound},
-	ErrRequestTimeout:    {"Request Timeout", http.StatusRequestTimeout},
-	ErrTokenMissing:      {"Token Missing", http.StatusUnauthorized},
-	ErrValidation:        {"Validation Error", http.StatusBadRequest},
-	ErrInvalidUserID:     {"Invalid User ID", http.StatusBadRequest},
-	ErrMissingXStoreID:   {"Missing x-store-id", http.StatusBadRequest},
-	ErrPermissionDenied:  {"Permission Denied", http.StatusForbidden},
-	ErrInvalidPassword:   {"Invalid Password", http.StatusBadRequest},
-	ErrStoreNotFound:     {"Store Not Found", http.StatusNotFound},
-	ErrOrderItemRequired: {"order_items Required", http.StatusBadRequest},
-	ErrTypeInvalid:       {"Only accept type 'percent' or 'amount'", http.StatusBadRequest},
-	ErrNotFound:          {"Status Not Found", http.StatusNotFound},
-	ErrDateNotBetween:    {"Date Not Between", http.StatusBadRequest},
+	ErrRequestTimeout:         {"Request Timeout", http.StatusRequestTimeout},
+	ErrTokenMissing:           {"Token Missing", http.StatusUnauthorized},
+	ErrValidation:             {"Validation Error", http.StatusBadRequest},
+	ErrInvalidUserID:          {"Invalid User ID", http.StatusBadRequest},
+	ErrMissingXStoreID:        {"Missing x-store-id", http.StatusBadRequest},
+	ErrPermissionDenied:       {"Permission Denied", http.StatusForbidden},
+	ErrInvalidPassword:        {"Invalid Password", http.StatusBadRequest},
+	ErrStoreNotFound:          {"Store Not Found", http.StatusNotFound},
+	ErrOrderItemRequired:      {"order_items Required", http.StatusBadRequest},
+	ErrTypeInvalid:            {"Only accept type 'percent' or 'amount'", http.StatusBadRequest},
+	ErrNotFound:               {"Status Not Found", http.StatusNotFound},
+	ErrDateNotBetween:         {"Date Not Between", http.StatusBadRequest},
+	ErrWalletNameAlreadyExist: {"Wallet name already exists", http.StatusBadRequest},
 }

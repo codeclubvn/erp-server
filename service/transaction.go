@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"erp/constants"
 	erpdto "erp/dto/erp"
 	"erp/infrastructure"
 	"erp/models"
@@ -10,69 +11,112 @@ import (
 	"go.uber.org/zap"
 )
 
-type RevenueService interface {
-	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateRevenueRequest) (*models.Transaction, error)
-	Update(ctx context.Context, req erpdto.UpdateRevenueRequest) (*models.Transaction, error)
-	GetList(ctx context.Context, req erpdto.ListRevenueRequest) ([]*models.Transaction, int64, error)
-	Delete(ctx context.Context, revenueID string) error
-	GetRevenueByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Transaction, error)
+type TransactionService interface {
+	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateTransactionRequest) (*models.Transaction, error)
+	Update(ctx context.Context, req erpdto.UpdateTransactionRequest) (*models.Transaction, error)
+	GetList(ctx context.Context, req erpdto.ListTransactionRequest) ([]*models.Transaction, int64, error)
+	Delete(ctx context.Context, transactionID string) error
+	GetTransactionByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Transaction, error)
 	GetOne(ctx context.Context, id string) (*models.Transaction, error)
 }
 
-type revenueService struct {
-	revenueRepo repository.RevenueRepository
-	db          *infrastructure.Database
-	logger      *zap.Logger
+type transactionService struct {
+	transactionRepo repository.TransactionRepository
+	walletRepo      repository.WalletRepository
+	db              *infrastructure.Database
+	logger          *zap.Logger
 }
 
-func NewRevenueService(revenueRepo repository.RevenueRepository, db *infrastructure.Database, logger *zap.Logger) RevenueService {
-	return &revenueService{
-		revenueRepo: revenueRepo,
-		db:          db,
-		logger:      logger,
+func NewTransactionService(transactionRepo repository.TransactionRepository, db *infrastructure.Database, logger *zap.Logger, walletRepo repository.WalletRepository) TransactionService {
+	return &transactionService{
+		transactionRepo: transactionRepo,
+		walletRepo:      walletRepo,
+		db:              db,
+		logger:          logger,
 	}
 }
 
-func (p *revenueService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateRevenueRequest) (*models.Transaction, error) {
+func (s *transactionService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateTransactionRequest) (*models.Transaction, error) {
 	output := &models.Transaction{}
-	if err := copier.Copy(&output, &req); err != nil {
-		return nil, err
-	}
+	err := repository.WithTransaction(s.db, func(tx *repository.TX) error {
+		if err := s.CalculateWalletAmount(tx, ctx, req.WalletId.String(), req.Amount, req.Status); err != nil {
+			return err
+		}
 
-	if err := p.revenueRepo.Create(nil, ctx, output); err != nil {
-		return nil, err
-	}
-	return output, nil
+		if err := copier.Copy(&output, &req); err != nil {
+			return err
+		}
+		return s.transactionRepo.Create(tx, ctx, output)
+	})
+	return output, err
 }
 
-func (p *revenueService) Update(ctx context.Context, req erpdto.UpdateRevenueRequest) (*models.Transaction, error) {
-	output, err := p.revenueRepo.GetOneById(ctx, req.Id.String())
+func (s *transactionService) Update(ctx context.Context, req erpdto.UpdateTransactionRequest) (*models.Transaction, error) {
+	output, err := s.transactionRepo.GetOneById(ctx, req.Id.String())
 	if err != nil {
 		return nil, err
 	}
 
-	if err := copier.Copy(&output, &req); err != nil {
-		return nil, err
+	err = repository.WithTransaction(s.db, func(tx *repository.TX) error {
+		amount := req.Amount - output.Amount
+		if err = s.CalculateWalletAmount(tx, ctx, req.WalletId.String(), amount, req.Status); err != nil {
+			return err
+		}
+
+		if err = copier.Copy(&output, &req); err != nil {
+			return err
+		}
+		return s.transactionRepo.Update(tx, ctx, output)
+	})
+
+	return output, err
+}
+
+func (s *transactionService) GetList(ctx context.Context, req erpdto.ListTransactionRequest) ([]*models.Transaction, int64, error) {
+	return s.transactionRepo.GetList(ctx, req)
+}
+
+func (s *transactionService) GetOne(ctx context.Context, id string) (*models.Transaction, error) {
+	return s.transactionRepo.GetOneById(ctx, id)
+}
+
+func (s *transactionService) GetTransactionByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Transaction, error) {
+	return s.transactionRepo.GetTransactionByOrderId(tx, ctx, orderId)
+}
+
+func (s *transactionService) Delete(ctx context.Context, transactionID string) error {
+	output, err := s.transactionRepo.GetOneById(ctx, transactionID)
+	if err != nil {
+		return err
+	}
+	err = repository.WithTransaction(s.db, func(tx *repository.TX) error {
+		if err = s.CalculateWalletAmount(tx, ctx, output.WalletId.String(), -output.Amount, output.Status); err != nil {
+			return err
+		}
+		return s.transactionRepo.Delete(nil, ctx, transactionID)
+	})
+	return err
+}
+
+func (s *transactionService) CalculateWalletAmount(tx *repository.TX, ctx context.Context, walletId string, amount float64, status string) error {
+	if walletId == "" || amount == 0 {
+		return nil
 	}
 
-	if err := p.revenueRepo.Update(nil, ctx, output); err != nil {
-		return nil, err
+	wallet, err := s.walletRepo.GetOneById(ctx, walletId)
+	if err != nil {
+		return err
 	}
-	return output, nil
-}
 
-func (p *revenueService) GetList(ctx context.Context, req erpdto.ListRevenueRequest) ([]*models.Transaction, int64, error) {
-	return p.revenueRepo.GetList(ctx, req)
-}
+	if status == constants.StatusIn {
+		wallet.Amount += amount
+	}
+	if status == constants.StatusOut {
+		wallet.Amount -= amount
+	}
 
-func (p *revenueService) GetOne(ctx context.Context, id string) (*models.Transaction, error) {
-	return p.revenueRepo.GetOneById(ctx, id)
-}
-
-func (p *revenueService) GetRevenueByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Transaction, error) {
-	return p.revenueRepo.GetRevenueByOrderId(tx, ctx, orderId)
-}
-
-func (p *revenueService) Delete(ctx context.Context, revenueID string) error {
-	return p.revenueRepo.Delete(nil, ctx, revenueID)
+	if err := s.walletRepo.Update(tx, ctx, wallet); err != nil {
+		return err
+	}
+	return nil
 }

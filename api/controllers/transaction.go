@@ -10,41 +10,41 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type RevenueController struct {
+type TransactionController struct {
 	api.BaseController
-	revenueService erpservice.RevenueService
+	TransactionService erpservice.TransactionService
 }
 
-func NewRevenueController(revenueService erpservice.RevenueService) *RevenueController {
-	return &RevenueController{
-		revenueService: revenueService,
+func NewTransactionController(transactionService erpservice.TransactionService) *TransactionController {
+	return &TransactionController{
+		TransactionService: transactionService,
 	}
 }
 
-func (p *RevenueController) Create(c *gin.Context) {
-	var req erpdto.CreateRevenueRequest
+func (p *TransactionController) Create(c *gin.Context) {
+	var req erpdto.CreateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
 		return
 	}
 
-	revenue, err := p.revenueService.Create(nil, c.Request.Context(), req)
+	transaction, err := p.TransactionService.Create(nil, c.Request.Context(), req)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
 	}
 
-	p.Response(c, http.StatusCreated, "Success", revenue.ID)
+	p.Response(c, http.StatusCreated, "Success", transaction.ID)
 }
 
-func (p *RevenueController) Update(c *gin.Context) {
-	var req erpdto.UpdateRevenueRequest
+func (p *TransactionController) Update(c *gin.Context) {
+	var req erpdto.UpdateTransactionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
 		return
 	}
 
-	_, err := p.revenueService.Update(c.Request.Context(), req)
+	_, err := p.TransactionService.Update(c.Request.Context(), req)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
@@ -53,25 +53,25 @@ func (p *RevenueController) Update(c *gin.Context) {
 	p.Response(c, http.StatusOK, "Success", nil)
 }
 
-func (p *RevenueController) List(c *gin.Context) {
-	var req erpdto.ListRevenueRequest
+func (p *TransactionController) List(c *gin.Context) {
+	var req erpdto.ListTransactionRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		p.ResponseValidationError(c, err)
 		return
 	}
 
-	revenues, total, err := p.revenueService.GetList(c.Request.Context(), req)
+	transactions, total, err := p.TransactionService.GetList(c.Request.Context(), req)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
 	}
 
-	p.ResponseList(c, "Success", &total, revenues)
+	p.ResponseList(c, "Success", &total, transactions)
 }
 
-func (p *RevenueController) Delete(c *gin.Context) {
+func (p *TransactionController) Delete(c *gin.Context) {
 	id := utils.ParseStringIDFromUri(c)
-	err := p.revenueService.Delete(c.Request.Context(), id)
+	err := p.TransactionService.Delete(c.Request.Context(), id)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
@@ -80,9 +80,9 @@ func (p *RevenueController) Delete(c *gin.Context) {
 	p.Response(c, http.StatusOK, "Success", nil)
 }
 
-func (p *RevenueController) GetOne(c *gin.Context) {
+func (p *TransactionController) GetOne(c *gin.Context) {
 	id := utils.ParseStringIDFromUri(c)
-	res, err := p.revenueService.GetOne(c, id)
+	res, err := p.TransactionService.GetOne(c, id)
 	if err != nil {
 		p.ResponseError(c, err)
 		return

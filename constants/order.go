@@ -8,12 +8,6 @@ const (
 	VAT                 = 8
 	TypeAmount          = "amount"
 
-	DebtStatusOut = "out"
-	DebtStatusIn  = "in"
-
-	RevenueStatusIn  = "in"
-	RevenueStatusOut = "out"
-
 	InActive = "inactive"
 
 	Confirm  = "confirm"

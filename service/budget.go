@@ -10,43 +10,44 @@ import (
 	"go.uber.org/zap"
 )
 
-type TransactionService interface {
-	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateTransactionRequest) (*models.Transaction, error)
-	Update(ctx context.Context, req erpdto.UpdateTransactionRequest) (*models.Transaction, error)
-	GetList(ctx context.Context, req erpdto.ListTransactionRequest) ([]*models.Transaction, int64, error)
-	Delete(ctx context.Context, transactionID string) error
-	GetTransactionByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Transaction, error)
-	GetOne(ctx context.Context, id string) (*models.Transaction, error)
+type BudgetService interface {
+	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateBudgetRequest) (*models.Budget, error)
+	Update(ctx context.Context, req erpdto.UpdateBudgetRequest) (*models.Budget, error)
+	Delete(ctx context.Context, budgetID string) error
+	GetOne(ctx context.Context, id string) (*models.Budget, error)
+	GetList(ctx context.Context, req erpdto.ListBudgetRequest) ([]*models.Budget, int64, error)
 }
 
-type transactionService struct {
+type budgetService struct {
+	budgetRepo      repository.BudgetRepository
 	transactionRepo repository.TransactionRepository
 	db              *infrastructure.Database
-	logger      *zap.Logger
+	logger          *zap.Logger
 }
 
-func NewTransactionService(transactionRepo repository.TransactionRepository, db *infrastructure.Database, logger *zap.Logger) TransactionService {
-	return &transactionService{
-		transactionRepo: transactionRepo,
+func NewBudgetService(budgetRepo repository.BudgetRepository, db *infrastructure.Database, logger *zap.Logger, transactionRepo repository.TransactionRepository) BudgetService {
+	return &budgetService{
+		budgetRepo:      budgetRepo,
 		db:              db,
 		logger:          logger,
+		transactionRepo: transactionRepo,
 	}
 }
 
-func (p *transactionService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateTransactionRequest) (*models.Transaction, error) {
-	output := &models.Transaction{}
+func (p *budgetService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateBudgetRequest) (*models.Budget, error) {
+	output := &models.Budget{}
 	if err := copier.Copy(&output, &req); err != nil {
 		return nil, err
 	}
 
-	if err := p.transactionRepo.Create(nil, ctx, output); err != nil {
+	if err := p.budgetRepo.Create(nil, ctx, output); err != nil {
 		return nil, err
 	}
 	return output, nil
 }
 
-func (p *transactionService) Update(ctx context.Context, req erpdto.UpdateTransactionRequest) (*models.Transaction, error) {
-	output, err := p.transactionRepo.GetOneById(ctx, req.Id.String())
+func (p *budgetService) Update(ctx context.Context, req erpdto.UpdateBudgetRequest) (*models.Budget, error) {
+	output, err := p.budgetRepo.GetOneById(ctx, req.Id.String())
 	if err != nil {
 		return nil, err
 	}
@@ -55,24 +56,20 @@ func (p *transactionService) Update(ctx context.Context, req erpdto.UpdateTransa
 		return nil, err
 	}
 
-	if err := p.transactionRepo.Update(nil, ctx, output); err != nil {
+	if err := p.budgetRepo.Update(nil, ctx, output); err != nil {
 		return nil, err
 	}
 	return output, nil
 }
 
-func (p *transactionService) GetList(ctx context.Context, req erpdto.ListTransactionRequest) ([]*models.Transaction, int64, error) {
-	return p.transactionRepo.GetList(ctx, req)
+func (p *budgetService) GetList(ctx context.Context, req erpdto.ListBudgetRequest) ([]*models.Budget, int64, error) {
+	return p.budgetRepo.GetList(ctx, req)
 }
 
-func (p *transactionService) GetOne(ctx context.Context, id string) (*models.Transaction, error) {
-	return p.transactionRepo.GetOneById(ctx, id)
+func (p *budgetService) GetOne(ctx context.Context, id string) (*models.Budget, error) {
+	return p.budgetRepo.GetOneById(ctx, id)
 }
 
-func (p *transactionService) GetTransactionByOrderId(tx *repository.TX, ctx context.Context, orderId string) (*models.Transaction, error) {
-	return p.transactionRepo.GetTransactionByOrderId(tx, ctx, orderId)
-}
-
-func (p *transactionService) Delete(ctx context.Context, transactionID string) error {
-	return p.transactionRepo.Delete(nil, ctx, transactionID)
+func (p *budgetService) Delete(ctx context.Context, budgetID string) error {
+	return p.budgetRepo.Delete(nil, ctx, budgetID)
 }

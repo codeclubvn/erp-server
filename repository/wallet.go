@@ -10,47 +10,47 @@ import (
 	"go.uber.org/zap"
 )
 
-type TransactionRepository interface {
-	Create(tx *TX, ctx context.Context, trans *models.Transaction) error
-	Update(tx *TX, ctx context.Context, trans *models.Transaction) error
+type WalletRepository interface {
+	Create(tx *TX, ctx context.Context, trans *models.Wallet) error
+	Update(tx *TX, ctx context.Context, trans *models.Wallet) error
 	Delete(tx *TX, ctx context.Context, id string) error
-	GetOneById(ctx context.Context, id string) (*models.Transaction, error)
-	GetTransactionByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Transaction, error)
-	GetList(ctx context.Context, req erpdto.ListTransactionRequest) (res []*models.Transaction, total int64, err error)
+	GetOneById(ctx context.Context, id string) (*models.Wallet, error)
+	GetOneByName(ctx context.Context, name string) (*models.Wallet, error)
+	GetList(ctx context.Context, req erpdto.ListWalletRequest) (res []*models.Wallet, total int64, err error)
+	SetAllWalletToFalse(ctx context.Context) error
 }
 
-type transactionRepo struct {
+type walletRepo struct {
 	db     *infrastructure.Database
 	logger *zap.Logger
 }
 
-func NewTransactionRepository(db *infrastructure.Database, logger *zap.Logger) TransactionRepository {
-	return &transactionRepo{
+func NewWalletRepository(db *infrastructure.Database, logger *zap.Logger) WalletRepository {
+	return &walletRepo{
 		db:     db,
 		logger: logger,
 	}
 }
 
-func (r *transactionRepo) Create(tx *TX, ctx context.Context, trans *models.Transaction) error {
+func (r *walletRepo) Create(tx *TX, ctx context.Context, trans *models.Wallet) error {
 	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Create(trans).Error
 }
 
-func (r *transactionRepo) GetOneById(ctx context.Context, id string) (*models.Transaction, error) {
-	trans := &models.Transaction{}
+func (r *walletRepo) GetOneById(ctx context.Context, id string) (*models.Wallet, error) {
+	trans := &models.Wallet{}
 	err := r.db.WithContext(ctx).Where("id = ?", id).First(trans).Error
 	return trans, err
 }
 
-func (r *transactionRepo) GetTransactionByOrderId(tx *TX, ctx context.Context, orderId string) (*models.Transaction, error) {
-	tx = GetTX(tx, *r.db)
-	trans := &models.Transaction{}
-	err := tx.db.WithContext(ctx).Where("order_id = ?", orderId).First(trans).Error
+func (r *walletRepo) GetOneByName(ctx context.Context, name string) (*models.Wallet, error) {
+	trans := &models.Wallet{}
+	err := r.db.WithContext(ctx).Where("name = ?", name).First(trans).Error
 	return trans, err
 }
 
-func (r *transactionRepo) GetList(ctx context.Context, req erpdto.ListTransactionRequest) (res []*models.Transaction, total int64, err error) {
-	query := r.db.Model(&models.Transaction{})
+func (r *walletRepo) GetList(ctx context.Context, req erpdto.ListWalletRequest) (res []*models.Wallet, total int64, err error) {
+	query := r.db.Model(&models.Wallet{})
 	if req.Search != "" {
 		query = query.Where("name ilike ?", "%"+req.Search+"%")
 	}
@@ -67,12 +67,17 @@ func (r *transactionRepo) GetList(ctx context.Context, req erpdto.ListTransactio
 	return res, total, err
 }
 
-func (r *transactionRepo) Update(tx *TX, ctx context.Context, trans *models.Transaction) error {
+func (r *walletRepo) Update(tx *TX, ctx context.Context, trans *models.Wallet) error {
 	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Where("id = ?", trans.ID).Save(trans).Error
 }
 
-func (r *transactionRepo) Delete(tx *TX, ctx context.Context, id string) error {
+func (r *walletRepo) Delete(tx *TX, ctx context.Context, id string) error {
 	tx = GetTX(tx, *r.db)
-	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Transaction{}).Error
+	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Wallet{}).Error
+}
+
+func (r *walletRepo) SetAllWalletToFalse(ctx context.Context) error {
+	userId := ctx.Value("x-user-id").(string)
+	return r.db.WithContext(ctx).Model(&models.Wallet{}).Where("updater_id = ?", userId).Update("is_default", false).Error
 }

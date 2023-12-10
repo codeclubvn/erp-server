@@ -10,41 +10,41 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type TransactionController struct {
+type TransactionCategoryController struct {
 	api.BaseController
-	TransactionService erpservice.TransactionService
+	TransactionCategoryService erpservice.TransactionCategoryService
 }
 
-func NewTransactionController(revenueService erpservice.TransactionService) *TransactionController {
-	return &TransactionController{
-		TransactionService: revenueService,
+func NewTransactionCategoryController(transactionCategoryService erpservice.TransactionCategoryService) *TransactionCategoryController {
+	return &TransactionCategoryController{
+		TransactionCategoryService: transactionCategoryService,
 	}
 }
 
-func (p *TransactionController) Create(c *gin.Context) {
-	var req erpdto.CreateRevenueRequest
+func (p *TransactionCategoryController) Create(c *gin.Context) {
+	var req erpdto.CreateTransactionCategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
 		return
 	}
 
-	revenue, err := p.TransactionService.Create(nil, c.Request.Context(), req)
+	transactionCategory, err := p.TransactionCategoryService.Create(nil, c.Request.Context(), req)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
 	}
 
-	p.Response(c, http.StatusCreated, "Success", revenue.ID)
+	p.Response(c, http.StatusCreated, "Success", transactionCategory.ID)
 }
 
-func (p *TransactionController) Update(c *gin.Context) {
-	var req erpdto.UpdateRevenueRequest
+func (p *TransactionCategoryController) Update(c *gin.Context) {
+	var req erpdto.UpdateTransactionCategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
 		return
 	}
 
-	_, err := p.TransactionService.Update(c.Request.Context(), req)
+	_, err := p.TransactionCategoryService.Update(c.Request.Context(), req)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
@@ -53,25 +53,25 @@ func (p *TransactionController) Update(c *gin.Context) {
 	p.Response(c, http.StatusOK, "Success", nil)
 }
 
-func (p *TransactionController) List(c *gin.Context) {
-	var req erpdto.ListRevenueRequest
+func (p *TransactionCategoryController) List(c *gin.Context) {
+	var req erpdto.ListTransactionCategoryRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		p.ResponseValidationError(c, err)
 		return
 	}
 
-	revenues, total, err := p.TransactionService.GetList(c.Request.Context(), req)
+	transactionCategorys, total, err := p.TransactionCategoryService.GetList(c.Request.Context(), req)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
 	}
 
-	p.ResponseList(c, "Success", &total, revenues)
+	p.ResponseList(c, "Success", &total, transactionCategorys)
 }
 
-func (p *TransactionController) Delete(c *gin.Context) {
+func (p *TransactionCategoryController) Delete(c *gin.Context) {
 	id := utils.ParseStringIDFromUri(c)
-	err := p.TransactionService.Delete(c.Request.Context(), id)
+	err := p.TransactionCategoryService.Delete(c.Request.Context(), id)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
@@ -80,9 +80,9 @@ func (p *TransactionController) Delete(c *gin.Context) {
 	p.Response(c, http.StatusOK, "Success", nil)
 }
 
-func (p *TransactionController) GetOne(c *gin.Context) {
+func (p *TransactionCategoryController) GetOne(c *gin.Context) {
 	id := utils.ParseStringIDFromUri(c)
-	res, err := p.TransactionService.GetOne(c, id)
+	res, err := p.TransactionCategoryService.GetOne(c, id)
 	if err != nil {
 		p.ResponseError(c, err)
 		return

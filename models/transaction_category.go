@@ -1,10 +1,10 @@
 package models
 
-type RevenueCategory struct {
+type TransactionCategory struct {
 	BaseModel
-	Name string `gorm:"column:name;type:varchar(255);not null"`
+	Name string `json:"name" gorm:"column:name;type:varchar(255);not null"`
 }
 
-func (p *RevenueCategory) TableName() string {
-	return "revenue_category"
+func (p *TransactionCategory) TableName() string {
+	return "transaction_categories"
 }

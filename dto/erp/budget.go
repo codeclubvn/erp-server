@@ -2,24 +2,35 @@ package erpdto
 
 import (
 	"erp/api/request"
+	"erp/models"
 	uuid "github.com/satori/go.uuid"
+	"time"
 )
 
-type CreateTransactionRequest struct {
-	OrderId uuid.UUID `json:"order_id"`
-	Amount  float64   `json:"amount" binding:"required"`
-	Status  string    `json:"status" binding:"required"`
-	Note    string    `json:"note" binding:"required"`
+type CreateBudgetRequest struct {
+	Amount                float64    `json:"amount" binding:"required"`
+	Note                  string     `json:"note"`
+	TransactionCategoryId uuid.UUID  `json:"transaction_category_id" binding:"required"`
+	StartTime             *time.Time `json:"start_time"`
+	EndTime               *time.Time `json:"end_time"`
+	Repeat                bool       `json:"repeat"`
 }
 
-type UpdateTransactionRequest struct {
-	Id      uuid.UUID `json:"id"`
-	OrderId uuid.UUID `json:"order_id"`
-	Amount  float64   `json:"amount" binding:"required"`
-	Status  string    `json:"status" binding:"required"`
-	Note    string    `json:"note" binding:"required"`
+type UpdateBudgetRequest struct {
+	Id                    uuid.UUID  `json:"id" binding:"required"`
+	Amount                float64    `json:"amount" binding:"required"`
+	Note                  string     `json:"note"`
+	TransactionCategoryId uuid.UUID  `json:"transaction_category_id" binding:"required"`
+	StartTime             *time.Time `json:"start_time"`
+	EndTime               *time.Time `json:"end_time"`
+	Repeat                bool       `json:"repeat"`
 }
 
-type ListTransactionRequest struct {
+type ListBudgetRequest struct {
 	request.PageOptions
+}
+
+type BudgetResponse struct {
+	models.Budget
+	Spent float64 `json:"spent"`
 }

@@ -3,7 +3,6 @@ package middlewares
 import (
 	config "erp/config"
 	"erp/infrastructure"
-
 	"go.uber.org/zap"
 )
 

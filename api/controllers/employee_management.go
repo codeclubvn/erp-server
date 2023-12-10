@@ -26,7 +26,7 @@ func NewERPEmployeeManagementController(handler *lib.Handler, logger *zap.Logger
 	}
 }
 
-func (p *ERPEmployeeManagementController) ListPermission(c *gin.Context) {
+func (p *ERPEmployeeManagementController) GetList(c *gin.Context) {
 	data, total, err := p.employeeManagementService.ListPermission()
 	if err != nil {
 		p.ResponseError(c, err)

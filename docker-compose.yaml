@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: password
       POSTGRES_DB: erp_server
     ports:
-      - 5432:5432
+      - "5432:5432"
 
   server:
     image: erp_server:latest
@@ -17,7 +17,12 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - 8008:8008
+      - "8008:8008"
     depends_on:
       - database
     restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:8008/api/v1/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
