@@ -13,10 +13,10 @@ import (
 
 type ERPRoleRepository interface {
 	UpdateRolePermission(tx *TX, ctx context.Context, roleID string, permissionIDs []string) error
-	CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Transaction, error)
+	CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Cashbook, error)
 	AssignRevenueToUser(tx *TX, ctx context.Context, userID string, roleID string, storeID string, isStoreOwner bool) error
-	FindRevenueByIDs(ids []string) ([]models.Transaction, error)
-	GetRevenueByRevenueID(ctx context.Context, id string) (*models.Transaction, error)
+	FindRevenueByIDs(ids []string) ([]models.Cashbook, error)
+	GetRevenueByRevenueID(ctx context.Context, id string) (*models.Cashbook, error)
 	FindRoleByIDs(ids []string) ([]models.Role, error)
 	AssignRoleToUser(tx *TX, ctx context.Context, userID string, roleID string, storeID string, isStoreOwner bool) error
 	FindRoleByID(ctx context.Context, id string) (*models.Role, error)
@@ -27,7 +27,7 @@ type erpRoleRepository struct {
 	db *infrastructure.Database
 }
 
-func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Transaction, error) {
+func (e *erpRoleRepository) CreateRole(tx *TX, ctx context.Context, name string, extends []string, storeID string) (*models.Cashbook, error) {
 	//TODO implement me
 	panic("implement me")
 }
@@ -37,12 +37,12 @@ func (e *erpRoleRepository) AssignRevenueToUser(tx *TX, ctx context.Context, use
 	panic("implement me")
 }
 
-func (e *erpRoleRepository) FindRevenueByIDs(ids []string) ([]models.Transaction, error) {
+func (e *erpRoleRepository) FindRevenueByIDs(ids []string) ([]models.Cashbook, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (e *erpRoleRepository) GetRevenueByRevenueID(ctx context.Context, id string) (*models.Transaction, error) {
+func (e *erpRoleRepository) GetRevenueByRevenueID(ctx context.Context, id string) (*models.Cashbook, error) {
 	//TODO implement me
 	panic("implement me")
 }

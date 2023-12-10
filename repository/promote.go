@@ -7,12 +7,13 @@ import (
 	"erp/models"
 	"erp/utils"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 )
 
 type IPromoteRepo interface {
 	Create(ctx context.Context, promote *models.Promote) error
 	GetPromoteById(ctx context.Context, id string) (*models.Promote, error)
-	CountCustomerUsePromote(ctx context.Context, customerId, code string) (int64, error)
+	CountCustomerUsePromote(ctx context.Context, customerId *uuid.UUID, code string) (int64, error)
 	UpdateQuantityUse(ctx context.Context, code string, quantityUse int) error
 	CreatePromoteUse(ctx context.Context, promoteUse *models.PromoteUse) error
 	GetPromoteByCode(ctx context.Context, code string) (*models.Promote, error)
@@ -53,7 +54,7 @@ func (r *promoteRep) GetPromoteByCode(ctx context.Context, code string) (*models
 	return &promote, nil
 }
 
-func (r *promoteRep) CountCustomerUsePromote(ctx context.Context, customerId, code string) (int64, error) {
+func (r *promoteRep) CountCustomerUsePromote(ctx context.Context, customerId *uuid.UUID, code string) (int64, error) {
 	var total int64 = 0
 	if err := r.db.WithContext(ctx).Model(models.PromoteUse{}).
 		Where("customer_id = ? and promote_code = ?", customerId, code).

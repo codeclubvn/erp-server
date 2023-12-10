@@ -1,4 +1,4 @@
-package erpdto
+package finance
 
 import (
 	"erp/api/request"

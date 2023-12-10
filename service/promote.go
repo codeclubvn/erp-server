@@ -10,13 +10,14 @@ import (
 	"erp/utils"
 	"github.com/jinzhu/copier"
 	"github.com/pkg/errors"
+	uuid "github.com/satori/go.uuid"
 	"log"
 )
 
 type IPromoteService interface {
 	CreateFlow(ctx context.Context, req erpdto.CreatePromoteRequest) (*models.Promote, error)
 	GetPromoteById(ctx context.Context, id string) (*models.Promote, error)
-	CountCustomerUsePromote(ctx context.Context, customerId, code string) (int64, error)
+	CountCustomerUsePromote(ctx context.Context, customerId *uuid.UUID, code string) (int64, error)
 	UpdateQuantityUse(ctx context.Context, code string, quantityUse int) error
 	CreatePromoteUse(ctx context.Context, req erpdto.CreatePromoteUseRequest) error
 	GetPromoteByCode(ctx context.Context, code string) (*models.Promote, error)
@@ -71,7 +72,7 @@ func (s *promoteService) GetPromoteByCode(ctx context.Context, code string) (*mo
 	return s.promoteRepo.GetPromoteByCode(ctx, code)
 }
 
-func (s *promoteService) CountCustomerUsePromote(ctx context.Context, customerId, code string) (int64, error) {
+func (s *promoteService) CountCustomerUsePromote(ctx context.Context, customerId *uuid.UUID, code string) (int64, error) {
 	return s.promoteRepo.CountCustomerUsePromote(ctx, customerId, code)
 }
 func (s *promoteService) UpdateQuantityUse(ctx context.Context, code string, quantityUse int) error {

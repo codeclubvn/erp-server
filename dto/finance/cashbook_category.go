@@ -1,4 +1,4 @@
-package erpdto
+package finance
 
 import (
 	"erp/api/request"
@@ -8,6 +8,7 @@ import (
 type CreateTransactionCategoryRequest struct {
 	Name string `json:"name" binding:"required"`
 	Type string `json:"type" binding:"required"` // expense, income, debt
+
 }
 
 type UpdateTransactionCategoryRequest struct {

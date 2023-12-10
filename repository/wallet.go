@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	erpdto "erp/dto/erp"
+	erpdto "erp/dto/finance"
 	"erp/infrastructure"
 	"erp/models"
 	"erp/utils"

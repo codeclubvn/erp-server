@@ -4,22 +4,23 @@ import (
 	"erp/api"
 	erpdto "erp/dto/erp"
 	erpservice "erp/service"
+	"erp/utils"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-type ERPCustomerController struct {
+type CustomerController struct {
 	api.BaseController
 	customerService erpservice.ERPCustomerService
 }
 
-func NewERPCustomerController(customerService erpservice.ERPCustomerService) *ERPCustomerController {
-	return &ERPCustomerController{
+func NewERPCustomerController(customerService erpservice.ERPCustomerService) *CustomerController {
+	return &CustomerController{
 		customerService: customerService,
 	}
 }
 
-func (p *ERPCustomerController) GetList(c *gin.Context) {
+func (p *CustomerController) GetList(c *gin.Context) {
 	var req erpdto.ListCustomerRequest
 	if err := c.ShouldBindQuery(&req); err != nil {
 		p.ResponseValidationError(c, err)
@@ -35,14 +36,9 @@ func (p *ERPCustomerController) GetList(c *gin.Context) {
 	p.ResponseList(c, "Success", total, customer)
 }
 
-func (p *ERPCustomerController) GetOne(c *gin.Context) {
-	var req erpdto.CustomerUriRequest
-	if err := c.ShouldBindUri(&req); err != nil {
-		p.ResponseValidationError(c, err)
-		return
-	}
-
-	customer, err := p.customerService.CustomerDetail(c.Request.Context(), req)
+func (p *CustomerController) GetOne(c *gin.Context) {
+	id := utils.ParseStringIDFromUri(c)
+	customer, err := p.customerService.GetOneById(c.Request.Context(), id)
 	if err != nil {
 		p.ResponseError(c, err)
 		return
@@ -51,7 +47,7 @@ func (p *ERPCustomerController) GetOne(c *gin.Context) {
 	p.Response(c, http.StatusOK, "Success", customer)
 }
 
-func (p *ERPCustomerController) Create(c *gin.Context) {
+func (p *CustomerController) Create(c *gin.Context) {
 	var req erpdto.CreateCustomerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
@@ -67,7 +63,7 @@ func (p *ERPCustomerController) Create(c *gin.Context) {
 	p.Response(c, http.StatusCreated, "Success", customer.ID)
 }
 
-func (p *ERPCustomerController) Update(c *gin.Context) {
+func (p *CustomerController) Update(c *gin.Context) {
 	var req erpdto.UpdateCustomerRequest
 
 	if err := c.ShouldBindUri(&req); err != nil {
@@ -88,7 +84,7 @@ func (p *ERPCustomerController) Update(c *gin.Context) {
 	p.Response(c, http.StatusCreated, "Success", nil)
 }
 
-func (p *ERPCustomerController) Delete(c *gin.Context) {
+func (p *CustomerController) Delete(c *gin.Context) {
 	var req erpdto.CustomerUriRequest
 	if err := c.ShouldBindUri(&req); err != nil {
 		p.ResponseValidationError(c, err)

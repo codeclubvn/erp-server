@@ -12,24 +12,24 @@ var Module = fx.Options(fx.Invoke(
 ))
 
 type Route struct {
-	handler            *lib.Handler
-	categoryController *controller.ERPCategoryController
-	customerController *controller.ERPCustomerController
-	authController     *controller.AuthController
-	employeeController *controller.ERPEmployeeManagementController
-	orderController    *controller.OrderController
-	productController  *controller.ERPProductController
-	promoteController  *controller.PromoteController
-	storeController    *controller.ERPStoreController
-	healthController   *controller.HealthController
-	middleware         *middlewares.GinMiddleware
-	revenueController  *controller.TransactionController
+	handler               *lib.Handler
+	categoryController    *controller.ERPCategoryController
+	customerController    *controller.CustomerController
+	authController        *controller.AuthController
+	employeeController    *controller.ERPEmployeeManagementController
+	orderController       *controller.OrderController
+	productController     *controller.ERPProductController
+	promoteController     *controller.PromoteController
+	storeController       *controller.ERPStoreController
+	healthController      *controller.HealthController
+	middleware            *middlewares.GinMiddleware
+	transactionController *controller.CashbookController
 }
 
 func NewRoute(
 	handler *lib.Handler,
 	categoryController *controller.ERPCategoryController,
-	customerController *controller.ERPCustomerController,
+	customerController *controller.CustomerController,
 	authController *controller.AuthController,
 	employeeController *controller.ERPEmployeeManagementController,
 	orderController *controller.OrderController,
@@ -38,7 +38,7 @@ func NewRoute(
 	storeController *controller.ERPStoreController,
 	healthController *controller.HealthController,
 	middleware *middlewares.GinMiddleware,
-	transactionController *controller.TransactionController,
+	transactionController *controller.CashbookController,
 	walletController *controller.WalletController,
 	budgetController *controller.BudgetController,
 	transactionCategoryController *controller.TransactionCategoryController,
@@ -89,11 +89,7 @@ func NewRoute(
 	handler.DELETE("/v1/cashbook/:id", middleware.Auth(true), transactionController.Delete)
 	handler.GET("/v1/cashbook/:id", middleware.Auth(true), transactionController.GetOne)
 
-	handler.POST("/v1/debt-book/", middleware.Auth(false), transactionController.Create)
-	handler.PUT("/v1/debt-book/", middleware.Auth(true), transactionController.Update)
-	handler.GET("/v1/debt-book/", middleware.Auth(false), transactionController.List)
-	handler.DELETE("/v1/debt-book/:id", middleware.Auth(true), transactionController.Delete)
-	handler.GET("/v1/debt-book/:id", middleware.Auth(true), transactionController.GetOne)
+	handler.GET("/v1/debt/", middleware.Auth(false), transactionController.ListDebt)
 
 	handler.POST("/v1/wallet/", middleware.Auth(false), walletController.Create)
 	handler.PUT("/v1/wallet/", middleware.Auth(true), walletController.Update)
@@ -107,11 +103,11 @@ func NewRoute(
 	handler.DELETE("/v1/budget/:id", middleware.Auth(true), budgetController.Delete)
 	handler.GET("/v1/budget/:id", middleware.Auth(true), budgetController.GetOne)
 
-	handler.POST("/v1/transaction_category/", middleware.Auth(false), transactionCategoryController.Create)
-	handler.PUT("/v1/transaction_category/", middleware.Auth(true), transactionCategoryController.Update)
-	handler.GET("/v1/transaction_category/", middleware.Auth(false), transactionCategoryController.List)
-	handler.DELETE("/v1/transaction_category/:id", middleware.Auth(true), transactionCategoryController.Delete)
-	handler.GET("/v1/transaction_category/:id", middleware.Auth(true), transactionCategoryController.GetOne)
+	handler.POST("/v1/cashbook_category/", middleware.Auth(false), transactionCategoryController.Create)
+	handler.PUT("/v1/cashbook_category/", middleware.Auth(true), transactionCategoryController.Update)
+	handler.GET("/v1/cashbook_category/", middleware.Auth(false), transactionCategoryController.List)
+	handler.DELETE("/v1/cashbook_category/:id", middleware.Auth(true), transactionCategoryController.Delete)
+	handler.GET("/v1/cashbook_category/:id", middleware.Auth(true), transactionCategoryController.GetOne)
 
 	handler.GET("/v1/health/", healthController.Health)
 

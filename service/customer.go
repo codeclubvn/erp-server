@@ -13,7 +13,7 @@ import (
 
 type ERPCustomerService interface {
 	ListCustomer(ctx context.Context, req erpdto.ListCustomerRequest) ([]*models.Customer, *int64, error)
-	CustomerDetail(ctx context.Context, req erpdto.CustomerUriRequest) (*models.Customer, error)
+	GetOneById(ctx context.Context, id string) (*models.Customer, error)
 	CreateCustomer(ctx context.Context, req erpdto.CreateCustomerRequest) (*models.Customer, error)
 	UpdateCustomer(ctx context.Context, req erpdto.UpdateCustomerRequest) (*models.Customer, error)
 	DeleteCustomer(ctx context.Context, customerId string) error
@@ -42,8 +42,8 @@ func (p *erpCustomerService) ListCustomer(ctx context.Context, req erpdto.ListCu
 	return customers, total, nil
 }
 
-func (p *erpCustomerService) CustomerDetail(ctx context.Context, req erpdto.CustomerUriRequest) (*models.Customer, error) {
-	customers, err := p.erpCustomerRepo.FindOneByID(ctx, req.ID)
+func (p *erpCustomerService) GetOneById(ctx context.Context, id string) (*models.Customer, error) {
+	customers, err := p.erpCustomerRepo.FindOneByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}

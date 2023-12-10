@@ -15,6 +15,7 @@ type Order struct {
 	PaymentMethod string  `json:"payment_method" gorm:"not null"`
 
 	CustomerId  *uuid.UUID `json:"customer_id,omitempty" gorm:"default:null;"`
+	Customer    *Customer  `json:"customer,omitempty" gorm:"foreignkey:CustomerId;association_foreignkey:ID"`
 	DeliveryFee *float64   `json:"delivery_fee,omitempty"`
 
 	Discount     *float64 `json:"discount,omitempty"`

@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	erpdto "erp/dto/erp"
+	erpdto "erp/dto/finance"
 	"erp/infrastructure"
 	"erp/models"
 	"erp/repository"
@@ -20,12 +20,12 @@ type BudgetService interface {
 
 type budgetService struct {
 	budgetRepo      repository.BudgetRepository
-	transactionRepo repository.TransactionRepository
+	transactionRepo repository.CashbookRepository
 	db              *infrastructure.Database
 	logger          *zap.Logger
 }
 
-func NewBudgetService(budgetRepo repository.BudgetRepository, db *infrastructure.Database, logger *zap.Logger, transactionRepo repository.TransactionRepository) BudgetService {
+func NewBudgetService(budgetRepo repository.BudgetRepository, db *infrastructure.Database, logger *zap.Logger, transactionRepo repository.CashbookRepository) BudgetService {
 	return &budgetService{
 		budgetRepo:      budgetRepo,
 		db:              db,

@@ -15,9 +15,8 @@ import (
 type OrderRepo interface {
 	Create(tx *TX, ctx context.Context, order *models.Order) error
 	Update(tx *TX, ctx context.Context, order *models.Order) error
-	GetOrderById(ctx context.Context, id string) (*models.Order, error)
+	GetOneById(ctx context.Context, id string) (*models.Order, error)
 	GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.Order, total int64, err error)
-	GetOneByID(ctx context.Context, id string) (res *models.Order, err error)
 }
 
 type orderRepo struct {
@@ -40,9 +39,12 @@ func (r *orderRepo) Update(tx *TX, ctx context.Context, order *models.Order) err
 	return tx.db.WithContext(ctx).Save(order).Error
 }
 
-func (r *orderRepo) GetOrderById(ctx context.Context, id string) (*models.Order, error) {
+func (r *orderRepo) GetOneById(ctx context.Context, id string) (*models.Order, error) {
 	var res models.Order
-	if err := r.db.WithContext(ctx).Where("id = ?", id).First(&res).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("id = ?", id).
+		Preload("OrderItems").
+		Preload("Customers").
+		First(&res).Error; err != nil {
 		if utils.ErrNoRows(err) {
 			return nil, errors.New(api_errors.ErrNotFound)
 		}
@@ -63,17 +65,11 @@ func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest)
 		query = query.Order(req.Sort)
 	}
 
-	query = query.Preload("OrderItems")
+	query = query.Preload("OrderItems").Preload("Customers")
 
 	if err = utils.QueryPagination(query, req.PageOptions, &res).
 		Count(&total).Error(); err != nil {
 		return nil, 0, errors.WithStack(err)
 	}
 	return res, total, err
-}
-
-func (r *orderRepo) GetOneByID(ctx context.Context, id string) (res *models.Order, err error) {
-	err = r.db.Where("id = ?", id).
-		Preload("OrderItems").First(&res).Error
-	return res, err
 }

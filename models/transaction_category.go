@@ -1,10 +1,11 @@
 package models
 
-type TransactionCategory struct {
+type CashbookCategory struct {
 	BaseModel
 	Name string `json:"name" gorm:"column:name;type:varchar(255);not null"`
+	Type string `json:"type" gorm:"column:type;type:varchar(255);not null"` // expense, income, debt
 }
 
-func (p *TransactionCategory) TableName() string {
-	return "transaction_categories"
+func (p *CashbookCategory) TableName() string {
+	return "cashbook_categories"
 }

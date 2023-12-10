@@ -92,9 +92,9 @@ func (d Database) RegisterTables() {
 		models.User{}, models.Role{}, models.Permission{},
 		models.Store{}, models.UserRole{}, models.Category{},
 		models.Product{}, models.CategoryProduct{}, models.Customer{},
-		models.Transaction{}, models.Order{}, models.Debt{},
+		models.Cashbook{}, models.Order{},
 		models.OrderItem{}, models.Promote{}, models.PromoteUse{},
-		models.Wallet{}, models.TransactionCategory{}, models.Budget{},
+		models.Wallet{}, models.CashbookCategory{}, models.Budget{},
 	)
 
 	if err != nil {

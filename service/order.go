@@ -30,11 +30,10 @@ type orderService struct {
 	logger           *zap.Logger
 	customerService  ERPCustomerService
 	productService   IProductService
-	debtService      IDebtService
 	orderItemService IOrderItemService
 	promoteService   IPromoteService
-	revenueRepo      repository.TransactionRepository
-	revenueService   TransactionService
+	cashbookRepo     repository.CashbookRepository
+	cashbookService  CashbookService
 }
 
 func NewOrderService(
@@ -43,9 +42,8 @@ func NewOrderService(
 	logger *zap.Logger,
 	customerService ERPCustomerService,
 	productService IProductService,
-	revenueRepo repository.TransactionRepository,
-	revenueService TransactionService,
-	debtService IDebtService,
+	revenueRepo repository.CashbookRepository,
+	cashbookService CashbookService,
 	orderItemService IOrderItemService,
 	promoteService IPromoteService,
 ) OrderService {
@@ -55,11 +53,10 @@ func NewOrderService(
 		logger:           logger,
 		customerService:  customerService,
 		productService:   productService,
-		revenueRepo:      revenueRepo,
-		debtService:      debtService,
+		cashbookRepo:     revenueRepo,
 		orderItemService: orderItemService,
 		promoteService:   promoteService,
-		revenueService:   revenueService,
+		cashbookService:  cashbookService,
 	}
 }
 
@@ -68,7 +65,7 @@ func (s *orderService) CreateFlow(ctx context.Context, req erpdto.CreateOrderReq
 	req.Code = s.getOrderCode(ctx)
 
 	// if customer_id != "", check customer exist
-	if err := s.getCustomer(ctx, utils.ValidString(req.CustomerId)); err != nil {
+	if err := s.getCustomer(ctx, req.CustomerId); err != nil {
 		return nil, err
 	}
 
@@ -167,19 +164,19 @@ func (s *orderService) createUserRevenue(tx *repository.TX, ctx context.Context,
 		return nil
 	}
 
-	transRequest := erpdto.CreateTransactionRequest{
+	cashbook := &models.Cashbook{
 		OrderId: valid_pointer.UUIDPointer(req.OrderId),
 		Amount:  req.Payment,
 		Status:  constants.StatusIn,
 	}
 
 	if req.Payment > req.Total {
-		transRequest.Amount = req.Total
+		cashbook.Amount = req.Total
 	}
-	_, err := s.revenueService.Create(tx, ctx, transRequest)
-	return err
+
+	return s.cashbookRepo.Create(tx, ctx, cashbook)
 }
-func (s *orderService) updateUserRevenue(tx *repository.TX, ctx context.Context, trans *models.Transaction, req erpdto.CreateOrderRequest) error {
+func (s *orderService) updateUserRevenue(tx *repository.TX, ctx context.Context, trans *models.Cashbook, req erpdto.CreateOrderRequest) error {
 	trans.Amount = req.Payment
 	if req.Payment <= 0 {
 		return nil
@@ -189,7 +186,7 @@ func (s *orderService) updateUserRevenue(tx *repository.TX, ctx context.Context,
 		trans.Amount = req.Total
 	}
 
-	return s.revenueRepo.Update(tx, ctx, trans)
+	return s.cashbookRepo.Update(tx, ctx, trans)
 }
 
 func (s *orderService) getOrderCode(ctx context.Context) string {
@@ -232,9 +229,9 @@ func (s *orderService) getProductIdsAndMapOrderItem(ctx context.Context, orderIt
 	return productIds, mapOrderItem
 }
 
-func (s *orderService) getCustomer(ctx context.Context, customerId string) error {
-	if customerId != "" {
-		_, err := s.customerService.CustomerDetail(ctx, erpdto.CustomerUriRequest{ID: customerId})
+func (s *orderService) getCustomer(ctx context.Context, customerId *uuid.UUID) error {
+	if customerId != nil {
+		_, err := s.customerService.GetOneById(ctx, customerId.String())
 		return err
 	}
 	return nil
@@ -253,29 +250,28 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 			return errors.New(api_errors.ErrPaymentInvalid)
 		}
 		if req.Payment < req.Total {
-			// create debt
-			debtRequest := erpdto.CreateDebtRequest{
-				OrderId:    req.OrderId,
-				Amount:     req.Total - req.Payment,
-				Status:     constants.StatusOut,
-				CustomerId: uuid.FromStringOrNil(utils.ValidString(req.CustomerId)),
-			}
 
 			// get debt by order_id
-			debt, err := s.debtService.GetDebtByOrderId(tx, ctx, req.OrderId.String())
+			cashbook, err := s.cashbookRepo.GetCashbookByOrderId(tx, ctx, req.OrderId.String())
 			if err != nil {
 				if !utils.ErrNoRows(err) {
 					return err
 				}
 			}
-			if debt != nil {
-				debt.Amount = debtRequest.Amount
-				if err := s.debtService.Update(tx, ctx, debt); err != nil {
+			if cashbook != nil {
+				cashbook.Amount = req.Total - req.Payment
+				if err = s.cashbookRepo.Update(tx, ctx, cashbook); err != nil {
 					return err
 				}
 			} else {
-				// create debt
-				if _, err := s.debtService.Create(tx, ctx, debtRequest); err != nil {
+				// create cashbook
+				cashbook = &models.Cashbook{}
+				if err = utils.Copy(&cashbook, req); err != nil {
+					return err
+				}
+				cashbook.Amount = req.Total - req.Payment
+				cashbook.Status = constants.StatusOut
+				if err = s.cashbookRepo.Create(tx, ctx, cashbook); err != nil {
 					return err
 				}
 			}
@@ -284,7 +280,7 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 
 	// create user revenue if payment > 0
 	// check revenue exist
-	trans, err := s.revenueRepo.GetTransactionByOrderId(tx, ctx, req.OrderId.String())
+	trans, err := s.cashbookRepo.GetCashbookByOrderId(tx, ctx, req.OrderId.String())
 	if err != nil {
 		if !utils.ErrNoRows(err) {
 			return err
@@ -346,7 +342,7 @@ func (s *orderService) PromoteFlow(ctx context.Context, req erpdto.CreateOrderRe
 	}
 
 	// check customer_id use promote
-	times, err := s.promoteService.CountCustomerUsePromote(ctx, utils.ValidString(req.CustomerId), utils.ValidString(req.PromoteCode))
+	times, err := s.promoteService.CountCustomerUsePromote(ctx, req.CustomerId, utils.ValidString(req.PromoteCode))
 	if err != nil {
 		if !utils.ErrNoRows(err) {
 			return 0, err
@@ -377,8 +373,8 @@ func (s *orderService) PromoteFlow(ctx context.Context, req erpdto.CreateOrderRe
 
 	// UpdateById promote_use
 	if err = s.promoteService.CreatePromoteUse(ctx, erpdto.CreatePromoteUseRequest{
-		CustomerId:  utils.ValidString(req.CustomerId),
-		PromoteCode: utils.ValidString(req.PromoteCode),
+		CustomerId:  req.CustomerId,
+		PromoteCode: req.PromoteCode,
 	}); err != nil {
 		return 0, nil
 	}
@@ -451,7 +447,7 @@ func (s *orderService) CalculateAmount(ctx context.Context, products []*models.P
 // UpdateFlow
 func (s *orderService) UpdateFlow(ctx context.Context, req erpdto.UpdateOrderRequest) (*models.Order, error) {
 	// get order
-	order, err := s.erpOrderRepo.GetOrderById(ctx, req.OrderId.String())
+	order, err := s.erpOrderRepo.GetOneById(ctx, req.OrderId.String())
 	if err != nil {
 		return nil, err
 	}
@@ -463,12 +459,11 @@ func (s *orderService) UpdateFlow(ctx context.Context, req erpdto.UpdateOrderReq
 
 		// if status == delivery, complete check payment
 		if order.CustomerId != nil {
-			customerId := utils.ValidUUID(order.CustomerId)
 			if err := s.handlePayment(tx, ctx, erpdto.CreateOrderRequest{
 				OrderId:    req.OrderId,
 				Status:     req.Status,
 				Payment:    req.Payment,
-				CustomerId: utils.StringPointer(customerId.String()),
+				CustomerId: order.CustomerId,
 				Total:      order.Total,
 			}); err != nil {
 				return err
@@ -546,24 +541,24 @@ func (s *orderService) cancelOrder(tx *repository.TX, ctx context.Context, order
 
 func (s *orderService) updateCancelDebtAndRevenue(tx *repository.TX, ctx context.Context, order *models.Order) error {
 	// get debt
-	debt, err := s.debtService.GetDebtByOrderId(tx, ctx, order.ID.String())
+	debt, err := s.cashbookRepo.GetDebtByOrderId(tx, ctx, order.ID.String())
 	if err != nil {
 		return err
 	}
 
 	// delete debt
-	if err := s.debtService.Delete(ctx, debt.ID.String()); err != nil {
+	if err := s.cashbookService.Delete(ctx, debt.ID.String()); err != nil {
 		return err
 	}
 
 	// get revenue
-	revenue, err := s.revenueRepo.GetTransactionByOrderId(tx, ctx, order.ID.String())
+	revenue, err := s.cashbookRepo.GetCashbookByOrderId(tx, ctx, order.ID.String())
 	if err != nil {
 		return err
 	}
 
 	// delete revenue
-	if err := s.revenueRepo.Delete(tx, ctx, revenue.ID.String()); err != nil {
+	if err := s.cashbookRepo.Delete(tx, ctx, revenue.ID.String()); err != nil {
 		return err
 	}
 	return nil
@@ -598,10 +593,8 @@ func (s *orderService) updateCancelProQuantity(tx *repository.TX, ctx context.Co
 
 func (s *orderService) GetList(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.Order, int64, error) {
 	return s.erpOrderRepo.GetList(ctx, req)
-	// todo: get list order item
 }
 
 func (u *orderService) GetOne(ctx context.Context, id string) (*models.Order, error) {
-	return u.erpOrderRepo.GetOneByID(ctx, id)
-	// todo: get list order item
+	return u.erpOrderRepo.GetOneById(ctx, id)
 }

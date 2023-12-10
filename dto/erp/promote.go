@@ -1,6 +1,9 @@
 package erpdto
 
-import "time"
+import (
+	uuid "github.com/satori/go.uuid"
+	"time"
+)
 
 type CreatePromoteRequest struct {
 	PromoteType      PromoteType `json:"promote_type" binding:"required"`                    // amount, percent
@@ -40,6 +43,6 @@ func (d PromoteType) CheckValid() bool {
 }
 
 type CreatePromoteUseRequest struct {
-	CustomerId  string `json:"customer_id"`
-	PromoteCode string `json:"promote_code"`
+	CustomerId  *uuid.UUID `json:"customer_id"`
+	PromoteCode *string    `json:"promote_code"`
 }

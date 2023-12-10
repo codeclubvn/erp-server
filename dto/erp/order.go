@@ -16,8 +16,8 @@ type CreateOrderRequest struct {
 	Total   float64 `json:"total"`   // grand total
 	Payment float64 `json:"payment"` // COD | Online
 
-	PaymentMethod string  `json:"payment_method" binding:"required"`
-	CustomerId    *string `json:"customer_id"`
+	PaymentMethod string     `json:"payment_method" binding:"required"`
+	CustomerId    *uuid.UUID `json:"customer_id"`
 
 	DeliveryFee *float64 `json:"delivery_fee"`
 

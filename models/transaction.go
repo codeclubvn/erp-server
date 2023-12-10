@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type Transaction struct {
+type Cashbook struct {
 	BaseModel
 	Amount   float64        `json:"amount" gorm:"column:amount;type:float;not null"`
 	Status   string         `json:"status" gorm:"column:status;type:varchar(255);not null"` // in, out
@@ -20,10 +20,15 @@ type Transaction struct {
 	WalletId *uuid.UUID `json:"wallet_id" gorm:"column:wallet_id;type:uuid;"`
 	Wallet   *Wallet    `json:"wallet" gorm:"foreignKey:WalletId"`
 
-	TransactionCategoryId *uuid.UUID           `json:"transaction_category_id" gorm:"column:transaction_category_id;type:uuid;"`
-	TransactionCategory   *TransactionCategory `json:"transaction_category" gorm:"foreignKey:TransactionCategoryId"`
+	CashbookCategoryId *uuid.UUID        `json:"cashbook_category_id" gorm:"column:cashbook_category_id;type:uuid;"`
+	CashbookCategory   *CashbookCategory `json:"cashbook_category" gorm:"foreignKey:CashbookCategoryId"`
+
+	CustomerId *uuid.UUID `json:"customer_id" gorm:"column:customer_id;type:uuid;"`
+	Customer   *Customer  `json:"customer" gorm:"foreignKey:CustomerId"`
+
+	IsPay bool `json:"is_pay" gorm:"column:is_pay;type:boolean;default:false"`
 }
 
-func (p *Transaction) TableName() string {
-	return "transactions"
+func (p *Cashbook) TableName() string {
+	return "cashbooks"
 }

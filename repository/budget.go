@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	erpdto "erp/dto/erp"
+	erpdto "erp/dto/finance"
 	"erp/infrastructure"
 	"erp/models"
 	"erp/utils"
@@ -38,11 +38,11 @@ func (r *budgetRepo) Create(tx *TX, ctx context.Context, input *models.Budget) e
 func (r *budgetRepo) GetOneById(ctx context.Context, id string) (*models.Budget, error) {
 	output := &models.Budget{}
 	err := r.db.WithContext(ctx).
-		Select("budgets.*, sum(transactions.amount) as spent").
-		Joins(`left join transactions on transactions.transaction_category_id = budgets.transaction_category_id 
-			AND (transactions.date_time BETWEEN budgets.start_time AND budgets.end_time OR budgets.start_time IS NULL OR budgets.end_time IS NULL)`).
+		Select("budgets.*, sum(cashbooks.amount) as spent").
+		Joins(`left join cashbooks on cashbooks.cashbook_category_id = budgets.cashbook_category_id 
+			AND (cashbooks.date_time BETWEEN budgets.start_time AND budgets.end_time OR budgets.start_time IS NULL OR budgets.end_time IS NULL)`).
 		Where("budgets.id = ?", id).
-		Preload("TransactionCategory").
+		Preload("CashbookCategory").
 		Group("budgets.id").
 		First(output).Error
 	return output, err
@@ -50,11 +50,11 @@ func (r *budgetRepo) GetOneById(ctx context.Context, id string) (*models.Budget,
 
 func (r *budgetRepo) GetList(ctx context.Context, req erpdto.ListBudgetRequest) (res []*models.Budget, total int64, err error) {
 	query := r.db.Model(&models.Budget{}).Debug().
-		Select("budgets.*, sum(transactions.amount) as spent").
-		Joins(`left join transactions on transactions.transaction_category_id = budgets.transaction_category_id 
-			AND (transactions.date_time BETWEEN budgets.start_time AND budgets.end_time OR budgets.start_time IS NULL OR budgets.end_time IS NULL)`)
+		Select("budgets.*, sum(cashbooks.amount) as spent").
+		Joins(`left join cashbooks on cashbooks.cashbook_category_id = budgets.cashbook_category_id 
+			AND (cashbooks.date_time BETWEEN budgets.start_time AND budgets.end_time OR budgets.start_time IS NULL OR budgets.end_time IS NULL)`)
 	if req.Search != "" {
-		query = query.Where("transactions.name ilike ?", "%"+req.Search+"%")
+		query = query.Where("cashbooks.name ilike ?", "%"+req.Search+"%")
 	}
 
 	switch req.Sort {
@@ -62,7 +62,7 @@ func (r *budgetRepo) GetList(ctx context.Context, req erpdto.ListBudgetRequest) 
 		query = query.Order(req.Sort)
 	}
 
-	query = query.Preload("TransactionCategory").Group("budgets.id")
+	query = query.Preload("CashbookCategory").Group("budgets.id")
 
 	if err = utils.QueryPagination(query, req.PageOptions, &res).
 		Count(&total).Error(); err != nil {

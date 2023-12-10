@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"erp/api_errors"
-	erpdto "erp/dto/erp"
+	erpdto "erp/dto/finance"
 	"erp/infrastructure"
 	"erp/models"
 	"erp/repository"
