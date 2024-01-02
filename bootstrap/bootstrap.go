@@ -1,15 +1,11 @@
 package bootstrap
 
 import (
-	controller "erp/api/controllers"
-	"erp/api/middlewares"
-	config "erp/config"
-	infrastructure "erp/infrastructure"
+	"erp/config"
+	"erp/infrastructure"
 	"erp/lib"
-	repository "erp/repository"
-	"erp/route"
-	service "erp/service"
-	utils "erp/utils"
+	"erp/repository"
+	"erp/utils"
 
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"

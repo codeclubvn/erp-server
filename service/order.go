@@ -164,10 +164,12 @@ func (s *orderService) createUserRevenue(tx *repository.TX, ctx context.Context,
 		return nil
 	}
 
+	now := time.Now()
 	cashbook := &models.Cashbook{
-		OrderId: valid_pointer.UUIDPointer(req.OrderId),
-		Amount:  req.Payment,
-		Status:  constants.StatusIn,
+		OrderId:  valid_pointer.UUIDPointer(req.OrderId),
+		Amount:   req.Payment,
+		Status:   constants.StatusIn,
+		DateTime: &now,
 	}
 
 	if req.Payment > req.Total {
@@ -258,8 +260,11 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 					return err
 				}
 			}
-			if cashbook != nil {
+			if cashbook.ID != uuid.Nil {
+				cashbook.OrderId = valid_pointer.UUIDPointer(req.OrderId)
 				cashbook.Amount = req.Total - req.Payment
+				now := time.Now()
+				cashbook.DateTime = &now
 				if err = s.cashbookRepo.Update(tx, ctx, cashbook); err != nil {
 					return err
 				}
@@ -271,6 +276,8 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 				}
 				cashbook.Amount = req.Total - req.Payment
 				cashbook.Status = constants.StatusOut
+				now := time.Now()
+				cashbook.DateTime = &now
 				if err = s.cashbookRepo.Create(tx, ctx, cashbook); err != nil {
 					return err
 				}
@@ -286,7 +293,7 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 			return err
 		}
 	}
-	if trans != nil {
+	if trans.ID != uuid.Nil {
 		if err := s.updateUserRevenue(tx, ctx, trans, req); err != nil {
 			return err
 		}

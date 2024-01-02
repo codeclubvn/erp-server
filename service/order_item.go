@@ -44,6 +44,7 @@ func (s *orderItemService) mapCreateOrderItem(ctx context.Context, req []erpdto.
 			OrderId:   orderId,
 			ProductId: item.ProductId,
 			Quantity:  item.Quantity,
+			Price:     item.Price,
 		})
 	}
 	return orderItem, nil

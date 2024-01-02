@@ -33,6 +33,7 @@ type CreateOrderRequest struct {
 type OrderItemRequest struct {
 	ProductId uuid.UUID `json:"product_id" binding:"required"`
 	Quantity  int       `json:"quantity" binding:"required"`
+	Price     float64   `json:"price" binding:"required"`
 }
 
 // enum promote method

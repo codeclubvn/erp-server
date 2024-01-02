@@ -3,7 +3,8 @@ debug: true
 contextTimeout: 5
 
 server:
-  port: '8008'
+  port: 8008
+  #  host: '0.0.0.0' # dùng localhost sẽ không chạy được trên docker
   host: '127.0.0.1'
   env: 'local'
   useRedis: false
@@ -12,8 +13,11 @@ services:
 
 database:
   driver: 'postgres'
-  host: 'host.docker.internal'
-  port: 5432
+  #  host: 'host.docker.internal' # dùng cho docker kết nối vào database trên host
+  #  host: 'localhost' # dùng chạy local
+  host: 'erp_database' # dùng cho docker kết nối vào container database trên docker
+#  port: 5433 # dùng cho docker kết nối vào database trên host
+  port: 5432 # dùng chạy docker
   username: 'postgres'
   password: 'password'
   name: 'erp_server'
@@ -24,7 +28,7 @@ database:
   maxConnectionLifetime: 300
 jwt:
   secret: 'hgG6T23XD25N'
-  accessTokenExpiresIn: 3600
-  refreshTokenExpiresIn: 86400
+  accessTokenExpiresIn: 36000000
+  refreshTokenExpiresIn: 864000000
 logger:
   level: 'debug'

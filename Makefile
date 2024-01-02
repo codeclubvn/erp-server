@@ -9,7 +9,6 @@ build:
 	docker build -t $(CONTAINER_NAME) .
 	docker run -d -p $(CONTAINER_PORT):$(CONTAINER_PORT) --name $(CONTAINER_NAME) --network $(NETWORK) $(CONTAINER_NAME)
 
-
 # Run the Golang server
 run:
 	go run main.go

@@ -5,7 +5,6 @@ import (
 	"erp/api/response"
 	"erp/api_errors"
 	"erp/utils"
-	"fmt"
 	"net/http"
 
 	"github.com/pkg/errors"
@@ -56,7 +55,6 @@ func (b *BaseController) ResponseList(c *gin.Context, message string, total *int
 }
 
 func (b *BaseController) ResponseError(c *gin.Context, err error) {
-	fmt.Println(err.Error())
 	mas, ok := api_errors.MapErrorCodeMessage[err.Error()]
 	var status int
 	ginType := gin.ErrorTypePublic

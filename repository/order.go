@@ -65,7 +65,7 @@ func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest)
 		query = query.Order(req.Sort)
 	}
 
-	query = query.Preload("OrderItems").Preload("Customers")
+	query = query.Preload("OrderItems").Preload("Customer")
 
 	if err = utils.QueryPagination(query, req.PageOptions, &res).
 		Count(&total).Error(); err != nil {
