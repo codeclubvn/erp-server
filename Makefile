@@ -5,9 +5,9 @@ NETWORK=oplacrm
 
 # Build Docker image and run container
 build:
-	@if "$(CONTAINER_NAME)" == "$(IS_EXIST)" ( docker rm -f $(CONTAINER_NAME) && docker rmi $(CONTAINER_NAME) ) else ( echo "Container $(CONTAINER_NAME) not exist" )
-	docker build -t $(CONTAINER_NAME) .
-	docker run -d -p $(CONTAINER_PORT):$(CONTAINER_PORT) --name $(CONTAINER_NAME) --network $(NETWORK) $(CONTAINER_NAME)
+	docker compose down
+	docker rmi $(CONTAINER_NAME)
+	docker compose up -d
 
 # Run the Golang server
 run:
