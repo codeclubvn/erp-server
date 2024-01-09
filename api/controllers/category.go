@@ -82,5 +82,5 @@ func (b *ERPCategoryController) GetList(c *gin.Context) {
 		b.ResponseError(c, err)
 		return
 	}
-	b.ResponseList(c, "success", total, res)
+	b.ResponseList(c, "success", &total, res)
 }

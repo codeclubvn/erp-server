@@ -16,7 +16,7 @@ type (
 		Update(ctx context.Context, req erpdto.UpdateCategoryRequest) (*models.Category, error)
 		Delete(ctx context.Context, id string) error
 		GetOne(ctx context.Context, id string) (*models.Category, error)
-		GetList(ctx context.Context, req erpdto.GetListCategoryRequest) ([]*models.Category, *int64, error)
+		GetList(ctx context.Context, req erpdto.GetListCategoryRequest) ([]*models.Category, int64, error)
 	}
 	categoryService struct {
 		categoryRepo repository.CategoryRepository
@@ -67,6 +67,6 @@ func (u *categoryService) GetOne(ctx context.Context, id string) (*models.Catego
 	return u.categoryRepo.GetOneByID(ctx, id)
 }
 
-func (u *categoryService) GetList(ctx context.Context, req erpdto.GetListCategoryRequest) ([]*models.Category, *int64, error) {
+func (u *categoryService) GetList(ctx context.Context, req erpdto.GetListCategoryRequest) ([]*models.Category, int64, error) {
 	return u.categoryRepo.GetList(ctx, req)
 }

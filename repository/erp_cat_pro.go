@@ -27,11 +27,11 @@ func NewCategoryProductRepository(db *infrastructure.Database) CategoryProductRe
 
 func (r *catProRepo) Create(tx *TX, ctx context.Context, categoryProduct *models.CategoryProduct) (err error) {
 	tx = GetTX(tx, *r.db)
-	currentUID, err := utils.GetUserUUIDFromContext(ctx)
-	if err != nil {
-		return err
-	}
-	categoryProduct.UpdaterID = currentUID
+	//currentUID, err := utils.GetUserUUIDFromContext(ctx)
+	//if err != nil {
+	//	return err
+	//}
+	//categoryProduct.UpdaterID = currentUID
 
 	err = r.db.Create(&categoryProduct).Error
 	return errors.Wrap(err, "create category_product failed")
@@ -39,11 +39,11 @@ func (r *catProRepo) Create(tx *TX, ctx context.Context, categoryProduct *models
 
 func (r *catProRepo) Update(tx *TX, ctx context.Context, categoryProduct *models.CategoryProduct) (err error) {
 	tx = GetTX(tx, *r.db)
-	currentUID, err := utils.GetUserUUIDFromContext(ctx)
-	if err != nil {
-		return err
-	}
-	categoryProduct.UpdaterID = currentUID
+	//currentUID, err := utils.GetUserUUIDFromContext(ctx)
+	//if err != nil {
+	//	return err
+	//}
+	//categoryProduct.UpdaterID = currentUID
 
 	err = r.db.Save(&categoryProduct).Error
 	return errors.Wrap(err, "UpdateById category_product failed")
