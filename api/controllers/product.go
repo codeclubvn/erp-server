@@ -34,7 +34,7 @@ func (b *ERPProductController) Create(c *gin.Context) {
 		b.ResponseError(c, err)
 		return
 	}
-	b.Response(c, http.StatusOK, "success", res)
+	b.Response(c, http.StatusOK, "success", res.ID)
 }
 
 func (b *ERPProductController) Update(c *gin.Context) {

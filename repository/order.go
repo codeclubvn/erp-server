@@ -18,6 +18,7 @@ type OrderRepo interface {
 	GetOneById(ctx context.Context, id string) (*models.Order, error)
 	GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.Order, total int64, err error)
 	GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.OrderOverview, err error)
+	GetBestSeller(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.ProductBestSellerResponse, err error)
 }
 
 type orderRepo struct {
@@ -61,6 +62,10 @@ func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest)
 		query = query.Where("note ilike ?", "%"+req.Search+"%")
 	}
 
+	if req.StartTime != "" && req.EndTime != "" {
+		query = query.Where("created_at BETWEEN ? AND ?", req.StartTime, req.EndTime)
+	}
+
 	switch req.Sort {
 	default:
 		query = query.Order(req.Sort)
@@ -76,11 +81,14 @@ func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest)
 }
 
 func (r *orderRepo) GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.OrderOverview, err error) {
-	queryString := `SELECT count(confirm) as confirm, count(delivery) as delivery, count(complete) as complete, count(cancel) as cancel 
+	queryString := `SELECT count(confirm) as confirm, count(delivery) as delivery, count(complete) as complete, count(cancel) as cancel,
+		sum(revenue) as revenue, sum(income) as income
 		FROM ( select CASE WHEN status = 'confirm' then 1 else null end as confirm,
 		CASE WHEN status = 'delivery' then 1 else null end as delivery,
 		CASE WHEN status = 'complete' then 1 else null end as complete,
-		CASE WHEN status = 'cancel' then 1 else null end as cancel
+		CASE WHEN status = 'cancel' then 1 else null end as cancel,
+		CASE WHEN status != 'cancel' then total else null end revenue,
+		CASE WHEN status != 'cancel' then "cost" else null end income
 		FROM orders `
 
 	if req.Search != "" {
@@ -89,6 +97,14 @@ func (r *orderRepo) GetOverview(ctx context.Context, req erpdto.GetListOrderRequ
 
 	queryString += `) as t`
 
-	err = r.db.Raw(queryString).Find(&res).Error
+	err = r.db.Debug().Raw(queryString).Find(&res).Error
+	return res, err
+}
+
+func (r *orderRepo) GetBestSeller(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.ProductBestSellerResponse, err error) {
+	err = r.db.Table("order_items").Select("products.*, sum(order_items.quantity) as quantity_sold").
+		Joins("inner join products on order_items.product_id = products.id").Order("quantity_sold desc").
+		Where("order_items.status != 'cancel'").
+		Limit(10).Group("products.id").Find(&res).Error
 	return res, err
 }

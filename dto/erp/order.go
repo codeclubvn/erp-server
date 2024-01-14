@@ -13,6 +13,7 @@ type CreateOrderRequest struct {
 
 	Note    *string `json:"note"` // note for order
 	Amount  float64 // tổng tiền của toàn bộ sản phẩm
+	Cost    float64 // tổng tiền chi phí
 	Total   float64 `json:"total"`   // grand total
 	Payment float64 `json:"payment"` // COD | Online
 
@@ -95,5 +96,7 @@ type UpdateOrderRequest struct {
 }
 
 type GetListOrderRequest struct {
+	StartTime string `form:"start_time"`
+	EndTime   string `form:"end_time"`
 	request.PageOptions
 }

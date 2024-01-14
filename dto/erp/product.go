@@ -14,6 +14,7 @@ type CreateProductRequest struct {
 	Status      bool    `json:"status"`                                 // true: active, false: inactive
 	Quantity    *int    `json:"quantity"`
 	StoreId     string
+	Cost        float64 `json:"cost" binding:"numeric,gte=0"` // gte: greater than or equal
 }
 
 type UpdateProductRequest struct {
@@ -29,6 +30,7 @@ type ProductResponse struct {
 	Price       float64   `json:"price"`
 	Status      bool      `json:"status"`
 	Quantity    int       `json:"quantity"`
+	Cost        float64   `json:"cost"`
 }
 
 type GetListProductRequest struct {

@@ -133,6 +133,21 @@ func (h *OrderController) GetOverview(c *gin.Context) {
 	h.Response(c, http.StatusOK, "success", res)
 }
 
+func (h *OrderController) GetBestSeller(c *gin.Context) {
+	var req erpdto.GetListOrderRequest
+
+	if err := c.ShouldBindQuery(&req); err != nil {
+		h.ResponseValidationError(c, err)
+		return
+	}
+	res, err := h.orderService.GetBestSeller(c, req)
+	if err != nil {
+		h.ResponseError(c, err)
+		return
+	}
+	h.Response(c, http.StatusOK, "success", res)
+}
+
 func (h *OrderController) validateOrderItem(req []erpdto.OrderItemRequest) (err error) {
 	if len(req) == 0 {
 		return errors.New(api_errors.ErrOrderItemRequired)

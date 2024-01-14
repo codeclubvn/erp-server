@@ -23,13 +23,16 @@ type Order struct {
 
 	PromoteFee  *float64 `json:"promote_fee,omitempty"`
 	PromoteCode *string  `json:"promote_code,omitempty"`
+	Cost        float64  `json:"cost"`
 	//StoreId     uuid.UUID `json:"store_id" gorm:"not null"`
 	OrderItems []*OrderItem `json:"order_item,omitempty" gorm:"foreignkey:OrderId;association_foreignkey:ID"`
 }
 
 type OrderOverview struct {
-	Confirm  int `json:"confirm"`
-	Delivery int `json:"delivery"`
-	Complete int `json:"complete"`
-	Cancel   int `json:"cancel"`
+	Revenue  float64 `json:"revenue"`
+	Income   float64 `json:"income"`
+	Confirm  int     `json:"confirm"`
+	Delivery int     `json:"delivery"`
+	Complete int     `json:"complete"`
+	Cancel   int     `json:"cancel"`
 }

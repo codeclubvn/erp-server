@@ -77,6 +77,7 @@ func NewRoute(
 	v1.GET("/order/", middleware.Auth(true), orderController.GetList)
 	v1.GET("/order/:id", middleware.Auth(true), orderController.GetOne)
 	v1.GET("/order/overview/", middleware.Auth(true), orderController.GetOverview)
+	v1.GET("/order/best_seller", middleware.Auth(true), orderController.GetBestSeller)
 
 	v1.POST("/promote/", middleware.Auth(true), promoteController.Create)
 
