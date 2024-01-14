@@ -21,6 +21,7 @@ type OrderService interface {
 	CreateFlow(ctx context.Context, req erpdto.CreateOrderRequest) (*models.Order, error)
 	UpdateFlow(ctx context.Context, req erpdto.UpdateOrderRequest) (*models.Order, error)
 	GetList(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.Order, int64, error)
+	GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.OrderOverview, error)
 	GetOne(ctx context.Context, id string) (*models.Order, error)
 }
 
@@ -602,6 +603,10 @@ func (s *orderService) GetList(ctx context.Context, req erpdto.GetListOrderReque
 	return s.erpOrderRepo.GetList(ctx, req)
 }
 
-func (u *orderService) GetOne(ctx context.Context, id string) (*models.Order, error) {
-	return u.erpOrderRepo.GetOneById(ctx, id)
+func (s *orderService) GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.OrderOverview, error) {
+	return s.erpOrderRepo.GetOverview(ctx, req)
+}
+
+func (s *orderService) GetOne(ctx context.Context, id string) (*models.Order, error) {
+	return s.erpOrderRepo.GetOneById(ctx, id)
 }

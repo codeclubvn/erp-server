@@ -17,6 +17,7 @@ type OrderRepo interface {
 	Update(tx *TX, ctx context.Context, order *models.Order) error
 	GetOneById(ctx context.Context, id string) (*models.Order, error)
 	GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.Order, total int64, err error)
+	GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.OrderOverview, err error)
 }
 
 type orderRepo struct {
@@ -57,7 +58,7 @@ func (r *orderRepo) GetOneById(ctx context.Context, id string) (*models.Order, e
 func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.Order, total int64, err error) {
 	query := r.db.Model(&models.Order{})
 	if req.Search != "" {
-		query = query.Where("name ilike ?", "%"+req.Search+"%")
+		query = query.Where("note ilike ?", "%"+req.Search+"%")
 	}
 
 	switch req.Sort {
@@ -72,4 +73,22 @@ func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest)
 		return nil, 0, errors.WithStack(err)
 	}
 	return res, total, err
+}
+
+func (r *orderRepo) GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.OrderOverview, err error) {
+	queryString := `SELECT count(confirm) as confirm, count(delivery) as delivery, count(complete) as complete, count(cancel) as cancel 
+		FROM ( select CASE WHEN status = 'confirm' then 1 else null end as confirm,
+		CASE WHEN status = 'delivery' then 1 else null end as delivery,
+		CASE WHEN status = 'complete' then 1 else null end as complete,
+		CASE WHEN status = 'cancel' then 1 else null end as cancel
+		FROM orders `
+
+	if req.Search != "" {
+		queryString += "WHERE note iLike " + "'%" + req.Search + "%'"
+	}
+
+	queryString += `) as t`
+
+	err = r.db.Raw(queryString).Find(&res).Error
+	return res, err
 }

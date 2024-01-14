@@ -2,7 +2,6 @@ package erpdto
 
 import (
 	"erp/api/request"
-	"github.com/lib/pq"
 )
 
 type CustomerUriRequest struct {
@@ -14,13 +13,12 @@ type ListCustomerRequest struct {
 }
 
 type CreateCustomerRequest struct {
-	FirstName      string         `json:"first_name" validate:"required"`
-	LastName       string         `json:"last_name" validate:"required"`
-	Gender         string         `json:"gender" validate:"required"`
-	Age            int            `json:"age" validate:"required"`
-	AddressStrings pq.StringArray `json:"address_strings" validate:"required"`
-	PhoneNumber    string         `json:"phone_number" validate:"required"`
-	Email          string         `json:"email" validate:"required"`
+	FullName    string `json:"full_name" validate:"required"`
+	Gender      string `json:"gender" validate:"required"`
+	Age         int    `json:"age" validate:"required"`
+	Address     string `json:"address" validate:"required"`
+	PhoneNumber string `json:"phone_number" validate:"required"`
+	Email       string `json:"email" validate:"required"`
 }
 
 type UpdateCustomerRequest struct {

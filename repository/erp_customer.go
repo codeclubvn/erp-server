@@ -34,7 +34,7 @@ func (p *erpCustomerRepository) List(ctx context.Context, req erpdto.ListCustome
 	query := p.db.Model(&models.Customer{})
 
 	if req.Search != "" {
-		query = query.Where("name LIKE ?", "%"+req.Search+"%")
+		query = query.Where("full_name ILIKE ?", "%"+req.Search+"%")
 	}
 
 	switch req.Sort {

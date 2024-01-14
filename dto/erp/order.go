@@ -62,6 +62,7 @@ func (d DiscountType) CheckValid() bool {
 type StatusOrder string
 
 const (
+	OrderConfirm  StatusOrder = "confirm"
 	OrderDelivery StatusOrder = "delivery"
 	OrderComplete StatusOrder = "complete"
 	OrderCancel   StatusOrder = "cancel"
@@ -76,7 +77,7 @@ func (u StatusOrder) ErrorUpdateMessage() string {
 }
 
 func (d StatusOrder) CheckValid() bool {
-	tCheck := []StatusOrder{OrderDelivery, OrderComplete, OrderCancel}
+	tCheck := []StatusOrder{OrderConfirm, OrderDelivery, OrderComplete, OrderCancel}
 	for _, v := range tCheck {
 		if v == d {
 			return true

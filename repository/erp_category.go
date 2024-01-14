@@ -14,7 +14,7 @@ type CategoryRepository interface {
 	Update(ctx context.Context, category *models.Category) (err error)
 	Delete(ctx context.Context, id string) (err error)
 	GetOneByID(ctx context.Context, id string) (res *models.Category, err error)
-	GetList(ctx context.Context, category erpdto.GetListCategoryRequest) (res []*models.Category, total int64, err error)
+	GetList(ctx context.Context, category erpdto.GetListCategoryRequest) (res []*models.CategoryResult, total int64, err error)
 }
 
 type categoryRepo struct {
@@ -59,19 +59,22 @@ func (u *categoryRepo) GetOneByID(ctx context.Context, id string) (res *models.C
 	return res, errors.Wrap(err, "get category by id failed")
 }
 
-func (u *categoryRepo) GetList(ctx context.Context, req erpdto.GetListCategoryRequest) (res []*models.Category, total int64, err error) {
-	query := u.db.Model(&models.Category{})
+func (u *categoryRepo) GetList(ctx context.Context, req erpdto.GetListCategoryRequest) (res []*models.CategoryResult, total int64, err error) {
+	var output []*models.CategoryResult
+	query := u.db.Table("categories")
 	if req.Search != "" {
 		query = query.Where("name like ?", "%"+req.Search+"%")
 	}
+
+	query.Count(&total)
 
 	switch req.Sort {
 	default:
 		query = query.Order(req.Sort)
 	}
 
-	if err = utils.QueryPagination(query, req.PageOptions, &res).Count(&total).Error(); err != nil {
+	if err = utils.QueryPagination(query, req.PageOptions, &output).Error(); err != nil {
 		return nil, 0, errors.WithStack(err)
 	}
-	return res, total, nil
+	return output, total, nil
 }

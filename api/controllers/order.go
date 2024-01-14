@@ -108,14 +108,29 @@ func (h *OrderController) GetList(c *gin.Context) {
 	h.ResponseList(c, "success", &total, res)
 }
 
-func (b *OrderController) GetOne(c *gin.Context) {
+func (h *OrderController) GetOne(c *gin.Context) {
 	id := utils.ParseStringIDFromUri(c)
-	res, err := b.orderService.GetOne(c, id)
+	res, err := h.orderService.GetOne(c, id)
 	if err != nil {
-		b.ResponseError(c, err)
+		h.ResponseError(c, err)
 		return
 	}
-	b.Response(c, http.StatusOK, "success", res)
+	h.Response(c, http.StatusOK, "success", res)
+}
+
+func (h *OrderController) GetOverview(c *gin.Context) {
+	var req erpdto.GetListOrderRequest
+
+	if err := c.ShouldBindQuery(&req); err != nil {
+		h.ResponseValidationError(c, err)
+		return
+	}
+	res, err := h.orderService.GetOverview(c, req)
+	if err != nil {
+		h.ResponseError(c, err)
+		return
+	}
+	h.Response(c, http.StatusOK, "success", res)
 }
 
 func (h *OrderController) validateOrderItem(req []erpdto.OrderItemRequest) (err error) {

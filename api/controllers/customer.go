@@ -66,10 +66,6 @@ func (p *CustomerController) Create(c *gin.Context) {
 func (p *CustomerController) Update(c *gin.Context) {
 	var req erpdto.UpdateCustomerRequest
 
-	if err := c.ShouldBindUri(&req); err != nil {
-		p.ResponseValidationError(c, err)
-		return
-	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		p.ResponseValidationError(c, err)
 		return
