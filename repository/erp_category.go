@@ -61,9 +61,9 @@ func (u *categoryRepo) GetOneByID(ctx context.Context, id string) (res *models.C
 
 func (u *categoryRepo) GetList(ctx context.Context, req erpdto.GetListCategoryRequest) (res []*models.CategoryResult, total int64, err error) {
 	var output []*models.CategoryResult
-	query := u.db.Table("categories")
+	query := u.db.Table("categories").Debug()
 	if req.Search != "" {
-		query = query.Where("name like ?", "%"+req.Search+"%")
+		query = query.Where("unaccent(name) ilike ?", "%"+req.Search+"%")
 	}
 
 	query.Count(&total)
