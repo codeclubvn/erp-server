@@ -63,7 +63,7 @@ func NewRoute(
 	v1.GET("/customer/", middleware.Auth(false), customerController.GetList)
 	v1.GET("/customer/:id", middleware.Auth(false), customerController.GetOne)
 	v1.POST("/customer/", middleware.Auth(false), customerController.Create)
-	v1.PUT("/customer/:id", middleware.Auth(false), customerController.Update)
+	v1.PUT("/customer/", middleware.Auth(false), customerController.Update)
 	v1.DELETE("/customer/:id", middleware.Auth(false), customerController.Delete)
 
 	v1.GET("/permission/", middleware.Auth(false), employeeController.GetList)
