@@ -54,4 +54,5 @@ var MapErrorCodeMessage = map[string]MessageAndStatus{
 	ErrNotFound:               {"Status Not Found", http.StatusNotFound},
 	ErrDateNotBetween:         {"Date Not Between", http.StatusBadRequest},
 	ErrWalletNameAlreadyExist: {"Wallet name already exists", http.StatusBadRequest},
+	ErrQuantityIsNotEnough:    {"Quantity is not enough", http.StatusBadRequest},
 }

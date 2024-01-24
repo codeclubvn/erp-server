@@ -13,7 +13,7 @@ import (
 
 type ERPCustomerService interface {
 	ListCustomer(ctx context.Context, req erpdto.ListCustomerRequest) ([]*models.Customer, *int64, error)
-	GetOneById(ctx context.Context, id string) (*models.Customer, error)
+	GetOneById(ctx context.Context, id string) (*models.CustomerDetailResponse, error)
 	CreateCustomer(ctx context.Context, req erpdto.CreateCustomerRequest) (*models.Customer, error)
 	UpdateCustomer(ctx context.Context, req erpdto.UpdateCustomerRequest) (*models.Customer, error)
 	DeleteCustomer(ctx context.Context, customerId string) error
@@ -21,20 +21,24 @@ type ERPCustomerService interface {
 
 type erpCustomerService struct {
 	erpCustomerRepo repository.ERPCustomerRepository
+	orderRepo       repository.OrderRepo
+	cashbookRepo    repository.CashbookRepository
 	db              *infrastructure.Database
 	logger          *zap.Logger
 }
 
-func NewCustomerService(erpCustomerRepo repository.ERPCustomerRepository, db *infrastructure.Database, logger *zap.Logger) ERPCustomerService {
+func NewCustomerService(erpCustomerRepo repository.ERPCustomerRepository, db *infrastructure.Database, logger *zap.Logger, orderRepo repository.OrderRepo, cashbookRepo repository.CashbookRepository) ERPCustomerService {
 	return &erpCustomerService{
 		erpCustomerRepo: erpCustomerRepo,
+		orderRepo:       orderRepo,
+		cashbookRepo:    cashbookRepo,
 		db:              db,
 		logger:          logger,
 	}
 }
 
-func (p *erpCustomerService) ListCustomer(ctx context.Context, req erpdto.ListCustomerRequest) ([]*models.Customer, *int64, error) {
-	customers, total, err := p.erpCustomerRepo.List(ctx, req)
+func (s *erpCustomerService) ListCustomer(ctx context.Context, req erpdto.ListCustomerRequest) ([]*models.Customer, *int64, error) {
+	customers, total, err := s.erpCustomerRepo.List(ctx, req)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -42,16 +46,36 @@ func (p *erpCustomerService) ListCustomer(ctx context.Context, req erpdto.ListCu
 	return customers, total, nil
 }
 
-func (p *erpCustomerService) GetOneById(ctx context.Context, id string) (*models.Customer, error) {
-	customers, err := p.erpCustomerRepo.FindOneByID(ctx, id)
+func (s *erpCustomerService) GetOneById(ctx context.Context, id string) (*models.CustomerDetailResponse, error) {
+	customer, err := s.erpCustomerRepo.FindOneByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return customers, nil
+	orderDetail, err := s.orderRepo.GetDetailCustomer(ctx, customer.ID.String())
+	if err != nil {
+		return nil, err
+	}
+
+	totalDebt, err := s.cashbookRepo.GetTotalDebtByCustomerID(ctx, customer.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	output := &models.CustomerDetailResponse{}
+
+	if err = copier.Copy(&output, &customer); err != nil {
+		log.Println("Copy struct failed!")
+		return nil, err
+	}
+	output.TotalOrder = orderDetail.TotalOrder
+	output.TotalDebt = totalDebt
+	output.TotalPaid = orderDetail.TotalPaid
+
+	return output, nil
 }
 
-func (p *erpCustomerService) CreateCustomer(ctx context.Context, req erpdto.CreateCustomerRequest) (*models.Customer, error) {
+func (s *erpCustomerService) CreateCustomer(ctx context.Context, req erpdto.CreateCustomerRequest) (*models.Customer, error) {
 	customer := &models.Customer{}
 
 	if err := copier.Copy(&customer, &req); err != nil {
@@ -59,7 +83,7 @@ func (p *erpCustomerService) CreateCustomer(ctx context.Context, req erpdto.Crea
 		return nil, err
 	}
 
-	customer, err := p.erpCustomerRepo.Create(ctx, customer)
+	customer, err := s.erpCustomerRepo.Create(ctx, customer)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +91,7 @@ func (p *erpCustomerService) CreateCustomer(ctx context.Context, req erpdto.Crea
 	return customer, nil
 }
 
-func (p *erpCustomerService) UpdateCustomer(ctx context.Context, req erpdto.UpdateCustomerRequest) (*models.Customer, error) {
+func (s *erpCustomerService) UpdateCustomer(ctx context.Context, req erpdto.UpdateCustomerRequest) (*models.Customer, error) {
 	customer := &models.Customer{}
 
 	if err := copier.Copy(&customer, &req); err != nil {
@@ -75,7 +99,7 @@ func (p *erpCustomerService) UpdateCustomer(ctx context.Context, req erpdto.Upda
 		return nil, err
 	}
 
-	_, err := p.erpCustomerRepo.Update(ctx, customer)
+	_, err := s.erpCustomerRepo.Update(ctx, customer)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +107,7 @@ func (p *erpCustomerService) UpdateCustomer(ctx context.Context, req erpdto.Upda
 	return customer, nil
 }
 
-func (p *erpCustomerService) DeleteCustomer(ctx context.Context, customerId string) error {
-	err := p.erpCustomerRepo.Delete(ctx, customerId)
+func (s *erpCustomerService) DeleteCustomer(ctx context.Context, customerId string) error {
+	err := s.erpCustomerRepo.Delete(ctx, customerId)
 	return err
 }

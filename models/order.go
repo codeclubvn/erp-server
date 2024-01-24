@@ -36,3 +36,8 @@ type OrderOverview struct {
 	Complete int     `json:"complete"`
 	Cancel   int     `json:"cancel"`
 }
+
+type CustomerDetail struct {
+	TotalOrder int     `json:"total_order"`
+	TotalPaid  float64 `json:"total_paid"`
+}

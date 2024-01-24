@@ -23,6 +23,7 @@ type CashbookRepository interface {
 	GetListDebt(ctx context.Context, req erpdto.ListCashbookRequest) (res []*models.Cashbook, total int64, err error)
 	GetTotalTransactionByCategoryIdAndTime(ctx context.Context, categoryId uuid.UUID, startTime, endTime *time.Time) (total float64, err error)
 	GetListTotalTransactionByCategoryIdAndTime(ctx context.Context, categoryId uuid.UUID, startTime, endTime *time.Time) (output []*erpdto.TotalTransactionByCategoryResponse, err error)
+	GetTotalDebtByCustomerID(ctx context.Context, customerId uuid.UUID) (total float64, err error)
 }
 
 type transactionRepo struct {
@@ -148,4 +149,11 @@ func (r *transactionRepo) GetListTotalTransactionByCategoryIdAndTime(ctx context
 	}
 	err = query.Find(&output).Error
 	return output, err
+}
+
+func (r *transactionRepo) GetTotalDebtByCustomerID(ctx context.Context, customerId uuid.UUID) (total float64, err error) {
+	total = float64(0)
+	query := r.db.Model(&models.Cashbook{}).Where("customer_id = ? and is_pay = false", customerId)
+	err = query.Pluck("coalesce(sum(amount),0)", &total).Error
+	return total, err
 }

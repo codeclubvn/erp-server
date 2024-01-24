@@ -19,6 +19,7 @@ type OrderRepo interface {
 	GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.Order, total int64, err error)
 	GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.OrderOverview, err error)
 	GetBestSeller(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.ProductBestSellerResponse, err error)
+	GetDetailCustomer(ctx context.Context, customerId string) (res *models.CustomerDetail, err error)
 }
 
 type orderRepo struct {
@@ -106,5 +107,13 @@ func (r *orderRepo) GetBestSeller(ctx context.Context, req erpdto.GetListOrderRe
 		Joins("inner join products on order_items.product_id = products.id").Order("quantity_sold desc").
 		Where("order_items.status != 'cancel'").
 		Limit(10).Group("products.id").Find(&res).Error
+	return res, err
+}
+
+func (r *orderRepo) GetDetailCustomer(ctx context.Context, customerId string) (res *models.CustomerDetail, err error) {
+	queryString := `SELECT count(id) as total_order, coalesce(sum(payment), 0) as total_paid
+	FROM orders WHERE customer_id = ?`
+
+	err = r.db.Debug().Raw(queryString, customerId).Find(&res).Error
 	return res, err
 }
