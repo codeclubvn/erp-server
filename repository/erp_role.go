@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
+	"erp/cmd/infrastructure"
 	"erp/domain"
-	"erp/infrastructure"
 	"erp/utils"
 
 	"github.com/pkg/errors"

@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	erpdto "erp/api/dto/finance"
+	"erp/cmd/infrastructure"
 	"erp/domain"
-	"erp/infrastructure"
+	erpdto "erp/handler/dto/finance"
 	"erp/repository"
 	"erp/utils/api_errors"
 	"github.com/jinzhu/copier"

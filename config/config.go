@@ -1,7 +1,7 @@
 package config
 
 import (
-	constants "erp/constants"
+	"erp/utils/constants"
 	"fmt"
 	"os"
 

@@ -1,9 +1,9 @@
 package route
 
 import (
-	controller "erp/api/controllers"
-	"erp/api/middlewares"
-	"erp/lib"
+	"erp/cmd/lib"
+	controller "erp/handler/controllers"
+	"erp/handler/middlewares"
 	"go.uber.org/fx"
 )
 

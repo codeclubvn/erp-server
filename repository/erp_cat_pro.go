@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	"erp/api/dto/erp"
+	"erp/cmd/infrastructure"
 	models "erp/domain"
-	"erp/infrastructure"
+	"erp/handler/dto/erp"
 	"erp/utils"
 	"github.com/pkg/errors"
 )

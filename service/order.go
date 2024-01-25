@@ -2,13 +2,13 @@ package service
 
 import (
 	"context"
-	erpdto2 "erp/api/dto/erp"
-	"erp/constants"
+	"erp/cmd/infrastructure"
 	"erp/domain"
-	"erp/infrastructure"
+	erpdto2 "erp/handler/dto/erp"
 	"erp/repository"
 	"erp/utils"
 	"erp/utils/api_errors"
+	constants2 "erp/utils/constants"
 	"erp/utils/valid_pointer"
 	"errors"
 	"github.com/jinzhu/copier"
@@ -170,7 +170,7 @@ func (s *orderService) createUserRevenue(tx *repository.TX, ctx context.Context,
 	cashbook := &domain.Cashbook{
 		OrderId:  valid_pointer.UUIDPointer(req.OrderId),
 		Amount:   req.Payment,
-		Status:   constants.StatusIn,
+		Status:   constants2.StatusIn,
 		DateTime: &now,
 	}
 
@@ -194,7 +194,7 @@ func (s *orderService) updateUserRevenue(tx *repository.TX, ctx context.Context,
 }
 
 func (s *orderService) getOrderCode(ctx context.Context) string {
-	return utils.GenerateCode(constants.NumberOrderCode)
+	return utils.GenerateCode(constants2.NumberOrderCode)
 }
 
 func (s *orderService) validateTotal(ctx context.Context, requestTotal, calculatedTotal float64) error {
@@ -277,7 +277,7 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 					return err
 				}
 				cashbook.Amount = req.Total - req.Payment
-				cashbook.Status = constants.StatusOut
+				cashbook.Status = constants2.StatusOut
 				now := time.Now()
 				cashbook.DateTime = &now
 				if err = s.cashbookRepo.Create(tx, ctx, cashbook); err != nil {
@@ -314,12 +314,12 @@ func (s *orderService) GetDiscount(ctx context.Context, discountType *erpdto2.Di
 
 	discount := discountReq
 	switch *discountType {
-	case constants.TypePercent:
-		if discountReq <= 0 || discountReq > constants.MaxOfPercent {
+	case constants2.TypePercent:
+		if discountReq <= 0 || discountReq > constants2.MaxOfPercent {
 			return 0, errors.New(api_errors.ErrDiscountPercentInvalid)
 		}
-		discount = total * discountReq / constants.MaxOfPercent
-	case constants.TypeAmount:
+		discount = total * discountReq / constants2.MaxOfPercent
+	case constants2.TypeAmount:
 		if discountReq <= 0 || discountReq > total {
 			return 0, errors.New(api_errors.ErrDiscountAmountInvalid)
 		}
@@ -362,7 +362,7 @@ func (s *orderService) PromoteFlow(ctx context.Context, req erpdto2.CreateOrderR
 	}
 
 	// check quantity use | is_active
-	if (promote.Quantity != nil && utils.ValidInt(promote.Quantity) <= utils.ValidInt(promote.QuantityUse)) || promote.Status == constants.InActive {
+	if (promote.Quantity != nil && utils.ValidInt(promote.Quantity) <= utils.ValidInt(promote.QuantityUse)) || promote.Status == constants2.InActive {
 		return 0, nil
 	}
 
@@ -389,8 +389,8 @@ func (s *orderService) PromoteFlow(ctx context.Context, req erpdto2.CreateOrderR
 	}
 
 	promoteFee := promote.DiscountValue
-	if promote.PromoteType == constants.TypePercent {
-		promoteFee = total * promote.DiscountValue / constants.MaxOfPercent
+	if promote.PromoteType == constants2.TypePercent {
+		promoteFee = total * promote.DiscountValue / constants2.MaxOfPercent
 	}
 
 	// check max_amount
@@ -431,7 +431,7 @@ func (s *orderService) calculateTotalAmount(ctx context.Context, amount float64,
 
 func (s *orderService) CalculateAmount(ctx context.Context, products []*domain.Product, mapOrderItem map[string]erpdto2.OrderItemRequest) (amount float64, costTotal float64, err error) {
 	for _, product := range products {
-		if product.Status != constants.ProductStatusActive {
+		if product.Status != constants2.ProductStatusActive {
 			return 0.0, 0.0, errors.New(api_errors.ErrProductInvalid)
 		}
 
@@ -479,7 +479,7 @@ func (s *orderService) UpdateFlow(ctx context.Context, req erpdto2.UpdateOrderRe
 			}
 		}
 		// if status == canceled, update order, update product quantity, sold
-		if req.Status == constants.Cancel {
+		if req.Status == constants2.Cancel {
 			if err = s.cancelOrder(tx, ctx, order); err != nil {
 				return err
 			}
@@ -540,19 +540,19 @@ func (s *orderService) GetOne(ctx context.Context, id string) (*domain.Order, er
 
 func (s *orderService) checkOrderStatus(ctx context.Context, order *domain.Order, req erpdto2.UpdateOrderRequest) error {
 	switch order.Status {
-	case constants.Confirm:
-		if req.Status != constants.Delivery && req.Status != constants.Cancel {
+	case constants2.Confirm:
+		if req.Status != constants2.Delivery && req.Status != constants2.Cancel {
 			return errors.New(api_errors.ErrOrderStatus)
 		}
-	case constants.Delivery:
-		if req.Status != constants.Complete && req.Status != constants.Cancel {
+	case constants2.Delivery:
+		if req.Status != constants2.Complete && req.Status != constants2.Cancel {
 			return errors.New(api_errors.ErrOrderStatus)
 		}
-	case constants.Complete:
-		if req.Status != constants.Cancel {
+	case constants2.Complete:
+		if req.Status != constants2.Cancel {
 			return errors.New(api_errors.ErrOrderStatus)
 		}
-	case constants.Cancel:
+	case constants2.Cancel:
 		return errors.New(api_errors.ErrOrderStatus)
 	}
 	return nil
@@ -560,7 +560,7 @@ func (s *orderService) checkOrderStatus(ctx context.Context, order *domain.Order
 
 func (s *orderService) cancelOrder(tx *repository.TX, ctx context.Context, order *domain.Order) error {
 	// update order
-	order.Status = constants.Cancel
+	order.Status = constants2.Cancel
 	if err := s.erpOrderRepo.Update(tx, ctx, order); err != nil {
 		return err
 	}

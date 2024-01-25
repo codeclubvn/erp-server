@@ -1,7 +1,7 @@
 package main
 
 import (
-	"erp/bootstrap"
+	"erp/cmd/bootstrap"
 )
 
 func main() {

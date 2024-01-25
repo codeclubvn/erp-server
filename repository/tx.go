@@ -1,8 +1,7 @@
 package repository
 
 import (
-	"erp/infrastructure"
-
+	"erp/cmd/infrastructure"
 	"gorm.io/gorm"
 )
 

@@ -1,8 +1,8 @@
 package utils
 
 import (
-	"erp/api/request"
-	"erp/infrastructure"
+	"erp/cmd/infrastructure"
+	"erp/handler/dto/request"
 	"fmt"
 	"gorm.io/gorm"
 )

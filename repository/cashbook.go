@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	erpdto "erp/api/dto/finance"
+	"erp/cmd/infrastructure"
 	"erp/domain"
-	"erp/infrastructure"
+	erpdto "erp/handler/dto/finance"
 	"erp/utils"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"

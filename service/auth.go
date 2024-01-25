@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	dto2 "erp/api/dto/auth"
 	config "erp/config"
 	models "erp/domain"
+	dto2 "erp/handler/dto/auth"
 	"erp/utils/api_errors"
 
 	"github.com/pkg/errors"
