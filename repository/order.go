@@ -2,24 +2,24 @@ package repository
 
 import (
 	"context"
-	"erp/api_errors"
-	erpdto "erp/dto/erp"
+	"erp/api/dto/erp"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/utils"
+	"erp/utils/api_errors"
 	"go.uber.org/zap"
 
 	"github.com/pkg/errors"
 )
 
 type OrderRepo interface {
-	Create(tx *TX, ctx context.Context, order *models.Order) error
-	Update(tx *TX, ctx context.Context, order *models.Order) error
-	GetOneById(ctx context.Context, id string) (*models.Order, error)
-	GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.Order, total int64, err error)
-	GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.OrderOverview, err error)
-	GetBestSeller(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.ProductBestSellerResponse, err error)
-	GetDetailCustomer(ctx context.Context, customerId string) (res *models.CustomerDetail, err error)
+	Create(tx *TX, ctx context.Context, order *domain.Order) error
+	Update(tx *TX, ctx context.Context, order *domain.Order) error
+	GetOneById(ctx context.Context, id string) (*domain.Order, error)
+	GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*domain.Order, total int64, err error)
+	GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) (res []*domain.OrderOverview, err error)
+	GetBestSeller(ctx context.Context, req erpdto.GetListOrderRequest) (res []*domain.ProductBestSellerResponse, err error)
+	GetDetailCustomer(ctx context.Context, customerId string) (res *domain.CustomerDetail, err error)
 }
 
 type orderRepo struct {
@@ -34,16 +34,16 @@ func NewOrderRepository(db *infrastructure.Database, logger *zap.Logger) OrderRe
 	}
 }
 
-func (r *orderRepo) Create(tx *TX, ctx context.Context, order *models.Order) error {
+func (r *orderRepo) Create(tx *TX, ctx context.Context, order *domain.Order) error {
 	return tx.db.WithContext(ctx).Create(order).Error
 }
 
-func (r *orderRepo) Update(tx *TX, ctx context.Context, order *models.Order) error {
+func (r *orderRepo) Update(tx *TX, ctx context.Context, order *domain.Order) error {
 	return tx.db.WithContext(ctx).Save(order).Error
 }
 
-func (r *orderRepo) GetOneById(ctx context.Context, id string) (*models.Order, error) {
-	var res models.Order
+func (r *orderRepo) GetOneById(ctx context.Context, id string) (*domain.Order, error) {
+	var res domain.Order
 	if err := r.db.WithContext(ctx).Where("id = ?", id).
 		Preload("OrderItems").
 		Preload("Customers").
@@ -57,8 +57,8 @@ func (r *orderRepo) GetOneById(ctx context.Context, id string) (*models.Order, e
 	return &res, nil
 }
 
-func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.Order, total int64, err error) {
-	query := r.db.Model(&models.Order{})
+func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest) (res []*domain.Order, total int64, err error) {
+	query := r.db.Model(&domain.Order{})
 	if req.Search != "" {
 		query = query.Where("note ilike ?", "%"+req.Search+"%")
 	}
@@ -81,7 +81,7 @@ func (r *orderRepo) GetList(ctx context.Context, req erpdto.GetListOrderRequest)
 	return res, total, err
 }
 
-func (r *orderRepo) GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.OrderOverview, err error) {
+func (r *orderRepo) GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) (res []*domain.OrderOverview, err error) {
 	queryString := `SELECT count(confirm) as confirm, count(delivery) as delivery, count(complete) as complete, count(cancel) as cancel,
 		sum(revenue) as revenue, sum(income) as income
 		FROM ( select CASE WHEN status = 'confirm' then 1 else null end as confirm,
@@ -102,7 +102,7 @@ func (r *orderRepo) GetOverview(ctx context.Context, req erpdto.GetListOrderRequ
 	return res, err
 }
 
-func (r *orderRepo) GetBestSeller(ctx context.Context, req erpdto.GetListOrderRequest) (res []*models.ProductBestSellerResponse, err error) {
+func (r *orderRepo) GetBestSeller(ctx context.Context, req erpdto.GetListOrderRequest) (res []*domain.ProductBestSellerResponse, err error) {
 	err = r.db.Table("order_items").Select("products.*, sum(order_items.quantity) as quantity_sold").
 		Joins("inner join products on order_items.product_id = products.id").Order("quantity_sold desc").
 		Where("order_items.status != 'cancel'").
@@ -110,7 +110,7 @@ func (r *orderRepo) GetBestSeller(ctx context.Context, req erpdto.GetListOrderRe
 	return res, err
 }
 
-func (r *orderRepo) GetDetailCustomer(ctx context.Context, customerId string) (res *models.CustomerDetail, err error) {
+func (r *orderRepo) GetDetailCustomer(ctx context.Context, customerId string) (res *domain.CustomerDetail, err error) {
 	queryString := `SELECT count(id) as total_order, coalesce(sum(payment), 0) as total_paid
 	FROM orders WHERE customer_id = ?`
 

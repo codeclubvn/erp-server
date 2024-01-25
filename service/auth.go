@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
-	"erp/api_errors"
+	dto2 "erp/api/dto/auth"
 	config "erp/config"
-	dto "erp/dto/auth"
-	models "erp/models"
+	models "erp/domain"
+	"erp/utils/api_errors"
 
 	"github.com/pkg/errors"
 
@@ -14,8 +14,8 @@ import (
 
 type (
 	AuthService interface {
-		Register(ctx context.Context, req dto.RegisterRequest) (user *models.User, err error)
-		Login(ctx context.Context, req dto.LoginRequest) (res *dto.LoginResponse, err error)
+		Register(ctx context.Context, req dto2.RegisterRequest) (user *models.User, err error)
+		Login(ctx context.Context, req dto2.LoginRequest) (res *dto2.LoginResponse, err error)
 	}
 	authService struct {
 		userService UserService
@@ -32,7 +32,7 @@ func NewAuthService(userService UserService, config *config.Config, jwtService J
 	}
 }
 
-func (a *authService) Register(ctx context.Context, req dto.RegisterRequest) (user *models.User, err error) {
+func (a *authService) Register(ctx context.Context, req dto2.RegisterRequest) (user *models.User, err error) {
 	encryptedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(req.Password),
 		bcrypt.DefaultCost,
@@ -53,7 +53,7 @@ func (a *authService) Register(ctx context.Context, req dto.RegisterRequest) (us
 	return user, err
 }
 
-func (a *authService) Login(ctx context.Context, req dto.LoginRequest) (res *dto.LoginResponse, err error) {
+func (a *authService) Login(ctx context.Context, req dto2.LoginRequest) (res *dto2.LoginResponse, err error) {
 	user, err := a.userService.GetByEmail(ctx, req.Email)
 
 	if err != nil {
@@ -78,15 +78,15 @@ func (a *authService) Login(ctx context.Context, req dto.LoginRequest) (res *dto
 		return nil, errors.Wrap(err, "cannot generate auth tokens")
 	}
 
-	return &dto.LoginResponse{
-		User: dto.UserResponse{
+	return &dto2.LoginResponse{
+		User: dto2.UserResponse{
 			ID:        user.ID.String(),
 			FirstName: user.FirstName,
 			LastName:  user.LastName,
 			Email:     user.Email,
 			RoleID:    user.RoleID,
 		},
-		Token: dto.TokenResponse{
+		Token: dto2.TokenResponse{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
 			ExpiresIn:    a.config.Jwt.AccessTokenExpiresIn,

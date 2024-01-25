@@ -2,9 +2,9 @@ package middlewares
 
 import (
 	"context"
+	"erp/api/dto/auth"
 	"erp/api/response"
-	"erp/api_errors"
-	dto "erp/dto/auth"
+	"erp/utils/api_errors"
 	"net/http"
 	"strings"
 
@@ -71,8 +71,8 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 		//}
 		//c.Request = c.Request.WithContext(context.WithValue(c.Request.Context(), "x-store-id", storeID))
 
-		//ur := new(models.UserRole)
-		//if err = e.db.Model(models.UserRole{}).Where("user_id = ? AND store_id = ?", claims.Subject, storeID).First(ur).Error; err != nil {
+		//ur := new(domain.UserRole)
+		//if err = e.db.Model(domain.UserRole{}).Where("user_id = ? AND store_id = ?", claims.Subject, storeID).First(ur).Error; err != nil {
 		//	c.Errors = append(c.Errors, &gin.Error{
 		//		Err: errors.Wrap(err, "cannot find user role"),
 		//	})
@@ -90,8 +90,8 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 		//	return
 		//}
 
-		//role := new(models.Role)
-		//if err = e.db.Model(models.Role{}).Where("id = ?", ur.RoleID).First(role).Error; err != nil {
+		//role := new(domain.Role)
+		//if err = e.db.Model(domain.Role{}).Where("id = ?", ur.RoleID).First(role).Error; err != nil {
 		//	c.Errors = append(c.Errors, &gin.Error{
 		//		Err: errors.Wrap(err, "cannot find role"),
 		//	})
@@ -104,8 +104,8 @@ func (e *GinMiddleware) Auth(authorization bool) gin.HandlerFunc {
 		//	})
 		//	return
 		//}
-		//up := new(models.Permission)
-		//if err = e.db.Model(models.Permission{}).Where("role_id = ? AND route_path = ?", ur.RoleID, c.Request.URL.Path).First(up).Error; err != nil {
+		//up := new(domain.Permission)
+		//if err = e.db.Model(domain.Permission{}).Where("role_id = ? AND route_path = ?", ur.RoleID, c.Request.URL.Path).First(up).Error; err != nil {
 		//	c.Errors = append(c.Errors, &gin.Error{
 		//		Err: errors.Wrap(err, "cannot find permission"),
 		//	})

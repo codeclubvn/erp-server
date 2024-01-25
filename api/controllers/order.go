@@ -2,10 +2,10 @@ package controller
 
 import (
 	"erp/api"
-	"erp/api_errors"
-	erpdto "erp/dto/erp"
+	"erp/api/dto/erp"
 	erpservice "erp/service"
 	"erp/utils"
+	"erp/utils/api_errors"
 	"errors"
 
 	"github.com/gin-gonic/gin"

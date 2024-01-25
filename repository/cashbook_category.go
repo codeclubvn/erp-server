@@ -2,20 +2,20 @@ package repository
 
 import (
 	"context"
-	erpdto "erp/dto/finance"
+	erpdto "erp/api/dto/finance"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
 type TransactionCategoryRepository interface {
-	Create(tx *TX, ctx context.Context, trans *models.CashbookCategory) error
-	Update(tx *TX, ctx context.Context, trans *models.CashbookCategory) error
+	Create(tx *TX, ctx context.Context, trans *domain.CashbookCategory) error
+	Update(tx *TX, ctx context.Context, trans *domain.CashbookCategory) error
 	Delete(tx *TX, ctx context.Context, id string) error
-	GetOneById(ctx context.Context, id string) (*models.CashbookCategory, error)
-	GetList(ctx context.Context, req erpdto.ListTransactionCategoryRequest) (res []*models.CashbookCategory, total int64, err error)
+	GetOneById(ctx context.Context, id string) (*domain.CashbookCategory, error)
+	GetList(ctx context.Context, req erpdto.ListTransactionCategoryRequest) (res []*domain.CashbookCategory, total int64, err error)
 }
 
 type transactionCategoryRepo struct {
@@ -30,19 +30,19 @@ func NewTransactionCategoryRepository(db *infrastructure.Database, logger *zap.L
 	}
 }
 
-func (r *transactionCategoryRepo) Create(tx *TX, ctx context.Context, trans *models.CashbookCategory) error {
+func (r *transactionCategoryRepo) Create(tx *TX, ctx context.Context, trans *domain.CashbookCategory) error {
 	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Create(trans).Error
 }
 
-func (r *transactionCategoryRepo) GetOneById(ctx context.Context, id string) (*models.CashbookCategory, error) {
-	trans := &models.CashbookCategory{}
+func (r *transactionCategoryRepo) GetOneById(ctx context.Context, id string) (*domain.CashbookCategory, error) {
+	trans := &domain.CashbookCategory{}
 	err := r.db.WithContext(ctx).Where("id = ?", id).First(trans).Error
 	return trans, err
 }
 
-func (r *transactionCategoryRepo) GetList(ctx context.Context, req erpdto.ListTransactionCategoryRequest) (res []*models.CashbookCategory, total int64, err error) {
-	query := r.db.Model(&models.CashbookCategory{})
+func (r *transactionCategoryRepo) GetList(ctx context.Context, req erpdto.ListTransactionCategoryRequest) (res []*domain.CashbookCategory, total int64, err error) {
+	query := r.db.Model(&domain.CashbookCategory{})
 	if req.Search != "" {
 		query = query.Where("name ilike ?", "%"+req.Search+"%")
 	}
@@ -59,12 +59,12 @@ func (r *transactionCategoryRepo) GetList(ctx context.Context, req erpdto.ListTr
 	return res, total, err
 }
 
-func (r *transactionCategoryRepo) Update(tx *TX, ctx context.Context, trans *models.CashbookCategory) error {
+func (r *transactionCategoryRepo) Update(tx *TX, ctx context.Context, trans *domain.CashbookCategory) error {
 	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Where("id = ?", trans.ID).Save(trans).Error
 }
 
 func (r *transactionCategoryRepo) Delete(tx *TX, ctx context.Context, id string) error {
 	tx = GetTX(tx, *r.db)
-	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.CashbookCategory{}).Error
+	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.CashbookCategory{}).Error
 }

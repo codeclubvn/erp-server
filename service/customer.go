@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	erpdto "erp/dto/erp"
+	"erp/api/dto/erp"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/repository"
 	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
@@ -12,10 +12,10 @@ import (
 )
 
 type ERPCustomerService interface {
-	ListCustomer(ctx context.Context, req erpdto.ListCustomerRequest) ([]*models.Customer, *int64, error)
-	GetOneById(ctx context.Context, id string) (*models.CustomerDetailResponse, error)
-	CreateCustomer(ctx context.Context, req erpdto.CreateCustomerRequest) (*models.Customer, error)
-	UpdateCustomer(ctx context.Context, req erpdto.UpdateCustomerRequest) (*models.Customer, error)
+	ListCustomer(ctx context.Context, req erpdto.ListCustomerRequest) ([]*domain.Customer, *int64, error)
+	GetOneById(ctx context.Context, id string) (*domain.CustomerDetailResponse, error)
+	CreateCustomer(ctx context.Context, req erpdto.CreateCustomerRequest) (*domain.Customer, error)
+	UpdateCustomer(ctx context.Context, req erpdto.UpdateCustomerRequest) (*domain.Customer, error)
 	DeleteCustomer(ctx context.Context, customerId string) error
 }
 
@@ -37,7 +37,7 @@ func NewCustomerService(erpCustomerRepo repository.ERPCustomerRepository, db *in
 	}
 }
 
-func (s *erpCustomerService) ListCustomer(ctx context.Context, req erpdto.ListCustomerRequest) ([]*models.Customer, *int64, error) {
+func (s *erpCustomerService) ListCustomer(ctx context.Context, req erpdto.ListCustomerRequest) ([]*domain.Customer, *int64, error) {
 	customers, total, err := s.erpCustomerRepo.List(ctx, req)
 	if err != nil {
 		return nil, nil, err
@@ -46,7 +46,7 @@ func (s *erpCustomerService) ListCustomer(ctx context.Context, req erpdto.ListCu
 	return customers, total, nil
 }
 
-func (s *erpCustomerService) GetOneById(ctx context.Context, id string) (*models.CustomerDetailResponse, error) {
+func (s *erpCustomerService) GetOneById(ctx context.Context, id string) (*domain.CustomerDetailResponse, error) {
 	customer, err := s.erpCustomerRepo.FindOneByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (s *erpCustomerService) GetOneById(ctx context.Context, id string) (*models
 		return nil, err
 	}
 
-	output := &models.CustomerDetailResponse{}
+	output := &domain.CustomerDetailResponse{}
 
 	if err = copier.Copy(&output, &customer); err != nil {
 		log.Println("Copy struct failed!")
@@ -75,8 +75,8 @@ func (s *erpCustomerService) GetOneById(ctx context.Context, id string) (*models
 	return output, nil
 }
 
-func (s *erpCustomerService) CreateCustomer(ctx context.Context, req erpdto.CreateCustomerRequest) (*models.Customer, error) {
-	customer := &models.Customer{}
+func (s *erpCustomerService) CreateCustomer(ctx context.Context, req erpdto.CreateCustomerRequest) (*domain.Customer, error) {
+	customer := &domain.Customer{}
 
 	if err := copier.Copy(&customer, &req); err != nil {
 		log.Println("Copy struct failed!")
@@ -91,8 +91,8 @@ func (s *erpCustomerService) CreateCustomer(ctx context.Context, req erpdto.Crea
 	return customer, nil
 }
 
-func (s *erpCustomerService) UpdateCustomer(ctx context.Context, req erpdto.UpdateCustomerRequest) (*models.Customer, error) {
-	customer := &models.Customer{}
+func (s *erpCustomerService) UpdateCustomer(ctx context.Context, req erpdto.UpdateCustomerRequest) (*domain.Customer, error) {
+	customer := &domain.Customer{}
 
 	if err := copier.Copy(&customer, &req); err != nil {
 		log.Println("Copy struct failed!")

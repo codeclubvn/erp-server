@@ -2,10 +2,10 @@ package repository
 
 import (
 	"context"
-	api_errors "erp/api_errors"
+	models "erp/domain"
 	"erp/infrastructure"
-	models "erp/models"
 	"erp/utils"
+	"erp/utils/api_errors"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"

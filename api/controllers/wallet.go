@@ -2,7 +2,7 @@ package controller
 
 import (
 	"erp/api"
-	erpdto "erp/dto/finance"
+	erpdto "erp/api/dto/finance"
 	erpservice "erp/service"
 	"erp/utils"
 	"net/http"

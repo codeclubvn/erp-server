@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	erpdto "erp/dto/erp"
+	"erp/api/dto/erp"
+	models "erp/domain"
 	"erp/infrastructure"
-	models "erp/models"
 	"erp/utils"
 	"github.com/pkg/errors"
 )
@@ -61,12 +61,16 @@ func (u *categoryRepo) GetOneByID(ctx context.Context, id string) (res *models.C
 
 func (u *categoryRepo) GetList(ctx context.Context, req erpdto.GetListCategoryRequest) (res []*models.CategoryResult, total int64, err error) {
 	var output []*models.CategoryResult
-	query := u.db.Table("categories").Debug()
+	query := u.db.
+		Select("categories.*, count(category_id) as total_product").
+		Table("categories").
+		Joins("left join categories_products cp on categories.id = cp.category_id")
+
 	if req.Search != "" {
 		query = query.Where("unaccent(name) ilike ?", "%"+req.Search+"%")
 	}
 
-	query.Count(&total)
+	query.Group("categories.id").Count(&total)
 
 	switch req.Sort {
 	default:

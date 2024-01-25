@@ -2,20 +2,20 @@ package repository
 
 import (
 	"context"
-	erpdto "erp/dto/finance"
+	erpdto "erp/api/dto/finance"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/utils"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
 type BudgetRepository interface {
-	Create(tx *TX, ctx context.Context, input *models.Budget) error
-	Update(tx *TX, ctx context.Context, input *models.Budget) error
+	Create(tx *TX, ctx context.Context, input *domain.Budget) error
+	Update(tx *TX, ctx context.Context, input *domain.Budget) error
 	Delete(tx *TX, ctx context.Context, id string) error
-	GetOneById(ctx context.Context, id string) (*models.Budget, error)
-	GetList(ctx context.Context, req erpdto.ListBudgetRequest) (res []*models.Budget, total int64, err error)
+	GetOneById(ctx context.Context, id string) (*domain.Budget, error)
+	GetList(ctx context.Context, req erpdto.ListBudgetRequest) (res []*domain.Budget, total int64, err error)
 }
 
 type budgetRepo struct {
@@ -30,13 +30,13 @@ func NewBudgetRepository(db *infrastructure.Database, logger *zap.Logger) Budget
 	}
 }
 
-func (r *budgetRepo) Create(tx *TX, ctx context.Context, input *models.Budget) error {
+func (r *budgetRepo) Create(tx *TX, ctx context.Context, input *domain.Budget) error {
 	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Create(input).Error
 }
 
-func (r *budgetRepo) GetOneById(ctx context.Context, id string) (*models.Budget, error) {
-	output := &models.Budget{}
+func (r *budgetRepo) GetOneById(ctx context.Context, id string) (*domain.Budget, error) {
+	output := &domain.Budget{}
 	err := r.db.WithContext(ctx).
 		Select("budgets.*, sum(cashbooks.amount) as spent").
 		Joins(`left join cashbooks on cashbooks.cashbook_category_id = budgets.cashbook_category_id 
@@ -48,8 +48,8 @@ func (r *budgetRepo) GetOneById(ctx context.Context, id string) (*models.Budget,
 	return output, err
 }
 
-func (r *budgetRepo) GetList(ctx context.Context, req erpdto.ListBudgetRequest) (res []*models.Budget, total int64, err error) {
-	query := r.db.Model(&models.Budget{}).Debug().
+func (r *budgetRepo) GetList(ctx context.Context, req erpdto.ListBudgetRequest) (res []*domain.Budget, total int64, err error) {
+	query := r.db.Model(&domain.Budget{}).Debug().
 		Select("budgets.*, sum(cashbooks.amount) as spent").
 		Joins(`left join cashbooks on cashbooks.cashbook_category_id = budgets.cashbook_category_id 
 			AND (cashbooks.date_time BETWEEN budgets.start_time AND budgets.end_time OR budgets.start_time IS NULL OR budgets.end_time IS NULL)`)
@@ -71,12 +71,12 @@ func (r *budgetRepo) GetList(ctx context.Context, req erpdto.ListBudgetRequest) 
 	return res, total, err
 }
 
-func (r *budgetRepo) Update(tx *TX, ctx context.Context, input *models.Budget) error {
+func (r *budgetRepo) Update(tx *TX, ctx context.Context, input *domain.Budget) error {
 	tx = GetTX(tx, *r.db)
 	return tx.db.WithContext(ctx).Where("id = ?", input.ID).Save(input).Error
 }
 
 func (r *budgetRepo) Delete(tx *TX, ctx context.Context, id string) error {
 	tx = GetTX(tx, *r.db)
-	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Budget{}).Error
+	return tx.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.Budget{}).Error
 }

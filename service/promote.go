@@ -2,12 +2,12 @@ package service
 
 import (
 	"context"
-	"erp/api_errors"
+	"erp/api/dto/erp"
 	"erp/constants"
-	erpdto "erp/dto/erp"
-	"erp/models"
+	"erp/domain"
 	"erp/repository"
 	"erp/utils"
+	"erp/utils/api_errors"
 	"github.com/jinzhu/copier"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -15,12 +15,12 @@ import (
 )
 
 type IPromoteService interface {
-	CreateFlow(ctx context.Context, req erpdto.CreatePromoteRequest) (*models.Promote, error)
-	GetPromoteById(ctx context.Context, id string) (*models.Promote, error)
+	CreateFlow(ctx context.Context, req erpdto.CreatePromoteRequest) (*domain.Promote, error)
+	GetPromoteById(ctx context.Context, id string) (*domain.Promote, error)
 	CountCustomerUsePromote(ctx context.Context, customerId *uuid.UUID, code string) (int64, error)
 	UpdateQuantityUse(ctx context.Context, code string, quantityUse int) error
 	CreatePromoteUse(ctx context.Context, req erpdto.CreatePromoteUseRequest) error
-	GetPromoteByCode(ctx context.Context, code string) (*models.Promote, error)
+	GetPromoteByCode(ctx context.Context, code string) (*domain.Promote, error)
 }
 
 type promoteService struct {
@@ -33,7 +33,7 @@ func NewPromoteService(promoteRepo repository.IPromoteRepo) IPromoteService {
 	}
 }
 
-func (s *promoteService) CreateFlow(ctx context.Context, req erpdto.CreatePromoteRequest) (*models.Promote, error) {
+func (s *promoteService) CreateFlow(ctx context.Context, req erpdto.CreatePromoteRequest) (*domain.Promote, error) {
 	promote, err := s.promoteRepo.GetPromoteByCode(ctx, req.Code)
 	if err != nil {
 		if !utils.ErrNoRows(err) {
@@ -51,7 +51,7 @@ func (s *promoteService) CreateFlow(ctx context.Context, req erpdto.CreatePromot
 		}
 	}
 
-	promote = &models.Promote{}
+	promote = &domain.Promote{}
 	if err := copier.Copy(promote, &req); err != nil {
 		log.Println("Copy struct failed!")
 		return nil, err
@@ -64,11 +64,11 @@ func (s *promoteService) CreateFlow(ctx context.Context, req erpdto.CreatePromot
 	return promote, nil
 }
 
-func (s *promoteService) GetPromoteById(ctx context.Context, id string) (*models.Promote, error) {
+func (s *promoteService) GetPromoteById(ctx context.Context, id string) (*domain.Promote, error) {
 	return s.promoteRepo.GetPromoteById(ctx, id)
 }
 
-func (s *promoteService) GetPromoteByCode(ctx context.Context, code string) (*models.Promote, error) {
+func (s *promoteService) GetPromoteByCode(ctx context.Context, code string) (*domain.Promote, error) {
 	return s.promoteRepo.GetPromoteByCode(ctx, code)
 }
 
@@ -80,7 +80,7 @@ func (s *promoteService) UpdateQuantityUse(ctx context.Context, code string, qua
 }
 
 func (s *promoteService) CreatePromoteUse(ctx context.Context, req erpdto.CreatePromoteUseRequest) error {
-	promoteUse := &models.PromoteUse{}
+	promoteUse := &domain.PromoteUse{}
 	if err := copier.Copy(&promoteUse, &req); err != nil {
 		return err
 	}

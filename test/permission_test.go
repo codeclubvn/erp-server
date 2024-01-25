@@ -1,7 +1,7 @@
 package test
 
 import (
-	"erp/models"
+	"erp/domain"
 	erpservice "erp/service"
 	"testing"
 
@@ -32,9 +32,9 @@ func TestListPermission(t *testing.T) {
 type MockPermissionRepo struct {
 }
 
-func (*MockPermissionRepo) List() ([]*models.Permission, *int64, error) {
+func (*MockPermissionRepo) List() ([]*domain.Permission, *int64, error) {
 	total := int64(3)
-	return []*models.Permission{
+	return []*domain.Permission{
 		{ID: uuid.NewV4(), Name: "permission1"},
 		{ID: uuid.NewV4(), Name: "permission2"},
 		{ID: uuid.NewV4(), Name: "permission3"},

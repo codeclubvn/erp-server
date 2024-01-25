@@ -2,14 +2,14 @@ package repository
 
 import (
 	"context"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"go.uber.org/zap"
 )
 
 type OrderItemRepo interface {
-	CreateMultiple(tx *TX, ctx context.Context, orderItems []*models.OrderItem) error
-	GetOrderItemByOrderId(ctx context.Context, orderId string) ([]*models.OrderItem, error)
+	CreateMultiple(tx *TX, ctx context.Context, orderItems []*domain.OrderItem) error
+	GetOrderItemByOrderId(ctx context.Context, orderId string) ([]*domain.OrderItem, error)
 }
 
 type orderItemRepo struct {
@@ -24,15 +24,15 @@ func NewOrderItemRepo(db *infrastructure.Database, logger *zap.Logger) OrderItem
 	}
 }
 
-func (p *orderItemRepo) CreateMultiple(tx *TX, ctx context.Context, orderItems []*models.OrderItem) error {
+func (p *orderItemRepo) CreateMultiple(tx *TX, ctx context.Context, orderItems []*domain.OrderItem) error {
 	if err := tx.db.Create(orderItems).Error; err != nil {
 		return err
 	}
 	return nil
 }
 
-func (r *orderItemRepo) GetOrderItemByOrderId(ctx context.Context, orderId string) ([]*models.OrderItem, error) {
-	var res []*models.OrderItem
+func (r *orderItemRepo) GetOrderItemByOrderId(ctx context.Context, orderId string) ([]*domain.OrderItem, error) {
+	var res []*domain.OrderItem
 	if err := r.db.Where("order_id = ?", orderId).Find(&res).Error; err != nil {
 		return nil, err
 	}

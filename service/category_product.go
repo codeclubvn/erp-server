@@ -2,15 +2,15 @@ package service
 
 import (
 	"context"
+	"erp/api/dto/erp"
 	config "erp/config"
-	erpdto "erp/dto/erp"
-	models "erp/models"
+	models "erp/domain"
 	repository "erp/repository"
 	"erp/utils"
 )
 
 type (
-	ERPCategoryProductService interface {
+	CategoryProductService interface {
 		Create(ctx context.Context, req erpdto.CategoryProductRequest) (*models.CategoryProduct, error)
 		Update(ctx context.Context, req erpdto.CategoryProductRequest) (*models.CategoryProduct, error)
 		Delete(ctx context.Context, id string) error
@@ -22,7 +22,7 @@ type (
 	}
 )
 
-func NewCategoryProductService(catProductRepo repository.CategoryProductRepository, config *config.Config) ERPCategoryProductService {
+func NewCategoryProductService(catProductRepo repository.CategoryProductRepository, config *config.Config) CategoryProductService {
 	return &CategoryProductServiceImpl{
 		catProductRepo: catProductRepo,
 		config:         config,
@@ -33,7 +33,7 @@ func (u *CategoryProductServiceImpl) Create(ctx context.Context, req erpdto.Cate
 	res := models.CategoryProduct{}
 	var err error
 
-	if err = utils.Copy(req, res); err != nil {
+	if err = utils.Copy(&res, &req); err != nil {
 		return nil, err
 	}
 	if err = u.catProductRepo.Create(nil, ctx, &res); err != nil {

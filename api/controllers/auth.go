@@ -2,7 +2,7 @@ package controller
 
 import (
 	"erp/api"
-	dto "erp/dto/auth"
+	dto2 "erp/api/dto/auth"
 	service "erp/service"
 	"net/http"
 
@@ -25,7 +25,7 @@ func NewAuthController(authService service.AuthService, logger *zap.Logger) *Aut
 }
 
 func (b *AuthController) Register(c *gin.Context) {
-	var req dto.RegisterRequest
+	var req dto2.RegisterRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		b.ResponseValidationError(c, err)
@@ -42,7 +42,7 @@ func (b *AuthController) Register(c *gin.Context) {
 }
 
 func (b *AuthController) Login(c *gin.Context) {
-	var req dto.LoginRequest
+	var req dto2.LoginRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		b.ResponseValidationError(c, err)

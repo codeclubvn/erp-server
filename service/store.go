@@ -2,12 +2,12 @@ package service
 
 import (
 	"context"
-	"erp/api_errors"
-	erpdto "erp/dto/erp"
+	"erp/api/dto/erp"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/repository"
 	"erp/utils"
+	"erp/utils/api_errors"
 
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -15,9 +15,9 @@ import (
 )
 
 type ERPStoreService interface {
-	CreateStoreAndAssignOwner(ctx context.Context, req erpdto.CreateStoreRequest) (*models.Store, error)
-	UpdateStore(ctx context.Context, storeID string, req erpdto.UpdateStoreRequest) (*models.Store, error)
-	ListStore(ctx context.Context, req erpdto.ListStoreRequest) ([]*models.Store, *int64, error)
+	CreateStoreAndAssignOwner(ctx context.Context, req erpdto.CreateStoreRequest) (*domain.Store, error)
+	UpdateStore(ctx context.Context, storeID string, req erpdto.UpdateStoreRequest) (*domain.Store, error)
+	ListStore(ctx context.Context, req erpdto.ListStoreRequest) ([]*domain.Store, *int64, error)
 	DeleteStore(ctx context.Context, storeID string) error
 }
 
@@ -37,12 +37,12 @@ func NewStoreService(erpStoreRepo repository.ERPStoreRepository, erpRoleRepo rep
 	}
 }
 
-func (p *erpStoreService) CreateStoreAndAssignOwner(ctx context.Context, req erpdto.CreateStoreRequest) (*models.Store, error) {
+func (p *erpStoreService) CreateStoreAndAssignOwner(ctx context.Context, req erpdto.CreateStoreRequest) (*domain.Store, error) {
 	ownerID, err := utils.GetUserUUIDFromContext(ctx)
 	if err != nil {
 		return nil, err
 	}
-	store := &models.Store{
+	store := &domain.Store{
 		Name:         req.Name,
 		Avatar:       req.Avatar,
 		Thumbnail:    req.Thumbnail,
@@ -81,8 +81,8 @@ func (p *erpStoreService) CreateStoreAndAssignOwner(ctx context.Context, req erp
 	return store, nil
 }
 
-func (p *erpStoreService) UpdateStore(ctx context.Context, storeID string, req erpdto.UpdateStoreRequest) (*models.Store, error) {
-	u := &models.Store{
+func (p *erpStoreService) UpdateStore(ctx context.Context, storeID string, req erpdto.UpdateStoreRequest) (*domain.Store, error) {
+	u := &domain.Store{
 		Name:         req.Name,
 		Avatar:       req.Avatar,
 		Thumbnail:    req.Thumbnail,
@@ -104,7 +104,7 @@ func (p *erpStoreService) UpdateStore(ctx context.Context, storeID string, req e
 	return store, nil
 }
 
-func (p *erpStoreService) ListStore(ctx context.Context, req erpdto.ListStoreRequest) ([]*models.Store, *int64, error) {
+func (p *erpStoreService) ListStore(ctx context.Context, req erpdto.ListStoreRequest) ([]*domain.Store, *int64, error) {
 	userID := utils.GetUserStringIDFromContext(ctx)
 
 	_, err := p.erpStoreRepo.FindByID(ctx, userID)

@@ -2,9 +2,9 @@ package repository
 
 import (
 	"context"
-	erpdto "erp/dto/erp"
+	"erp/api/dto/erp"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/utils"
 	"fmt"
 	"github.com/pkg/errors"
@@ -12,10 +12,10 @@ import (
 )
 
 type ERPCustomerRepository interface {
-	List(ctx context.Context, request erpdto.ListCustomerRequest) ([]*models.Customer, *int64, error)
-	FindOneByID(ctx context.Context, customerId string) (res *models.Customer, err error)
-	Create(ctx context.Context, customer *models.Customer) (*models.Customer, error)
-	Update(ctx context.Context, customer *models.Customer) (*models.Customer, error)
+	List(ctx context.Context, request erpdto.ListCustomerRequest) ([]*domain.Customer, *int64, error)
+	FindOneByID(ctx context.Context, customerId string) (res *domain.Customer, err error)
+	Create(ctx context.Context, customer *domain.Customer) (*domain.Customer, error)
+	Update(ctx context.Context, customer *domain.Customer) (*domain.Customer, error)
 	Delete(ctx context.Context, customerId string) error
 }
 
@@ -28,10 +28,10 @@ func NewERPCustomerRepository(db *infrastructure.Database) ERPCustomerRepository
 	return &erpCustomerRepository{db}
 }
 
-func (p *erpCustomerRepository) List(ctx context.Context, req erpdto.ListCustomerRequest) ([]*models.Customer, *int64, error) {
-	var customer []*models.Customer
+func (p *erpCustomerRepository) List(ctx context.Context, req erpdto.ListCustomerRequest) ([]*domain.Customer, *int64, error) {
+	var customer []*domain.Customer
 	var total int64 = 0
-	query := p.db.Model(&models.Customer{})
+	query := p.db.Model(&domain.Customer{})
 
 	if req.Search != "" {
 		query = query.Where("full_name ILIKE ?", "%"+req.Search+"%")
@@ -49,7 +49,7 @@ func (p *erpCustomerRepository) List(ctx context.Context, req erpdto.ListCustome
 	return customer, &total, nil
 }
 
-func (p *erpCustomerRepository) FindOneByID(ctx context.Context, customerId string) (res *models.Customer, err error) {
+func (p *erpCustomerRepository) FindOneByID(ctx context.Context, customerId string) (res *domain.Customer, err error) {
 	db := p.db.WithContext(ctx)
 	if res := db.Where("id = ?", customerId).First(&res); res.Error != nil {
 		return nil, errors.Wrap(err, "Get customer by id failed")
@@ -58,7 +58,7 @@ func (p *erpCustomerRepository) FindOneByID(ctx context.Context, customerId stri
 	return res, nil
 }
 
-func (p *erpCustomerRepository) Create(ctx context.Context, customer *models.Customer) (*models.Customer, error) {
+func (p *erpCustomerRepository) Create(ctx context.Context, customer *domain.Customer) (*domain.Customer, error) {
 	if err := p.db.WithContext(ctx).Create(customer).Error; err != nil {
 		return nil, errors.Wrap(err, "CreateFlow customer failed")
 	}
@@ -66,7 +66,7 @@ func (p *erpCustomerRepository) Create(ctx context.Context, customer *models.Cus
 	return customer, nil
 }
 
-func (p *erpCustomerRepository) Update(ctx context.Context, customer *models.Customer) (*models.Customer, error) {
+func (p *erpCustomerRepository) Update(ctx context.Context, customer *domain.Customer) (*domain.Customer, error) {
 	customer.UpdatedAt = time.Now()
 
 	if err := p.db.WithContext(ctx).Save(&customer).Error; err != nil {
@@ -78,7 +78,7 @@ func (p *erpCustomerRepository) Update(ctx context.Context, customer *models.Cus
 }
 
 func (p *erpCustomerRepository) Delete(ctx context.Context, customerId string) error {
-	if err := p.db.WithContext(ctx).Where("id = ?", customerId).Delete(&models.Customer{}).Error; err != nil {
+	if err := p.db.WithContext(ctx).Where("id = ?", customerId).Delete(&domain.Customer{}).Error; err != nil {
 		return errors.Wrap(err, "Delete customer failed")
 	}
 

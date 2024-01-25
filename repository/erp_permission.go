@@ -2,8 +2,8 @@ package repository
 
 import (
 	"erp/api/request"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/utils"
 
 	"github.com/pkg/errors"
@@ -11,7 +11,7 @@ import (
 )
 
 type ErpPermissionRepo interface {
-	List() ([]*models.Permission, *int64, error)
+	List() ([]*domain.Permission, *int64, error)
 }
 
 type erpPermissionRepo struct {
@@ -23,10 +23,10 @@ func NewErpPermissionRepo(db *infrastructure.Database, logger *zap.Logger) ErpPe
 	return &erpPermissionRepo{db, logger}
 }
 
-func (e *erpPermissionRepo) List() ([]*models.Permission, *int64, error) {
+func (e *erpPermissionRepo) List() ([]*domain.Permission, *int64, error) {
 	var total int64 = 0
-	var res []*models.Permission
-	query := e.db.Model(&models.Permission{})
+	var res []*domain.Permission
+	query := e.db.Model(&domain.Permission{})
 	err := utils.QueryPagination(query, request.PageOptions{
 		Limit: 1000,
 		Page:  1,

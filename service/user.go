@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	config "erp/config"
-	models "erp/models"
+	models "erp/domain"
 	repository "erp/repository"
 
 	"gorm.io/gorm"

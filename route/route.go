@@ -12,23 +12,25 @@ var Module = fx.Options(fx.Invoke(
 ))
 
 type Route struct {
-	handler               *lib.Handler
-	categoryController    *controller.ERPCategoryController
-	customerController    *controller.CustomerController
-	authController        *controller.AuthController
-	employeeController    *controller.ERPEmployeeManagementController
-	orderController       *controller.OrderController
-	productController     *controller.ERPProductController
-	promoteController     *controller.PromoteController
-	storeController       *controller.ERPStoreController
-	healthController      *controller.HealthController
-	middleware            *middlewares.GinMiddleware
-	transactionController *controller.CashbookController
+	handler                   *lib.Handler
+	categoryController        *controller.ERPCategoryController
+	customerController        *controller.CustomerController
+	authController            *controller.AuthController
+	employeeController        *controller.ERPEmployeeManagementController
+	orderController           *controller.OrderController
+	productController         *controller.ERPProductController
+	promoteController         *controller.PromoteController
+	storeController           *controller.ERPStoreController
+	healthController          *controller.HealthController
+	middleware                *middlewares.GinMiddleware
+	transactionController     *controller.CashbookController
+	categoryProductController *controller.CategoryProductController
 }
 
 func NewRoute(
 	handler *lib.Handler,
 	categoryController *controller.ERPCategoryController,
+	categoryProductController *controller.CategoryProductController,
 	customerController *controller.CustomerController,
 	authController *controller.AuthController,
 	employeeController *controller.ERPEmployeeManagementController,
@@ -59,6 +61,11 @@ func NewRoute(
 	v1.GET("/category/", middleware.Auth(false), categoryController.GetList)
 	v1.GET("/category/:id", middleware.Auth(false), categoryController.GetOne)
 	v1.DELETE("/category/:id", middleware.Auth(true), categoryController.Delete)
+
+	v1.POST("/category_product/", middleware.Auth(true), categoryProductController.Create)
+	v1.PUT("/category_product/", middleware.Auth(true), categoryProductController.Update)
+	v1.GET("/category_product/", middleware.Auth(false), categoryProductController.GetList)
+	v1.DELETE("/category_product/:id", middleware.Auth(true), categoryProductController.Delete)
 
 	v1.GET("/customer/", middleware.Auth(false), customerController.GetList)
 	v1.GET("/customer/:id", middleware.Auth(false), customerController.GetOne)

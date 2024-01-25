@@ -2,20 +2,20 @@ package service
 
 import (
 	"context"
-	erpdto "erp/dto/finance"
+	erpdto "erp/api/dto/finance"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/repository"
 	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
 )
 
 type BudgetService interface {
-	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateBudgetRequest) (*models.Budget, error)
-	Update(ctx context.Context, req erpdto.UpdateBudgetRequest) (*models.Budget, error)
+	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateBudgetRequest) (*domain.Budget, error)
+	Update(ctx context.Context, req erpdto.UpdateBudgetRequest) (*domain.Budget, error)
 	Delete(ctx context.Context, budgetID string) error
-	GetOne(ctx context.Context, id string) (*models.Budget, error)
-	GetList(ctx context.Context, req erpdto.ListBudgetRequest) ([]*models.Budget, int64, error)
+	GetOne(ctx context.Context, id string) (*domain.Budget, error)
+	GetList(ctx context.Context, req erpdto.ListBudgetRequest) ([]*domain.Budget, int64, error)
 }
 
 type budgetService struct {
@@ -34,8 +34,8 @@ func NewBudgetService(budgetRepo repository.BudgetRepository, db *infrastructure
 	}
 }
 
-func (p *budgetService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateBudgetRequest) (*models.Budget, error) {
-	output := &models.Budget{}
+func (p *budgetService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateBudgetRequest) (*domain.Budget, error) {
+	output := &domain.Budget{}
 	if err := copier.Copy(&output, &req); err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func (p *budgetService) Create(tx *repository.TX, ctx context.Context, req erpdt
 	return output, nil
 }
 
-func (p *budgetService) Update(ctx context.Context, req erpdto.UpdateBudgetRequest) (*models.Budget, error) {
+func (p *budgetService) Update(ctx context.Context, req erpdto.UpdateBudgetRequest) (*domain.Budget, error) {
 	output, err := p.budgetRepo.GetOneById(ctx, req.Id.String())
 	if err != nil {
 		return nil, err
@@ -62,11 +62,11 @@ func (p *budgetService) Update(ctx context.Context, req erpdto.UpdateBudgetReque
 	return output, nil
 }
 
-func (p *budgetService) GetList(ctx context.Context, req erpdto.ListBudgetRequest) ([]*models.Budget, int64, error) {
+func (p *budgetService) GetList(ctx context.Context, req erpdto.ListBudgetRequest) ([]*domain.Budget, int64, error) {
 	return p.budgetRepo.GetList(ctx, req)
 }
 
-func (p *budgetService) GetOne(ctx context.Context, id string) (*models.Budget, error) {
+func (p *budgetService) GetOne(ctx context.Context, id string) (*domain.Budget, error) {
 	return p.budgetRepo.GetOneById(ctx, id)
 }
 

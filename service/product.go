@@ -2,10 +2,10 @@ package service
 
 import (
 	"context"
+	"erp/api/dto/erp"
 	config "erp/config"
-	erpdto "erp/dto/erp"
+	models "erp/domain"
 	"erp/infrastructure"
-	models "erp/models"
 	repository "erp/repository"
 	"erp/utils"
 	"github.com/pkg/errors"

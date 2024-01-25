@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	erpdto "erp/dto/erp"
+	"erp/api/dto/erp"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/repository"
 	"erp/utils"
 
@@ -78,7 +78,7 @@ func (e *erpEmployeeManagementService) CreateRole(ctx context.Context, req erpdt
 }
 
 func (e *erpEmployeeManagementService) CreateEmployee(ctx context.Context, req erpdto.CreateEmployeeRequest) (id string, err error) {
-	var user *models.User
+	var user *domain.User
 
 	err = repository.WithTransaction(e.db, func(tx *repository.TX) error {
 		encryptedPassword, err := bcrypt.GenerateFromPassword(
@@ -90,7 +90,7 @@ func (e *erpEmployeeManagementService) CreateEmployee(ctx context.Context, req e
 			return errors.WithStack(err)
 		}
 
-		user, err = e.userRepo.Create(tx, ctx, models.User{
+		user, err = e.userRepo.Create(tx, ctx, domain.User{
 			FirstName: req.FirstName,
 			LastName:  req.LastName,
 			Email:     req.Email,

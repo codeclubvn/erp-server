@@ -1,10 +1,10 @@
 package service
 
 import (
-	"erp/api_errors"
+	"erp/api/dto/auth"
 	config "erp/config"
 	"erp/constants"
-	dto "erp/dto/auth"
+	"erp/utils/api_errors"
 	"time"
 
 	"github.com/golang-jwt/jwt"

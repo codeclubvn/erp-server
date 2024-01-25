@@ -2,7 +2,7 @@ package controller
 
 import (
 	"erp/api"
-	erpdto "erp/dto/erp"
+	"erp/api/dto/erp"
 	erpservice "erp/service"
 	"erp/utils"
 	"github.com/gin-gonic/gin"

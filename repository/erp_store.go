@@ -3,20 +3,20 @@ package repository
 import (
 	"context"
 	"erp/api/request"
-	"erp/api_errors"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/utils"
+	"erp/utils/api_errors"
 
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
 type ERPStoreRepository interface {
-	Create(tx *TX, ctx context.Context, store *models.Store) (*models.Store, error)
-	Update(tx *TX, ctx context.Context, store *models.Store) (*models.Store, error)
-	FindByID(ctx context.Context, id string) (*models.Store, error)
-	List(ctx context.Context, search string, o request.PageOptions, userID string) ([]*models.Store, *int64, error)
+	Create(tx *TX, ctx context.Context, store *domain.Store) (*domain.Store, error)
+	Update(tx *TX, ctx context.Context, store *domain.Store) (*domain.Store, error)
+	FindByID(ctx context.Context, id string) (*domain.Store, error)
+	List(ctx context.Context, search string, o request.PageOptions, userID string) ([]*domain.Store, *int64, error)
 	DeleteByID(tx *TX, ctx context.Context, id string) error
 }
 
@@ -32,7 +32,7 @@ func NewERPStoreRepository(db *infrastructure.Database, logger *zap.Logger) ERPS
 	}
 }
 
-func (p *erpStoreRepository) Create(tx *TX, ctx context.Context, store *models.Store) (*models.Store, error) {
+func (p *erpStoreRepository) Create(tx *TX, ctx context.Context, store *domain.Store) (*domain.Store, error) {
 	tx = GetTX(tx, *p.db)
 
 	if err := tx.db.WithContext(ctx).Create(store).Error; err != nil {
@@ -42,7 +42,7 @@ func (p *erpStoreRepository) Create(tx *TX, ctx context.Context, store *models.S
 	return store, nil
 }
 
-func (p *erpStoreRepository) Update(tx *TX, ctx context.Context, store *models.Store) (*models.Store, error) {
+func (p *erpStoreRepository) Update(tx *TX, ctx context.Context, store *domain.Store) (*domain.Store, error) {
 	tx = GetTX(tx, *p.db)
 
 	if err := tx.db.WithContext(ctx).Save(store).Error; err != nil {
@@ -52,8 +52,8 @@ func (p *erpStoreRepository) Update(tx *TX, ctx context.Context, store *models.S
 	return store, nil
 }
 
-func (p *erpStoreRepository) FindByID(ctx context.Context, id string) (*models.Store, error) {
-	var store models.Store
+func (p *erpStoreRepository) FindByID(ctx context.Context, id string) (*domain.Store, error) {
+	var store domain.Store
 	if err := p.db.WithContext(ctx).Where("id = ?", id).First(&store).Error; err != nil {
 		if utils.ErrNoRows(err) {
 			return nil, errors.New(api_errors.ErrStoreNotFound)
@@ -64,11 +64,11 @@ func (p *erpStoreRepository) FindByID(ctx context.Context, id string) (*models.S
 	return &store, nil
 }
 
-func (p *erpStoreRepository) List(ctx context.Context, search string, o request.PageOptions, userID string) ([]*models.Store, *int64, error) {
-	var stores []*models.Store
+func (p *erpStoreRepository) List(ctx context.Context, search string, o request.PageOptions, userID string) ([]*domain.Store, *int64, error) {
+	var stores []*domain.Store
 	var total int64 = 0
 
-	q := p.db.WithContext(ctx).Model(&models.Store{})
+	q := p.db.WithContext(ctx).Model(&domain.Store{})
 
 	if search != "" {
 		q = q.Where("name LIKE ?", "%"+search+"%")
@@ -86,7 +86,7 @@ func (p *erpStoreRepository) List(ctx context.Context, search string, o request.
 func (p *erpStoreRepository) DeleteByID(tx *TX, ctx context.Context, id string) error {
 	tx = GetTX(tx, *p.db)
 
-	if err := tx.db.WithContext(ctx).Where("id = ?", id).Delete(&models.Store{}).Error; err != nil {
+	if err := tx.db.WithContext(ctx).Where("id = ?", id).Delete(&domain.Store{}).Error; err != nil {
 		return errors.Wrap(err, "Delete store failed")
 	}
 

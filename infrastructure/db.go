@@ -3,7 +3,7 @@ package infrastructure
 import (
 	"database/sql"
 	config "erp/config"
-	"erp/models"
+	"erp/domain"
 	"fmt"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
@@ -91,12 +91,12 @@ func getDatabaseInstance(config *config.Config) (db *gorm.DB, err error) {
 
 func (d Database) RegisterTables() {
 	err := d.DB.AutoMigrate(
-		models.User{}, models.Role{}, models.Permission{},
-		models.Store{}, models.UserRole{}, models.Category{},
-		models.Product{}, models.CategoryProduct{}, models.Customer{},
-		models.Cashbook{}, models.Order{},
-		models.OrderItem{}, models.Promote{}, models.PromoteUse{},
-		models.Wallet{}, models.CashbookCategory{}, models.Budget{},
+		domain.User{}, domain.Role{}, domain.Permission{},
+		domain.Store{}, domain.UserRole{}, domain.Category{},
+		domain.Product{}, domain.CategoryProduct{}, domain.Customer{},
+		domain.Cashbook{}, domain.Order{},
+		domain.OrderItem{}, domain.Promote{}, domain.PromoteUse{},
+		domain.Wallet{}, domain.CashbookCategory{}, domain.Budget{},
 	)
 
 	if err != nil {

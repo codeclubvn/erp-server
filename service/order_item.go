@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
-	erpdto "erp/dto/erp"
+	"erp/api/dto/erp"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/repository"
 	uuid "github.com/satori/go.uuid"
 	"go.uber.org/zap"
@@ -12,7 +12,7 @@ import (
 
 type IOrderItemService interface {
 	CreateOrderItemFlow(tx *repository.TX, ctx context.Context, req []erpdto.OrderItemRequest, orderId uuid.UUID) error
-	GetOrderItemByOrderId(ctx context.Context, orderId string) ([]*models.OrderItem, error)
+	GetOrderItemByOrderId(ctx context.Context, orderId string) ([]*domain.OrderItem, error)
 }
 
 type orderItemService struct {
@@ -37,10 +37,10 @@ func (s *orderItemService) CreateOrderItemFlow(tx *repository.TX, ctx context.Co
 	return s.orderItemRepo.CreateMultiple(tx, ctx, orderItem)
 }
 
-func (s *orderItemService) mapCreateOrderItem(ctx context.Context, req []erpdto.OrderItemRequest, orderId uuid.UUID) ([]*models.OrderItem, error) {
-	orderItem := []*models.OrderItem{}
+func (s *orderItemService) mapCreateOrderItem(ctx context.Context, req []erpdto.OrderItemRequest, orderId uuid.UUID) ([]*domain.OrderItem, error) {
+	orderItem := []*domain.OrderItem{}
 	for _, item := range req {
-		orderItem = append(orderItem, &models.OrderItem{
+		orderItem = append(orderItem, &domain.OrderItem{
 			OrderId:   orderId,
 			ProductId: item.ProductId,
 			Quantity:  item.Quantity,
@@ -50,6 +50,6 @@ func (s *orderItemService) mapCreateOrderItem(ctx context.Context, req []erpdto.
 	return orderItem, nil
 }
 
-func (s *orderItemService) GetOrderItemByOrderId(ctx context.Context, orderId string) ([]*models.OrderItem, error) {
+func (s *orderItemService) GetOrderItemByOrderId(ctx context.Context, orderId string) ([]*domain.OrderItem, error) {
 	return s.orderItemRepo.GetOrderItemByOrderId(ctx, orderId)
 }

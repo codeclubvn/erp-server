@@ -2,7 +2,7 @@ package finance
 
 import (
 	"erp/api/request"
-	"erp/models"
+	"erp/domain"
 	uuid "github.com/satori/go.uuid"
 	"time"
 )
@@ -31,6 +31,6 @@ type ListBudgetRequest struct {
 }
 
 type BudgetResponse struct {
-	models.Budget
+	domain.Budget
 	Spent float64 `json:"spent"`
 }

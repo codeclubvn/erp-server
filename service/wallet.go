@@ -2,22 +2,22 @@ package service
 
 import (
 	"context"
-	"erp/api_errors"
-	erpdto "erp/dto/finance"
+	erpdto "erp/api/dto/finance"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/repository"
+	"erp/utils/api_errors"
 	"github.com/jinzhu/copier"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
 
 type WalletService interface {
-	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateWalletRequest) (*models.Wallet, error)
-	Update(ctx context.Context, req erpdto.UpdateWalletRequest) (*models.Wallet, error)
-	GetList(ctx context.Context, req erpdto.ListWalletRequest) ([]*models.Wallet, int64, error)
+	Create(tx *repository.TX, ctx context.Context, req erpdto.CreateWalletRequest) (*domain.Wallet, error)
+	Update(ctx context.Context, req erpdto.UpdateWalletRequest) (*domain.Wallet, error)
+	GetList(ctx context.Context, req erpdto.ListWalletRequest) ([]*domain.Wallet, int64, error)
 	Delete(ctx context.Context, walletID string) error
-	GetOne(ctx context.Context, id string) (*models.Wallet, error)
+	GetOne(ctx context.Context, id string) (*domain.Wallet, error)
 }
 
 type walletService struct {
@@ -34,13 +34,13 @@ func NewWalletService(walletRepo repository.WalletRepository, db *infrastructure
 	}
 }
 
-func (p *walletService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateWalletRequest) (*models.Wallet, error) {
+func (p *walletService) Create(tx *repository.TX, ctx context.Context, req erpdto.CreateWalletRequest) (*domain.Wallet, error) {
 	// check if wallet name is already exist
 	if _, err := p.walletRepo.GetOneByName(ctx, req.Name); err == nil {
 		return nil, errors.New(api_errors.ErrWalletNameAlreadyExist)
 	}
 
-	output := &models.Wallet{}
+	output := &domain.Wallet{}
 	if err := copier.Copy(&output, &req); err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (p *walletService) Create(tx *repository.TX, ctx context.Context, req erpdt
 	return output, nil
 }
 
-func (p *walletService) Update(ctx context.Context, req erpdto.UpdateWalletRequest) (*models.Wallet, error) {
+func (p *walletService) Update(ctx context.Context, req erpdto.UpdateWalletRequest) (*domain.Wallet, error) {
 	output, err := p.walletRepo.GetOneById(ctx, req.Id.String())
 	if err != nil {
 		return nil, err
@@ -81,11 +81,11 @@ func (p *walletService) Update(ctx context.Context, req erpdto.UpdateWalletReque
 	return output, nil
 }
 
-func (p *walletService) GetList(ctx context.Context, req erpdto.ListWalletRequest) ([]*models.Wallet, int64, error) {
+func (p *walletService) GetList(ctx context.Context, req erpdto.ListWalletRequest) ([]*domain.Wallet, int64, error) {
 	return p.walletRepo.GetList(ctx, req)
 }
 
-func (p *walletService) GetOne(ctx context.Context, id string) (*models.Wallet, error) {
+func (p *walletService) GetOne(ctx context.Context, id string) (*domain.Wallet, error) {
 	return p.walletRepo.GetOneById(ctx, id)
 }
 

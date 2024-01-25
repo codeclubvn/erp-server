@@ -2,13 +2,13 @@ package service
 
 import (
 	"context"
-	"erp/api_errors"
+	erpdto2 "erp/api/dto/erp"
 	"erp/constants"
-	erpdto "erp/dto/erp"
+	"erp/domain"
 	"erp/infrastructure"
-	"erp/models"
 	"erp/repository"
 	"erp/utils"
+	"erp/utils/api_errors"
 	"erp/utils/valid_pointer"
 	"errors"
 	"github.com/jinzhu/copier"
@@ -18,12 +18,12 @@ import (
 )
 
 type OrderService interface {
-	CreateFlow(ctx context.Context, req erpdto.CreateOrderRequest) (*models.Order, error)
-	UpdateFlow(ctx context.Context, req erpdto.UpdateOrderRequest) (*models.Order, error)
-	GetList(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.Order, int64, error)
-	GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.OrderOverview, error)
-	GetBestSeller(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.ProductBestSellerResponse, error)
-	GetOne(ctx context.Context, id string) (*models.Order, error)
+	CreateFlow(ctx context.Context, req erpdto2.CreateOrderRequest) (*domain.Order, error)
+	UpdateFlow(ctx context.Context, req erpdto2.UpdateOrderRequest) (*domain.Order, error)
+	GetList(ctx context.Context, req erpdto2.GetListOrderRequest) ([]*domain.Order, int64, error)
+	GetOverview(ctx context.Context, req erpdto2.GetListOrderRequest) ([]*domain.OrderOverview, error)
+	GetBestSeller(ctx context.Context, req erpdto2.GetListOrderRequest) ([]*domain.ProductBestSellerResponse, error)
+	GetOne(ctx context.Context, id string) (*domain.Order, error)
 }
 
 type orderService struct {
@@ -62,7 +62,7 @@ func NewOrderService(
 	}
 }
 
-func (s *orderService) CreateFlow(ctx context.Context, req erpdto.CreateOrderRequest) (*models.Order, error) {
+func (s *orderService) CreateFlow(ctx context.Context, req erpdto2.CreateOrderRequest) (*domain.Order, error) {
 	// get order code
 	req.Code = s.getOrderCode(ctx)
 
@@ -106,7 +106,7 @@ func (s *orderService) CreateFlow(ctx context.Context, req erpdto.CreateOrderReq
 		return nil, err
 	}
 
-	order := &models.Order{}
+	order := &domain.Order{}
 
 	err = repository.WithTransaction(s.db, func(tx *repository.TX) error {
 
@@ -144,7 +144,7 @@ func (s *orderService) CreateFlow(ctx context.Context, req erpdto.CreateOrderReq
 	return order, err
 }
 
-func (s *orderService) updateCreateProQuantity(tx *repository.TX, ctx context.Context, products []*models.Product, mapOrderItem map[string]erpdto.OrderItemRequest) error {
+func (s *orderService) updateCreateProQuantity(tx *repository.TX, ctx context.Context, products []*domain.Product, mapOrderItem map[string]erpdto2.OrderItemRequest) error {
 	// if quantity is null, only update sold
 	// if quantity is not null, update quantity and sold
 	for _, value := range products {
@@ -161,13 +161,13 @@ func (s *orderService) updateCreateProQuantity(tx *repository.TX, ctx context.Co
 	return nil
 }
 
-func (s *orderService) createUserRevenue(tx *repository.TX, ctx context.Context, req erpdto.CreateOrderRequest) error {
+func (s *orderService) createUserRevenue(tx *repository.TX, ctx context.Context, req erpdto2.CreateOrderRequest) error {
 	if req.Payment <= 0 {
 		return nil
 	}
 
 	now := time.Now()
-	cashbook := &models.Cashbook{
+	cashbook := &domain.Cashbook{
 		OrderId:  valid_pointer.UUIDPointer(req.OrderId),
 		Amount:   req.Payment,
 		Status:   constants.StatusIn,
@@ -180,7 +180,7 @@ func (s *orderService) createUserRevenue(tx *repository.TX, ctx context.Context,
 
 	return s.cashbookRepo.Create(tx, ctx, cashbook)
 }
-func (s *orderService) updateUserRevenue(tx *repository.TX, ctx context.Context, trans *models.Cashbook, req erpdto.CreateOrderRequest) error {
+func (s *orderService) updateUserRevenue(tx *repository.TX, ctx context.Context, trans *domain.Cashbook, req erpdto2.CreateOrderRequest) error {
 	trans.Amount = req.Payment
 	if req.Payment <= 0 {
 		return nil
@@ -204,15 +204,15 @@ func (s *orderService) validateTotal(ctx context.Context, requestTotal, calculat
 	return nil
 }
 
-func (s *orderService) validateOrderItem(orderItems []erpdto.OrderItemRequest, products []*models.Product) error {
+func (s *orderService) validateOrderItem(orderItems []erpdto2.OrderItemRequest, products []*domain.Product) error {
 	if len(orderItems) != len(products) {
 		return errors.New(api_errors.ErrOrderItemInvalid)
 	}
 	return nil
 }
 
-func (s *orderService) create(tx *repository.TX, ctx context.Context, req erpdto.CreateOrderRequest) (*models.Order, error) {
-	order := &models.Order{}
+func (s *orderService) create(tx *repository.TX, ctx context.Context, req erpdto2.CreateOrderRequest) (*domain.Order, error) {
+	order := &domain.Order{}
 
 	if err := utils.Copy(order, req); err != nil {
 		return order, err
@@ -222,9 +222,9 @@ func (s *orderService) create(tx *repository.TX, ctx context.Context, req erpdto
 
 }
 
-func (s *orderService) getProductIdsAndMapOrderItem(ctx context.Context, orderItems []erpdto.OrderItemRequest) ([]string, map[string]erpdto.OrderItemRequest) {
+func (s *orderService) getProductIdsAndMapOrderItem(ctx context.Context, orderItems []erpdto2.OrderItemRequest) ([]string, map[string]erpdto2.OrderItemRequest) {
 	productIds := []string{}
-	mapOrderItem := map[string]erpdto.OrderItemRequest{}
+	mapOrderItem := map[string]erpdto2.OrderItemRequest{}
 	for _, value := range orderItems {
 		productIds = append(productIds, value.ProductId.String())
 		mapOrderItem[value.ProductId.String()] = value
@@ -241,8 +241,8 @@ func (s *orderService) getCustomer(ctx context.Context, customerId *uuid.UUID) e
 	return nil
 }
 
-func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req erpdto.CreateOrderRequest) error {
-	if req.Status != erpdto.OrderDelivery && req.Status != erpdto.OrderComplete {
+func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req erpdto2.CreateOrderRequest) error {
+	if req.Status != erpdto2.OrderDelivery && req.Status != erpdto2.OrderComplete {
 		return nil
 	}
 	if req.CustomerId == nil {
@@ -272,7 +272,7 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 				}
 			} else {
 				// create cashbook
-				cashbook = &models.Cashbook{}
+				cashbook = &domain.Cashbook{}
 				if err = utils.Copy(&cashbook, req); err != nil {
 					return err
 				}
@@ -307,7 +307,7 @@ func (s *orderService) handlePayment(tx *repository.TX, ctx context.Context, req
 	return nil
 }
 
-func (s *orderService) GetDiscount(ctx context.Context, discountType *erpdto.DiscountType, total, discountReq float64) (float64, error) {
+func (s *orderService) GetDiscount(ctx context.Context, discountType *erpdto2.DiscountType, total, discountReq float64) (float64, error) {
 	if discountType == nil {
 		return 0, nil
 	}
@@ -334,7 +334,7 @@ func (s *orderService) GetDiscount(ctx context.Context, discountType *erpdto.Dis
 // check customer_id use promote, is_active, quantity, start_date, end_date, max_amount
 // check promote_type, get discount_value
 // update quantity_use, create promote_use
-func (s *orderService) PromoteFlow(ctx context.Context, req erpdto.CreateOrderRequest, total float64) (float64, error) {
+func (s *orderService) PromoteFlow(ctx context.Context, req erpdto2.CreateOrderRequest, total float64) (float64, error) {
 	// check promote id exist
 	if req.PromoteCode == nil {
 		return 0, nil
@@ -381,7 +381,7 @@ func (s *orderService) PromoteFlow(ctx context.Context, req erpdto.CreateOrderRe
 	}
 
 	// UpdateById promote_use
-	if err = s.promoteService.CreatePromoteUse(ctx, erpdto.CreatePromoteUseRequest{
+	if err = s.promoteService.CreatePromoteUse(ctx, erpdto2.CreatePromoteUseRequest{
 		CustomerId:  req.CustomerId,
 		PromoteCode: req.PromoteCode,
 	}); err != nil {
@@ -404,7 +404,7 @@ func (s *orderService) PromoteFlow(ctx context.Context, req erpdto.CreateOrderRe
 	return promoteFee, nil
 }
 
-func (s *orderService) calculateTotalAmount(ctx context.Context, amount float64, req erpdto.CreateOrderRequest) (float64, error) {
+func (s *orderService) calculateTotalAmount(ctx context.Context, amount float64, req erpdto2.CreateOrderRequest) (float64, error) {
 	if utils.ValidFloat64(req.DeliveryFee) < 0 {
 		return 0, errors.New(api_errors.ErrDeliveryFeeInvalid)
 	}
@@ -429,7 +429,7 @@ func (s *orderService) calculateTotalAmount(ctx context.Context, amount float64,
 	return total, nil
 }
 
-func (s *orderService) CalculateAmount(ctx context.Context, products []*models.Product, mapOrderItem map[string]erpdto.OrderItemRequest) (amount float64, costTotal float64, err error) {
+func (s *orderService) CalculateAmount(ctx context.Context, products []*domain.Product, mapOrderItem map[string]erpdto2.OrderItemRequest) (amount float64, costTotal float64, err error) {
 	for _, product := range products {
 		if product.Status != constants.ProductStatusActive {
 			return 0.0, 0.0, errors.New(api_errors.ErrProductInvalid)
@@ -454,7 +454,7 @@ func (s *orderService) CalculateAmount(ctx context.Context, products []*models.P
 }
 
 // UpdateFlow
-func (s *orderService) UpdateFlow(ctx context.Context, req erpdto.UpdateOrderRequest) (*models.Order, error) {
+func (s *orderService) UpdateFlow(ctx context.Context, req erpdto2.UpdateOrderRequest) (*domain.Order, error) {
 	// get order
 	order, err := s.erpOrderRepo.GetOneById(ctx, req.OrderId.String())
 	if err != nil {
@@ -468,7 +468,7 @@ func (s *orderService) UpdateFlow(ctx context.Context, req erpdto.UpdateOrderReq
 
 		// if status == delivery, complete check payment
 		if order.CustomerId != nil {
-			if err := s.handlePayment(tx, ctx, erpdto.CreateOrderRequest{
+			if err := s.handlePayment(tx, ctx, erpdto2.CreateOrderRequest{
 				OrderId:    req.OrderId,
 				Status:     req.Status,
 				Payment:    req.Payment,
@@ -497,7 +497,7 @@ func (s *orderService) UpdateFlow(ctx context.Context, req erpdto.UpdateOrderReq
 	return order, err
 }
 
-func (s *orderService) updateCancelDebtAndRevenue(tx *repository.TX, ctx context.Context, order *models.Order) error {
+func (s *orderService) updateCancelDebtAndRevenue(tx *repository.TX, ctx context.Context, order *domain.Order) error {
 	// get debt
 	debt, err := s.cashbookRepo.GetDebtByOrderId(tx, ctx, order.ID.String())
 	if err != nil {
@@ -522,23 +522,23 @@ func (s *orderService) updateCancelDebtAndRevenue(tx *repository.TX, ctx context
 	return nil
 }
 
-func (s *orderService) GetList(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.Order, int64, error) {
+func (s *orderService) GetList(ctx context.Context, req erpdto2.GetListOrderRequest) ([]*domain.Order, int64, error) {
 	return s.erpOrderRepo.GetList(ctx, req)
 }
 
-func (s *orderService) GetOverview(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.OrderOverview, error) {
+func (s *orderService) GetOverview(ctx context.Context, req erpdto2.GetListOrderRequest) ([]*domain.OrderOverview, error) {
 	return s.erpOrderRepo.GetOverview(ctx, req)
 }
 
-func (s *orderService) GetBestSeller(ctx context.Context, req erpdto.GetListOrderRequest) ([]*models.ProductBestSellerResponse, error) {
+func (s *orderService) GetBestSeller(ctx context.Context, req erpdto2.GetListOrderRequest) ([]*domain.ProductBestSellerResponse, error) {
 	return s.erpOrderRepo.GetBestSeller(ctx, req)
 }
 
-func (s *orderService) GetOne(ctx context.Context, id string) (*models.Order, error) {
+func (s *orderService) GetOne(ctx context.Context, id string) (*domain.Order, error) {
 	return s.erpOrderRepo.GetOneById(ctx, id)
 }
 
-func (s *orderService) checkOrderStatus(ctx context.Context, order *models.Order, req erpdto.UpdateOrderRequest) error {
+func (s *orderService) checkOrderStatus(ctx context.Context, order *domain.Order, req erpdto2.UpdateOrderRequest) error {
 	switch order.Status {
 	case constants.Confirm:
 		if req.Status != constants.Delivery && req.Status != constants.Cancel {
@@ -558,7 +558,7 @@ func (s *orderService) checkOrderStatus(ctx context.Context, order *models.Order
 	return nil
 }
 
-func (s *orderService) cancelOrder(tx *repository.TX, ctx context.Context, order *models.Order) error {
+func (s *orderService) cancelOrder(tx *repository.TX, ctx context.Context, order *domain.Order) error {
 	// update order
 	order.Status = constants.Cancel
 	if err := s.erpOrderRepo.Update(tx, ctx, order); err != nil {
@@ -589,9 +589,9 @@ func (s *orderService) cancelOrder(tx *repository.TX, ctx context.Context, order
 	return nil
 }
 
-func (s *orderService) mapCancelOrderItem(orderItems []*models.OrderItem) ([]string, map[string]models.OrderItem) {
+func (s *orderService) mapCancelOrderItem(orderItems []*domain.OrderItem) ([]string, map[string]domain.OrderItem) {
 	productIds := []string{}
-	mapOrderItem := map[string]models.OrderItem{}
+	mapOrderItem := map[string]domain.OrderItem{}
 	for _, value := range orderItems {
 		productIds = append(productIds, value.ProductId.String())
 		mapOrderItem[value.ProductId.String()] = *value
@@ -599,7 +599,7 @@ func (s *orderService) mapCancelOrderItem(orderItems []*models.OrderItem) ([]str
 	return productIds, mapOrderItem
 }
 
-func (s *orderService) updateCancelProQuantity(tx *repository.TX, ctx context.Context, products []*models.Product, mapOrderItem map[string]models.OrderItem) error {
+func (s *orderService) updateCancelProQuantity(tx *repository.TX, ctx context.Context, products []*domain.Product, mapOrderItem map[string]domain.OrderItem) error {
 	// if quantity is null, only update sold
 	// if quantity is not null, update quantity and sold
 	for _, value := range products {

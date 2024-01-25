@@ -3,8 +3,8 @@ package api
 import (
 	"erp/api/request"
 	"erp/api/response"
-	"erp/api_errors"
 	"erp/utils"
+	"erp/utils/api_errors"
 	"net/http"
 
 	"github.com/pkg/errors"
