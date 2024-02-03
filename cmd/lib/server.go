@@ -19,7 +19,7 @@ type Handler struct {
 
 func NewServerGroup(instance *gin.Engine) *Handler {
 	return &Handler{
-		instance.Group("/handler/"),
+		instance.Group("/api/"),
 	}
 }
 

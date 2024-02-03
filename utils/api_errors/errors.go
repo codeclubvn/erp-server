@@ -33,6 +33,7 @@ var (
 	ErrPromoteCodeRequiredCustomer = "10032"
 	ErrOrderStatus                 = "10033"
 	ErrWalletNameAlreadyExist      = "10034"
+	ErrFileNotFound                = "10035"
 )
 
 type MessageAndStatus struct {

@@ -25,6 +25,7 @@ type Route struct {
 	middleware                *middlewares.GinMiddleware
 	transactionController     *controller.CashbookController
 	categoryProductController *controller.CategoryProductController
+	fileController            *controller.FileController
 }
 
 func NewRoute(
@@ -44,6 +45,7 @@ func NewRoute(
 	walletController *controller.WalletController,
 	budgetController *controller.BudgetController,
 	transactionCategoryController *controller.TransactionCategoryController,
+	fileController *controller.FileController,
 ) *Route {
 
 	v1 := handler.Group("/v1")
@@ -118,6 +120,8 @@ func NewRoute(
 	v1.GET("/cashbook_category/", middleware.Auth(false), transactionCategoryController.List)
 	v1.DELETE("/cashbook_category/:id", middleware.Auth(true), transactionCategoryController.Delete)
 	v1.GET("/cashbook_category/:id", middleware.Auth(true), transactionCategoryController.GetOne)
+
+	v1.POST("/file/upload/", middleware.Auth(false), fileController.UploadFile)
 
 	v1.GET("/health/", healthController.Health)
 
