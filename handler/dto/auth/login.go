@@ -26,3 +26,13 @@ type UserResponse struct {
 	Email     string     `json:"email"`
 	RoleID    *uuid.UUID `json:"role_id,omitempty"`
 }
+
+type ForgotPasswordRequest struct {
+	Email string `json:"email" binding:"required" validate:"email"`
+}
+
+type ResetPasswordRequest struct {
+	Token            string `json:"token" binding:"required"`
+	Password         string `json:"password" binding:"required" validate:"min=6,max=20"`
+	RemoveAllDevices bool   `json:"remove_all_devices"`
+}

@@ -51,6 +51,8 @@ func NewRoute(
 	v1 := handler.Group("/v1")
 	v1.POST("/auth/register", authController.Register)
 	v1.POST("/auth/login", authController.Login)
+	v1.POST("/auth/forgot_password", authController.ForgotPassword)
+	v1.POST("/auth/reset_password", authController.ResetPassword)
 
 	v1.POST("/product/", middleware.Auth(true), productController.Create)
 	v1.PUT("/product/", middleware.Auth(true), productController.Update)

@@ -57,3 +57,31 @@ func (b *AuthController) Login(c *gin.Context) {
 	}
 	b.Response(c, http.StatusOK, "success", res)
 }
+
+func (b *AuthController) ForgotPassword(c *gin.Context) {
+	var req dto2.ForgotPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		b.ResponseValidationError(c, err)
+		return
+	}
+
+	if err := b.authService.ForgotPassword(c.Request.Context(), req); err != nil {
+		b.ResponseError(c, err)
+		return
+	}
+	b.Response(c, http.StatusOK, "success", nil)
+}
+
+func (b *AuthController) ResetPassword(c *gin.Context) {
+	var req dto2.ResetPasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		b.ResponseValidationError(c, err)
+		return
+	}
+
+	if err := b.authService.ResetPassword(c.Request.Context(), req); err != nil {
+		b.ResponseError(c, err)
+		return
+	}
+	b.Response(c, http.StatusOK, "success", nil)
+}

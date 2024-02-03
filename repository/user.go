@@ -15,6 +15,7 @@ type UserRepository interface {
 	GetByID(ctx context.Context, id string) (res *models.User, err error)
 	GetByEmail(ctx context.Context, email string) (res *models.User, err error)
 	Create(tx *TX, ctx context.Context, user models.User) (res *models.User, err error)
+	UpdatePassword(tx *TX, ctx context.Context, userId string, password []byte) (err error)
 }
 
 type userRepository struct {
@@ -56,4 +57,12 @@ func (u *userRepository) GetByEmail(ctx context.Context, email string) (res *mod
 		return nil, err
 	}
 	return
+}
+
+func (u *userRepository) UpdatePassword(tx *TX, ctx context.Context, userId string, password []byte) (err error) {
+	if tx != nil {
+		tx = &TX{db: *u.db}
+	}
+	err = u.db.Model(&models.User{}).Where("id = ?", userId).Update("password", password).Error
+	return err
 }

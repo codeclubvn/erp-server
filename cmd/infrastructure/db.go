@@ -97,6 +97,7 @@ func (d Database) RegisterTables() {
 		domain.Cashbook{}, domain.Order{},
 		domain.OrderItem{}, domain.Promote{}, domain.PromoteUse{},
 		domain.Wallet{}, domain.CashbookCategory{}, domain.Budget{},
+		domain.ResetPasswordToken{},
 	)
 
 	if err != nil {
