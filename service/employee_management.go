@@ -91,10 +91,9 @@ func (e *erpEmployeeManagementService) CreateEmployee(ctx context.Context, req e
 		}
 
 		user, err = e.userRepo.Create(tx, ctx, domain.User{
-			FirstName: req.FirstName,
-			LastName:  req.LastName,
-			Email:     req.Email,
-			Password:  string(encryptedPassword),
+			FullName: req.FullName,
+			Email:    req.Email,
+			Password: string(encryptedPassword),
 		})
 		if err != nil {
 			return err

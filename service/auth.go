@@ -2,13 +2,14 @@ package service
 
 import (
 	"context"
+	"erp/cmd/lib"
 	config "erp/config"
 	models "erp/domain"
 	dto2 "erp/handler/dto/auth"
 	"erp/repository"
 	"erp/utils/api_errors"
+	"erp/utils/constants"
 	"fmt"
-
 	"github.com/pkg/errors"
 
 	"golang.org/x/crypto/bcrypt"
@@ -26,19 +27,21 @@ type (
 		jwtService         JwtService
 		config             *config.Config
 		resetPasswordToken repository.ResetPasswordToken
+		email              lib.Sendinblue
 	}
 )
 
-func NewAuthService(userService UserService, config *config.Config, jwtService JwtService, resetPasswordToken repository.ResetPasswordToken) AuthService {
+func NewAuthService(userService UserService, config *config.Config, jwtService JwtService, resetPasswordToken repository.ResetPasswordToken, email lib.Sendinblue) AuthService {
 	return &authService{
 		userService:        userService,
 		jwtService:         jwtService,
 		config:             config,
 		resetPasswordToken: resetPasswordToken,
+		email:              email,
 	}
 }
 
-func (a *authService) Register(ctx context.Context, req dto2.RegisterRequest) (user *models.User, err error) {
+func (s *authService) Register(ctx context.Context, req dto2.RegisterRequest) (user *models.User, err error) {
 	encryptedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(req.Password),
 		bcrypt.DefaultCost,
@@ -49,18 +52,17 @@ func (a *authService) Register(ctx context.Context, req dto2.RegisterRequest) (u
 
 	req.Password = string(encryptedPassword)
 
-	user, err = a.userService.Create(ctx, models.User{
-		Email:     req.Email,
-		Password:  req.Password,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
+	user, err = s.userService.Create(ctx, models.User{
+		Email:    req.Email,
+		Password: req.Password,
+		FullName: req.FullName,
 	})
 
 	return user, err
 }
 
-func (a *authService) Login(ctx context.Context, req dto2.LoginRequest) (res *dto2.LoginResponse, err error) {
-	user, err := a.userService.GetByEmail(ctx, req.Email)
+func (s *authService) Login(ctx context.Context, req dto2.LoginRequest) (res *dto2.LoginResponse, err error) {
+	user, err := s.userService.GetByEmail(ctx, req.Email)
 
 	if err != nil {
 		return nil, err
@@ -79,29 +81,28 @@ func (a *authService) Login(ctx context.Context, req dto2.LoginRequest) (res *dt
 		return nil, errors.New(api_errors.ErrInvalidPassword)
 	}
 
-	accessToken, refreshToken, err := a.jwtService.GenerateAuthTokens(user.ID.String())
+	accessToken, refreshToken, err := s.jwtService.GenerateAuthTokens(user.ID.String())
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot generate auth tokens")
 	}
 
 	return &dto2.LoginResponse{
 		User: dto2.UserResponse{
-			ID:        user.ID.String(),
-			FirstName: user.FirstName,
-			LastName:  user.LastName,
-			Email:     user.Email,
-			RoleID:    user.RoleID,
+			ID:       user.ID.String(),
+			FullName: user.FullName,
+			Email:    user.Email,
+			RoleID:   user.RoleID,
 		},
 		Token: dto2.TokenResponse{
 			AccessToken:  accessToken,
 			RefreshToken: refreshToken,
-			ExpiresIn:    a.config.Jwt.AccessTokenExpiresIn,
+			ExpiresIn:    s.config.Jwt.AccessTokenExpiresIn,
 		},
 	}, nil
 }
 
-func (a *authService) ForgotPassword(ctx context.Context, req dto2.ForgotPasswordRequest) (err error) {
-	user, err := a.userService.GetByEmail(ctx, req.Email)
+func (s *authService) ForgotPassword(ctx context.Context, req dto2.ForgotPasswordRequest) (err error) {
+	user, err := s.userService.GetByEmail(ctx, req.Email)
 	if err != nil {
 		return err
 	}
@@ -114,18 +115,23 @@ func (a *authService) ForgotPassword(ctx context.Context, req dto2.ForgotPasswor
 	output := &models.ResetPasswordToken{
 		UserID: user.ID.String(),
 	}
-	if err = a.resetPasswordToken.Create(nil, ctx, output); err != nil {
+	if err = s.resetPasswordToken.Create(nil, ctx, output); err != nil {
 		return errors.Wrap(err, "cannot create reset password token")
 	}
-	// send email with reset password link
-	fmt.Println("resetPasswordToken", output.ID)
 
+	go func() {
+		// {{params.RESET_PASSWORD_LINK}} will be replaced by the actual link
+		params := map[string]interface{}{
+			constants.ResetPasswordLink: fmt.Sprintf("%s/auth/reset-password/%s", s.config.Server.WebsiteURL, output.ID),
+		}
+		s.email.SendMail(context.Background(), user.Email, user.FullName, constants.TemplateIdOfEmailResetPassword, params)
+	}()
 	return
 }
 
-func (a *authService) ResetPassword(ctx context.Context, req dto2.ResetPasswordRequest) (err error) {
+func (s *authService) ResetPassword(ctx context.Context, req dto2.ResetPasswordRequest) (err error) {
 	// validate token
-	resetPasswordToken, err := a.resetPasswordToken.GetOneById(ctx, req.Token)
+	resetPasswordToken, err := s.resetPasswordToken.GetOneById(ctx, req.Token)
 	if err != nil {
 		return errors.Wrap(err, "cannot get reset password token")
 	}
@@ -135,7 +141,7 @@ func (a *authService) ResetPassword(ctx context.Context, req dto2.ResetPasswordR
 	}
 
 	// reset password
-	if err = a.userService.UpdatePassword(ctx, resetPasswordToken.UserID, req.Password); err != nil {
+	if err = s.userService.UpdatePassword(ctx, resetPasswordToken.UserID, req.Password); err != nil {
 		return errors.Wrap(err, "cannot update password")
 	}
 

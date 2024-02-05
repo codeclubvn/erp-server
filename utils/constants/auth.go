@@ -8,3 +8,6 @@ const (
 	VerifyToken        TokenType = "verify_token"
 	ResetPasswordToken TokenType = "reset_password_token"
 )
+
+const ResetPasswordLink = "RESET_PASSWORD_LINK"
+const TemplateIdOfEmailResetPassword = 1

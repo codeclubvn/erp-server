@@ -17,11 +17,10 @@ type ManagePermissionRequest struct {
 }
 
 type CreateEmployeeRequest struct {
-	Email     string `json:"email" binding:"required"`
-	Password  string `json:"password" binding:"required"`
-	RoleID    string `json:"role_id" binding:"required"`
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name" binding:"required"`
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+	RoleID   string `json:"role_id" binding:"required"`
+	FullName string `json:"full_name" binding:"required"`
 }
 
 type AssignRoleRequest struct {

@@ -34,6 +34,7 @@ type (
 		Logger         Logger     `mapstructure:"logger"`
 		Jwt            Jwt        `mapstructure:"jwt"`
 		Cloudinary     Cloudinary `mapstructure:"cloudinary"`
+		Sendinblue     Sendinblue `mapstructure:"sendinblue"`
 	}
 
 	Server struct {
@@ -42,6 +43,7 @@ type (
 		UseRedis   bool   `mapstructure:"useRedis"`
 		Port       int    `mapstructure:"port"`
 		UploadPath string `mapstructure:"uploadPath"`
+		WebsiteURL string `mapstructure:"websiteURL"`
 	}
 
 	Database struct {
@@ -81,6 +83,14 @@ type (
 		ApiSecret string `mapstructure:"apiSecret"`
 		PublicId  string `mapstructure:"publicId"`
 		URL       string `mapstructure:"url"`
+	}
+
+	Sendinblue struct {
+		ApiKey           string
+		BasePath         string
+		DefaultFromEmail string
+		DefaultFromName  string
+		userAgent        string
 	}
 )
 

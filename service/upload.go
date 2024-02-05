@@ -29,17 +29,17 @@ type (
 		UploadImage(ctx context.Context, file *multipart.FileHeader) (*uploader.UploadResult, error)
 	}
 	fileService struct {
-		fileRepository  repository.FileRepository
-		config          *config.Config
-		imageRepository lib.CloudinaryRepository
+		fileRepository repository.FileRepository
+		config         *config.Config
+		cloudinary     lib.CloudinaryRepository
 	}
 )
 
-func NewFileService(itemRepo repository.FileRepository, config *config.Config, imageRepository lib.CloudinaryRepository) FileService {
+func NewFileService(itemRepo repository.FileRepository, config *config.Config, cloudinary lib.CloudinaryRepository) FileService {
 	return &fileService{
-		fileRepository:  itemRepo,
-		config:          config,
-		imageRepository: imageRepository,
+		fileRepository: itemRepo,
+		config:         config,
+		cloudinary:     cloudinary,
 	}
 }
 
@@ -192,7 +192,7 @@ func (s *fileService) Download(ctx context.Context, id string) (*domain.File, er
 }
 
 func (s *fileService) UploadImage(ctx context.Context, file *multipart.FileHeader) (*uploader.UploadResult, error) {
-	res, err := s.imageRepository.UploadFileCloud(ctx, file)
+	res, err := s.cloudinary.UploadFileCloud(ctx, file)
 	if err != nil {
 		return nil, err
 	}

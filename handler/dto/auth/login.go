@@ -20,11 +20,10 @@ type TokenResponse struct {
 }
 
 type UserResponse struct {
-	ID        string     `json:"id"`
-	FirstName string     `json:"first_name"`
-	LastName  string     `json:"last_name"`
-	Email     string     `json:"email"`
-	RoleID    *uuid.UUID `json:"role_id,omitempty"`
+	ID       string     `json:"id"`
+	FullName string     `json:"full_name"`
+	Email    string     `json:"email"`
+	RoleID   *uuid.UUID `json:"role_id,omitempty"`
 }
 
 type ForgotPasswordRequest struct {

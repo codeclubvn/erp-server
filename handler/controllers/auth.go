@@ -32,13 +32,13 @@ func (b *AuthController) Register(c *gin.Context) {
 		return
 	}
 
-	_, err := b.authService.Register(c.Request.Context(), req)
+	user, err := b.authService.Register(c.Request.Context(), req)
 
 	if err != nil {
 		b.ResponseError(c, err)
 		return
 	}
-	b.Response(c, http.StatusOK, "success", nil)
+	b.Response(c, http.StatusOK, "success", user)
 }
 
 func (b *AuthController) Login(c *gin.Context) {
