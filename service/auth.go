@@ -113,7 +113,7 @@ func (s *authService) ForgotPassword(ctx context.Context, req dto2.ForgotPasswor
 
 	// save token to db
 	output := &models.ResetPasswordToken{
-		UserID: user.ID.String(),
+		UserID: user.ID,
 	}
 	if err = s.resetPasswordToken.Create(nil, ctx, output); err != nil {
 		return errors.Wrap(err, "cannot create reset password token")
@@ -141,7 +141,7 @@ func (s *authService) ResetPassword(ctx context.Context, req dto2.ResetPasswordR
 	}
 
 	// reset password
-	if err = s.userService.UpdatePassword(ctx, resetPasswordToken.UserID, req.Password); err != nil {
+	if err = s.userService.UpdatePassword(ctx, resetPasswordToken.UserID.String(), req.Password); err != nil {
 		return errors.Wrap(err, "cannot update password")
 	}
 

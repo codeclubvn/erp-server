@@ -1,8 +1,12 @@
 package domain
 
+import (
+	uuid "github.com/satori/go.uuid"
+)
+
 type ResetPasswordToken struct {
 	BaseModel
-	UserID string `json:"user_id"`
+	UserID uuid.UUID `json:"user_id"`
 }
 
 func (ResetPasswordToken) TableName() string {

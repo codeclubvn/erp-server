@@ -17,6 +17,9 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app/main ./main.
 # Stage 3: Create a lightweight runtime image
 FROM ubuntu:20.04 as runner
 
+ENV ENV=local
+ENV CLOUDINARY_URL=cloudinary://991793784142871:oZ47iHrgrFQq4fe7ksKKlo7tg4A@dsr2xnaj7
+
 WORKDIR /app
 COPY --from=builder /app/main /app/main
 COPY --from=builder /app/config/config.yml /app/config/config.yml
